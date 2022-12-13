@@ -3,6 +3,7 @@ package hu.krisz768.bettertuke;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -42,7 +43,7 @@ public class SplashActivity extends AppCompatActivity {
 
         if (Dm.IsDatabaseExist()) {
             AddLog("Database exist, checking for update...");
-
+            Dm = new DatabaseManager(this);
             String Verison = Dm.GetDatabaseVerison();
 
             AddLog("Database version = " + Verison);
@@ -55,6 +56,7 @@ public class SplashActivity extends AppCompatActivity {
                 AddLog("Database is up to date!");
 
                 //END
+                StartMain();
             } else {
                 AddLog("Database version does not match! Updating....");
 
@@ -62,12 +64,13 @@ public class SplashActivity extends AppCompatActivity {
 
                 if (serverApi.downloadDatabaseFile()) {
                     AddLog("Database downloaded successfully");
-
+                    Dm = new DatabaseManager(this);
                     Verison = Dm.GetDatabaseVerison();
 
                     AddLog("Database version = " + Verison);
 
                     //END
+                    StartMain();
                 }else  {
                     AddLog("Database download fail!");
 
@@ -78,18 +81,24 @@ public class SplashActivity extends AppCompatActivity {
             AddLog("Database not found, attempt to download...");
             if (serverApi.downloadDatabaseFile()) {
                 AddLog("Database downloaded successfully");
-
+                Dm = new DatabaseManager(this);
                 String Verison = Dm.GetDatabaseVerison();
 
                 AddLog("Database version = " + Verison);
 
                 //END
+                StartMain();
             }else  {
                 AddLog("Database download fail!");
 
                 //FAIL
             }
         }
+    }
+
+    private void StartMain() {
+        Intent myIntent = new Intent(this, MainActivity.class);
+        startActivity(myIntent);
     }
 
 
