@@ -2,7 +2,9 @@ package hu.krisz768.bettertuke.Database;
 
 import android.content.Context;
 
-public class BusPlaces {
+import java.io.Serializable;
+
+public class BusPlaces implements Serializable {
     private int Id;
     private String Name;
     private float GpsX;

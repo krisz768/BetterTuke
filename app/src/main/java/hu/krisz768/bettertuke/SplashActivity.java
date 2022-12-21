@@ -4,11 +4,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Locale;
 
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
@@ -40,6 +45,13 @@ public class SplashActivity extends AppCompatActivity {
 
         DatabaseManager Dm = new DatabaseManager(this);
         TukeServerApi serverApi = new TukeServerApi(this);
+
+        SimpleDateFormat Sdf = new SimpleDateFormat("MMM dd yyyy hh:mm:ss:SSSa", Locale.US);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.e("asdXDDDDDDDDDDDDDDDDDDD", Sdf.format(new Date()));
+        }
+
 
         if (Dm.IsDatabaseExist()) {
             AddLog("Database exist, checking for update...");

@@ -2,6 +2,8 @@ package hu.krisz768.bettertuke.Database;
 
 import android.content.Context;
 
+import java.io.Serializable;
+
 public class BusStops {
     private int Id;
     private String Foldhely;
@@ -21,8 +23,15 @@ public class BusStops {
         return Id;
     }
 
-    public String getFoldhely() {
-        return Foldhely;
+    public int getFoldhely() {
+        try
+        {
+            return Integer.parseInt(Foldhely);
+        } catch (Exception e) {
+
+        }
+
+        return -1;
     }
 
     public float getGpsX() {

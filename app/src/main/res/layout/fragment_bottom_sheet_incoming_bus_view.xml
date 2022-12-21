@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".BottomSheetIncomingBusFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/BusStopName"
+            android:layout_width="match_parent"
+            android:layout_height="61dp"
+            android:gravity="center"
+            android:text="@string/hello_blank_fragment"
+            android:textSize="25dp" />
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/BusListFragment"
+            android:name="hu.krisz768.bettertuke.LoadingFragment"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            tools:layout="@layout/fragment_loading" />
+
+    </LinearLayout>
+
+</FrameLayout>

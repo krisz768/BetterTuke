@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
+
 public class TukeServerApi {
 
     private final Context ctx;
@@ -31,6 +33,35 @@ public class TukeServerApi {
         }
 
         return "Err";
+    }
+
+    public IncommingBusRespModel[] getNextIncommingBuses(int kocsiallas) {
+        try {
+            apiGetNextIncommingBuses data = new apiGetNextIncommingBuses(kocsiallas);
+            Thread thread = new Thread(data);
+            thread.start();
+            thread.join();
+            IncommingBusRespModel[] BusList = data.getValue();
+            return BusList;
+        } catch (Exception e) {
+            log(e.toString());
+        }
+
+        return new IncommingBusRespModel[0];
+    }
+
+    public Boolean getIsBusHasStarted(int jaratid) {
+        try {
+            apiGetIsBusHasStarted data = new apiGetIsBusHasStarted(jaratid);
+            Thread thread = new Thread(data);
+            thread.start();
+            thread.join();
+            return data.value;
+        } catch (Exception e) {
+            log(e.toString());
+        }
+
+        return false;
     }
 
     public boolean downloadDatabaseFile() {

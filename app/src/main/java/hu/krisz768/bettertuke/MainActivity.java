@@ -1,15 +1,25 @@
 package hu.krisz768.bettertuke;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.location.CurrentLocationRequest;
@@ -21,18 +31,29 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
+import hu.krisz768.bettertuke.models.MarkerDescriptor;
 
 public class MainActivity extends AppCompatActivity {
 
     FusedLocationProviderClient fusedLocationClient;
+
+    View BottomSheet;
+    BottomSheetBehavior bottomSheetBehavior;
+    private BottomSheetBehavior.BottomSheetCallback BottomSheetCallback;
 
     private Integer CurrentPlace = -1;
     private Integer CurrentStop = -1;
@@ -46,9 +67,36 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        BottomSheet = findViewById(R.id.standard_bottom_sheet);
+        bottomSheetBehavior = BottomSheetBehavior.from(BottomSheet);
+
+        SetupBottomSheet();
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
         busStops = BusStops.GetAllStops(this);
         busPlaces = BusPlaces.getAllBusPlaces(this);
 
+        SetupGoogleMap();
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        SetupBottomSheet();
+
+        final FragmentContainerView fragmentView = findViewById(R.id.fragmentContainerView2);
+
+        ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+            params.height = bottomSheetBehavior.getPeekHeight();
+        } else if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+            params.height = bottomSheetBehavior.getMaxHeight();
+        }
+
+        fragmentView.setLayoutParams(params);
+    }
+
+    private void SetupGoogleMap() {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
 
@@ -58,6 +106,14 @@ public class MainActivity extends AppCompatActivity {
                 googleMap = googleMap_;
 
                 googleMap.getUiSettings().setZoomControlsEnabled(false);
+
+                googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(@NonNull Marker marker) {
+                        MarkerClickListener(marker);
+                        return true;
+                    }
+                });
                 //googleMap.getUiSettings().setMyLocationButtonEnabled(false);
                 MarkBusStops();
                 GetClosestStop();
@@ -80,17 +136,47 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
 
+    private void MarkerClickListener(Marker marker) {
+        MarkerDescriptor Md = (MarkerDescriptor)marker.getTag();
+        if (Md.getType() == MarkerDescriptor.Types.Stop) {
+            CurrentStop = Md.getId();
+        } else {
+            CurrentPlace = Md.getId();
+            for (int i = 0; i < busStops.length; i++) {
+                if (busStops[i].getFoldhely() == Md.getId()) {
+                    CurrentStop = busStops[i].getId();
+                    break;
+                }
+            }
+        }
 
+        MarkBusStops();
+        ShowBottomSheet();
     }
 
     private void MarkBusStops() {
-        googleMap.getUiSettings().setZoomControlsEnabled(true);
+        googleMap.clear();
+
         for (int i = 0; i < busPlaces.length; i++) {
-            googleMap.addMarker(new MarkerOptions().position(new LatLng(busPlaces[i].getGpsY(), busPlaces[i].getGpsX())));
+            if (busPlaces[i].getId() == CurrentPlace) {
+                for (int j = 0; j < busStops.length; j++) {
+                    if (busStops[j].getFoldhely() == CurrentPlace) {
+
+                        Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStops[j].getGpsY(), busStops[j].getGpsX())));
+                        marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStops[j].getId()));
+                    }
+                }
+            } else  {
+                BitmapDescriptor asd = BitmapDescriptorFactory.fromResource(R.drawable.busplace);
+                Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busPlaces[i].getGpsY(), busPlaces[i].getGpsX())).icon(BitmapDescriptorFactory.fromResource(R.drawable.busplace2)));
+                marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Place, busPlaces[i].getId()));
+            }
         }
 
-        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(this, R.raw.mapstyle_night);
+        MapStyleOptions style = new MapStyleOptions(GetMapTheme());
+
         googleMap.setMapStyle(style);
     }
 
@@ -141,10 +227,15 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        googleMap.clear();
+        CurrentPlace = busStops[Closest].getFoldhely();
+        CurrentStop = busStops[Closest].getId();
 
-        googleMap.addMarker(new MarkerOptions().position(new LatLng(busStops[Closest].getGpsY(), busStops[Closest].getGpsX())));
+        ZoomClose(Closest, location);
+        MarkBusStops();
+        ShowBottomSheet();
+    }
 
+    private void ZoomClose(int Closest, Location location) {
         LatLngBounds Bounds = new LatLngBounds(
                 new LatLng(location.getLatitude() > busStops[Closest].getGpsY() ? busStops[Closest].getGpsY() : location.getLatitude(), location.getLongitude() > busStops[Closest].getGpsX() ? busStops[Closest].getGpsX() : location.getLongitude()),
                 new LatLng(location.getLatitude() > busStops[Closest].getGpsY() ? location.getLatitude() : busStops[Closest].getGpsY(), location.getLongitude() > busStops[Closest].getGpsX() ? location.getLongitude() : busStops[Closest].getGpsX())
@@ -152,5 +243,330 @@ public class MainActivity extends AppCompatActivity {
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(Bounds, 0));
         googleMap.moveCamera(CameraUpdateFactory.zoomTo(googleMap.getCameraPosition().zoom - 2.0f));
+    }
+
+    private void SetupBottomSheet() {
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels/3;
+
+        final FragmentContainerView fragmentView = findViewById(R.id.fragmentContainerView2);
+
+        bottomSheetBehavior.setPeekHeight(height);
+        if (BottomSheetCallback == null) {
+            BottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
+                @Override
+                public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                    ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
+                    if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                        params.height = bottomSheetBehavior.getPeekHeight();
+                    } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                        params.height = bottomSheet.getHeight();
+                    }
+
+                    fragmentView.setLayoutParams(params);
+                }
+
+                @Override
+                public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                    ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
+                    if (slideOffset > 0) {
+                        params.height = Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheet.getHeight() - bottomSheetBehavior.getPeekHeight())*slideOffset));
+                    } else if (slideOffset < 0) {
+                        params.height = bottomSheetBehavior.getPeekHeight();
+                    }
+
+                    fragmentView.setLayoutParams(params);
+                }
+            };
+            bottomSheetBehavior.addBottomSheetCallback(BottomSheetCallback);
+        }
+    }
+
+    private void ShowBottomSheet() {
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        FragmentContainerView fragmentView = findViewById(R.id.fragmentContainerView2);
+
+        BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces);
+                getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragmentContainerView2, InBusFragment)
+                .commit();
+    }
+
+    private String GetMapTheme() {
+        TypedValue typedValue = new TypedValue();
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+        String PrimaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
+        String OnPrimaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryContainer, typedValue, true);
+        //String PrimaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimaryContainer, typedValue, true);
+        //String OnPrimaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+
+
+
+
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
+        String SecondaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondary, typedValue, true);
+        String OnSecondaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondaryContainer, typedValue, true);
+        String SecondaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondaryContainer, typedValue, true);
+        //String OnSecondaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+
+
+
+        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorTertiary, typedValue, true);
+        //String TertiaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnTertiary, typedValue, true);
+        //String OnTertiaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorTertiaryContainer, typedValue, true);
+        String TertiaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnTertiaryContainer, typedValue, true);
+        //String OnTertiaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        //getTheme().resolveAttribute(com.google.android.material.R.attr.backgroundColor, typedValue, true);
+        //String Background = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnBackground, typedValue, true);
+        //String OnBackground = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurface, typedValue, true);
+        String Surface = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSurface, typedValue, true);
+        //String OnSurface = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurfaceInverse, typedValue, true);
+        String OnSurfaceVariant = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+
+        int TextStroke = 0;
+
+        int nightModeFlags =
+                getResources().getConfiguration().uiMode &
+                        Configuration.UI_MODE_NIGHT_MASK;
+        switch (nightModeFlags) {
+            case Configuration.UI_MODE_NIGHT_YES:
+                TextStroke = -100;
+                break;
+
+            case Configuration.UI_MODE_NIGHT_NO:
+                TextStroke = 0;
+                break;
+
+            case Configuration.UI_MODE_NIGHT_UNDEFINED:
+                TextStroke = 0;
+                break;
+        }
+
+
+        String JSON = "[\n" +
+                "  {\n" +
+                "    \"featureType\": \"all\",\n" +
+                "    \"elementType\": \"geometry\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + Surface  + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"all\",\n" +
+                "    \"elementType\": \"labels.text.stroke\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"lightness\": " + TextStroke + "\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"administrative\",\n" +
+                "    \"elementType\": \"labels.text.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + PrimaryColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"administrative.locality\",\n" +
+                "    \"elementType\": \"labels.text.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + PrimaryColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"poi\",\n" +
+                "    \"elementType\": \"labels.text.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + OnSurfaceVariant + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"poi.park\",\n" +
+                "    \"elementType\": \"geometry\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + TertiaryContainerColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"poi.park\",\n" +
+                "    \"elementType\": \"labels.text.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"#6b9a76\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"road\",\n" +
+                "    \"elementType\": \"geometry.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + PrimaryColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"road\",\n" +
+                "    \"elementType\": \"labels.text.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + SecondaryColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"road.arterial\",\n" +
+                "    \"elementType\": \"geometry.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + SecondaryColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"road.arterial\",\n" +
+                "    \"elementType\": \"geometry.stroke\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + OnSecondaryColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"road.highway\",\n" +
+                "    \"elementType\": \"geometry.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + SecondaryColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"road.highway\",\n" +
+                "    \"elementType\": \"geometry.stroke\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + OnPrimaryColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"road.highway\",\n" +
+                "    \"elementType\": \"labels.text.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + SecondaryColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"road.local\",\n" +
+                "    \"elementType\": \"geometry.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + SecondaryContainerColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"road.local\",\n" +
+                "    \"elementType\": \"geometry.stroke\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"" + PrimaryColor + "\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"transit\",\n" +
+                "    \"elementType\": \"geometry\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"#2f3948\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"transit.station\",\n" +
+                "    \"elementType\": \"labels.text.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"#d59563\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"water\",\n" +
+                "    \"elementType\": \"geometry\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"#17263c\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"water\",\n" +
+                "    \"elementType\": \"labels.text.fill\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"color\": \"#515c6d\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"featureType\": \"water\",\n" +
+                "    \"elementType\": \"labels.text.stroke\",\n" +
+                "    \"stylers\": [\n" +
+                "      {\n" +
+                "        \"lightness\": -20\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "]";
+
+
+        return JSON;
     }
 }
