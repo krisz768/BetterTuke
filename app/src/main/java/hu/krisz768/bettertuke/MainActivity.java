@@ -124,6 +124,10 @@ public class MainActivity extends AppCompatActivity {
                 googleMap.getUiSettings().setZoomControlsEnabled(false);
                 googleMap.getUiSettings().setMyLocationButtonEnabled(false);
 
+                MapStyleOptions style = new MapStyleOptions(GetMapTheme());
+
+                googleMap.setMapStyle(style);
+
                 googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker) {
@@ -212,10 +216,6 @@ public class MainActivity extends AppCompatActivity {
                 marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Place, busPlaces[i].getId()));
             }
         }
-
-        MapStyleOptions style = new MapStyleOptions(GetMapTheme());
-
-        googleMap.setMapStyle(style);
     }
 
     private BitmapDescriptor BitmapFromVector(int vectorResId, boolean primary) {
