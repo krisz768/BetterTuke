@@ -111,6 +111,25 @@ public class DatabaseManager {
         }
     }
 
+    public BusJaratok GetBusJaratById (int Id) {
+        try
+        {
+            BusJaratok ret = null;
+            Cursor cursor = Sld.rawQuery("SELECT * FROM jaratok WHERE id_jarat = " + Id + ";", null);
+            while(cursor.moveToNext()) {
+                ret = new BusJaratok(cursor.getInt(0), cursor.getString(1), cursor.getInt(2),cursor.getInt(3),cursor.getInt(4), cursor.getString(5),cursor.getInt(6));
+            }
+            cursor.close();
+
+            return ret;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+
+        }
+    }
+
     private void log (String msg) {
         Log.e("DatabaseManager", msg);
     }

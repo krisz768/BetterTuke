@@ -4,7 +4,7 @@ import android.content.Context;
 
 import java.io.Serializable;
 
-public class BusStops {
+public class BusStops implements Serializable {
     private int Id;
     private String Foldhely;
     private float GpsX;

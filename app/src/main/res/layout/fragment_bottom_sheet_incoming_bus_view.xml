@@ -19,6 +19,11 @@
             android:text="@string/hello_blank_fragment"
             android:textSize="25dp" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/BusStopListRecView"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/BusListFragment"
             android:name="hu.krisz768.bettertuke.LoadingFragment"

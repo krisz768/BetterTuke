@@ -11,6 +11,10 @@ import androidx.fragment.app.FragmentManager;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -96,6 +100,12 @@ public class MainActivity extends AppCompatActivity {
         fragmentView.setLayoutParams(params);
     }
 
+    public void ChangeStop(int Id) {
+        CurrentStop = Id;
+        MarkBusStops();
+        ShowBottomSheet();
+    }
+
     private void SetupGoogleMap() {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -152,25 +162,34 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        MarkBusStops();
         ShowBottomSheet();
+        MarkBusStops();
     }
 
     private void MarkBusStops() {
         googleMap.clear();
+
+        BitmapDescriptor StopSelected = BitmapFromVector(R.drawable.bus_stop_svgrepo_com__1___1_, true);
+        BitmapDescriptor StopNotSelected = BitmapFromVector(R.drawable.bus_stop_svgrepo_com__1___1_, false);
+        BitmapDescriptor Place = BitmapFromVector(R.drawable.bus_stop_pointer_svgrepo_com, false);
 
         for (int i = 0; i < busPlaces.length; i++) {
             if (busPlaces[i].getId() == CurrentPlace) {
                 for (int j = 0; j < busStops.length; j++) {
                     if (busStops[j].getFoldhely() == CurrentPlace) {
 
-                        Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStops[j].getGpsY(), busStops[j].getGpsX())));
-                        marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStops[j].getId()));
+                        if (busStops[j].getId() == CurrentStop) {
+                            Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStops[j].getGpsY(), busStops[j].getGpsX())).icon(StopSelected));
+                            marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStops[j].getId()));
+                        } else {
+                            Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStops[j].getGpsY(), busStops[j].getGpsX())).icon(StopNotSelected));
+                            marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStops[j].getId()));
+                        }
+
                     }
                 }
             } else  {
-                BitmapDescriptor asd = BitmapDescriptorFactory.fromResource(R.drawable.busplace);
-                Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busPlaces[i].getGpsY(), busPlaces[i].getGpsX())).icon(BitmapDescriptorFactory.fromResource(R.drawable.busplace2)));
+                Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busPlaces[i].getGpsY(), busPlaces[i].getGpsX())).icon(Place));
                 marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Place, busPlaces[i].getId()));
             }
         }
@@ -178,6 +197,30 @@ public class MainActivity extends AppCompatActivity {
         MapStyleOptions style = new MapStyleOptions(GetMapTheme());
 
         googleMap.setMapStyle(style);
+    }
+
+    private BitmapDescriptor BitmapFromVector(int vectorResId, boolean primary) {
+        Drawable vectorDrawable = ContextCompat.getDrawable(this, vectorResId);
+
+        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
+
+        TypedValue typedValue = new TypedValue();
+        if (primary) {
+            getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+        } else {
+            getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
+        }
+
+        int color = ContextCompat.getColor(this, typedValue.resourceId);
+        vectorDrawable.setTint(color);
+
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(bitmap);
+
+        vectorDrawable.draw(canvas);
+
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
     private void GetClosestStop() {
@@ -254,8 +297,10 @@ public class MainActivity extends AppCompatActivity {
         final FragmentContainerView fragmentView = findViewById(R.id.fragmentContainerView2);
 
         bottomSheetBehavior.setPeekHeight(height);
+
         if (BottomSheetCallback == null) {
             BottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
+
                 @Override
                 public void onStateChanged(@NonNull View bottomSheet, int newState) {
                     ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
@@ -266,10 +311,12 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     fragmentView.setLayoutParams(params);
+
                 }
 
                 @Override
                 public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
                     ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
                     if (slideOffset > 0) {
                         params.height = Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheet.getHeight() - bottomSheetBehavior.getPeekHeight())*slideOffset));
@@ -285,10 +332,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void ShowBottomSheet() {
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+
         FragmentContainerView fragmentView = findViewById(R.id.fragmentContainerView2);
 
-        BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces);
+        BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces, busStops);
                 getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragmentContainerView2, InBusFragment)
                 .commit();
@@ -302,8 +352,8 @@ public class MainActivity extends AppCompatActivity {
         getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
         String OnPrimaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
 
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryContainer, typedValue, true);
-        //String PrimaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryContainer, typedValue, true);
+        String PrimaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
 
         //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimaryContainer, typedValue, true);
         //String OnPrimaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
@@ -461,7 +511,7 @@ public class MainActivity extends AppCompatActivity {
                 "    \"elementType\": \"geometry.fill\",\n" +
                 "    \"stylers\": [\n" +
                 "      {\n" +
-                "        \"color\": \"" + SecondaryColor + "\"\n" +
+                "        \"color\": \"" + PrimaryContainerColor + "\"\n" +
                 "      }\n" +
                 "    ]\n" +
                 "  },\n" +
@@ -479,7 +529,7 @@ public class MainActivity extends AppCompatActivity {
                 "    \"elementType\": \"geometry.fill\",\n" +
                 "    \"stylers\": [\n" +
                 "      {\n" +
-                "        \"color\": \"" + SecondaryColor + "\"\n" +
+                "        \"color\": \"" + PrimaryContainerColor + "\"\n" +
                 "      }\n" +
                 "    ]\n" +
                 "  },\n" +
