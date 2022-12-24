@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -29,6 +30,7 @@ import android.widget.Toast;
 import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -42,10 +44,14 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnTokenCanceledListener;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
+import java.security.Permission;
 
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
@@ -116,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 googleMap = googleMap_;
 
                 googleMap.getUiSettings().setZoomControlsEnabled(false);
+                googleMap.getUiSettings().setMyLocationButtonEnabled(false);
 
                 googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
@@ -124,28 +131,40 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     }
                 });
-                //googleMap.getUiSettings().setMyLocationButtonEnabled(false);
-                MarkBusStops();
-                GetClosestStop();
+
                 if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
                     ActivityCompat.requestPermissions(MainActivity.this,
                             new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        return;
-                    }
+                    MarkBusStops();
+                } else {
+                    googleMap.setMyLocationEnabled(true);
+                    GetClosestStop();
                 }
-                googleMap.setMyLocationEnabled(true);
+
 
             }
         });
+    }
+
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        for (int i =0; i < permissions.length; i++) {
+            Log.e("TESZT", permissions[i] + " " + grantResults[i]);
+            if (permissions[i].equals("android.permission.ACCESS_FINE_LOCATION")) {
+                if (grantResults[i] != -1) {
+                    googleMap.setMyLocationEnabled(true);
+                    GetClosestStop();
+                } else {
+                    LatLng Pecs = new LatLng(46.0707, 18.2331);
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(Pecs));
+                    googleMap.moveCamera(CameraUpdateFactory.zoomTo(13));
+                }
+            }
+        }
+
     }
 
     private void MarkerClickListener(Marker marker) {
@@ -227,17 +246,29 @@ public class MainActivity extends AppCompatActivity {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         try {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return;
             }
 
-            fusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+            //CurrentLocationRequest asd = new CurrentLocationRequest.Builder().
+
+            fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, new CancellationToken() {
+                @NonNull
+                @Override
+                public CancellationToken onCanceledRequested(@NonNull OnTokenCanceledListener onTokenCanceledListener) {
+                    return null;
+                }
+
+                @Override
+                public boolean isCancellationRequested() {
+                    return false;
+                }
+            }).addOnSuccessListener(new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    GetClosestStopFromList(location);
+                }
+            });
+            /*fusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
                     // Got last known location. In some rare situations this can be null.
@@ -247,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
                         //TODO
                     }
                 }
-            });
+            });*/
         } catch (Exception e) {
             Log.e("Main", e.toString());
         }
@@ -270,10 +301,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        CurrentPlace = busStops[Closest].getFoldhely();
-        CurrentStop = busStops[Closest].getId();
+        if (Closest != -1) {
+            CurrentPlace = busStops[Closest].getFoldhely();
+            CurrentStop = busStops[Closest].getId();
 
-        ZoomClose(Closest, location);
+            ZoomClose(Closest, location);
+        }
+
         MarkBusStops();
         ShowBottomSheet();
     }

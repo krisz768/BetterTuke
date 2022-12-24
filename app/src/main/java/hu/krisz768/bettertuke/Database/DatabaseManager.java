@@ -29,9 +29,13 @@ public class DatabaseManager {
 
     }
 
+    public void ReloadDatabase () {
+        TukeDatabaseHelper Dbh = new TukeDatabaseHelper(Ctx, DATABASEFILE);
+        Sld = Dbh.getReadableDatabase();
+    }
+
     public boolean IsDatabaseExist () {
         File Database = new File(DATABASEFILE);
-        Sld = null;
         if (Database.exists()) {
 
             return true;

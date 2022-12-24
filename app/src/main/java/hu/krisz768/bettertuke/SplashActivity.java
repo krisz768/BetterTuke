@@ -46,16 +46,9 @@ public class SplashActivity extends AppCompatActivity {
         DatabaseManager Dm = new DatabaseManager(this);
         TukeServerApi serverApi = new TukeServerApi(this);
 
-        SimpleDateFormat Sdf = new SimpleDateFormat("MMM dd yyyy hh:mm:ss:SSSa", Locale.US);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.e("asdXDDDDDDDDDDDDDDDDDDD", Sdf.format(new Date()));
-        }
-
 
         if (Dm.IsDatabaseExist()) {
             AddLog("Database exist, checking for update...");
-            Dm = new DatabaseManager(this);
             String Verison = Dm.GetDatabaseVerison();
 
             AddLog("Database version = " + Verison);
@@ -76,7 +69,8 @@ public class SplashActivity extends AppCompatActivity {
 
                 if (serverApi.downloadDatabaseFile()) {
                     AddLog("Database downloaded successfully");
-                    Dm = new DatabaseManager(this);
+
+                    Dm.ReloadDatabase();
                     Verison = Dm.GetDatabaseVerison();
 
                     AddLog("Database version = " + Verison);
@@ -93,7 +87,7 @@ public class SplashActivity extends AppCompatActivity {
             AddLog("Database not found, attempt to download...");
             if (serverApi.downloadDatabaseFile()) {
                 AddLog("Database downloaded successfully");
-                Dm = new DatabaseManager(this);
+                Dm.ReloadDatabase();
                 String Verison = Dm.GetDatabaseVerison();
 
                 AddLog("Database version = " + Verison);
