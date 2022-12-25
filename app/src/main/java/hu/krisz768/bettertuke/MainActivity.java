@@ -47,6 +47,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
@@ -116,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void ChangeStop(int Id) {
         CurrentStop = Id;
+        ZoomToMarker();
         MarkBusStops();
         ShowBottomSheet();
     }
@@ -201,8 +203,23 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        ZoomToMarker();
         ShowBottomSheet();
         MarkBusStops();
+    }
+
+    private void ZoomToMarker() {
+        if (CurrentStop == -1)
+            return;
+
+        for (int i = 0; i < busStops.length; i++) {
+            if (busStops[i].getId() == CurrentStop) {
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(new LatLng(busStops[i].getGpsY(), busStops[i].getGpsX())).zoom(17.5F).build();
+
+                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            }
+        }
     }
 
     private void MarkBusStops() {
@@ -243,9 +260,13 @@ public class MainActivity extends AppCompatActivity {
 
             //CurrentLocationRequest asd = new CurrentLocationRequest.Builder().
 
+
             final LatLng Pecs = new LatLng(46.0707, 18.2331);
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(Pecs));
-            googleMap.moveCamera(CameraUpdateFactory.zoomTo(12));
+
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(Pecs).zoom(12).build();
+
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
             fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, new CancellationToken() {
                 @NonNull
@@ -323,8 +344,8 @@ public class MainActivity extends AppCompatActivity {
                 new LatLng(location.getLatitude() > busStops[Closest].getGpsY() ? location.getLatitude() : busStops[Closest].getGpsY(), location.getLongitude() > busStops[Closest].getGpsX() ? location.getLongitude() : busStops[Closest].getGpsX())
         );
 
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(Bounds, 0));
-        googleMap.moveCamera(CameraUpdateFactory.zoomTo(googleMap.getCameraPosition().zoom - 2.0f));
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(Bounds, 500));
+        //googleMap.animateCamera(CameraUpdateFactory.zoomTo(googleMap.getCameraPosition().zoom - 2.0f));
     }
 
     private void SetupBottomSheet() {
