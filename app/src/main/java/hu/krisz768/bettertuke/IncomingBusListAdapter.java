@@ -3,6 +3,7 @@ package hu.krisz768.bettertuke;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
 
 public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusListAdapter.ViewHolder>{
     private IncommingBusRespModel[] BusList;
+    private Context ctx;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -38,7 +40,7 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
             arrtime = (TextView) view.findViewById(R.id.BusArrTime);
         }
 
-        public void setData(IncommingBusRespModel Data) {
+        public void setData(IncommingBusRespModel Data, Context ctx) {
             number.setText(Data.getJaratszam());
             desc.setText(Data.getJaratnev());
             Date Arrtime = Data.getErkezes();
@@ -53,19 +55,22 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
             number.setTextColor(Whitecolor);
 
             if (Data.isElindult()) {
-                int Greencolor = Color.rgb(11, 133, 0);
-                number.setBackgroundColor(Greencolor);
+                number.setBackground(ContextCompat.getDrawable(ctx, R.drawable.bus_number_background_active));
             } else  {
-                int Greycolor = Color.rgb(101, 102, 101);
-                number.setBackgroundColor(Greycolor);
+                number.setBackground(ContextCompat.getDrawable(ctx, R.drawable.bus_number_background_inactive));
             }
 
 
         }
     }
 
-    public IncomingBusListAdapter(IncommingBusRespModel[] BusList) {
+    public void UpdateList(IncommingBusRespModel[] BusList) {
         this.BusList = BusList;
+    }
+
+    public IncomingBusListAdapter(IncommingBusRespModel[] BusList, Context ctx) {
+        this.BusList = BusList;
+        this.ctx = ctx;
     }
 
     // Create new views (invoked by the layout manager)
@@ -84,7 +89,7 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.setData(BusList[position]);
+        viewHolder.setData(BusList[position], ctx);
     }
 
     // Return the size of your dataset (invoked by the layout manager)

@@ -2,6 +2,7 @@ package hu.krisz768.bettertuke;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,6 +55,11 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Incomin
                ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
                int color = ContextCompat.getColor(ctx, typedValue.resourceId);
                button.setBackgroundColor(color);
+           } else {
+               TypedValue typedValue = new TypedValue();
+               ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+               int color = ContextCompat.getColor(ctx, typedValue.resourceId);
+               button.setBackgroundColor(color);
            }
         }
     }
@@ -63,6 +69,10 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Incomin
         this.SelectedStop = SelectedStop;
         this.ctx = ctx;
         this.callback = callback;
+    }
+
+    public void setSelectedStop(int SelectedStop) {
+        this.SelectedStop = SelectedStop;
     }
 
     // Create new views (invoked by the layout manager)

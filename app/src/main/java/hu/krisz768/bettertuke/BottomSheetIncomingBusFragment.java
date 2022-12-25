@@ -49,6 +49,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private BusPlaces[] mPlaceList;
     private BusStops[] mStopList;
 
+    private IncomingBusStopSelectorAdapter Ibssa;
+    private IncomingBusListFragment InBusFragment;
+    private Thread UpdateThread;
+
     public BottomSheetIncomingBusFragment() {
         // Required empty public constructor
     }
@@ -101,7 +105,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         BusStops[] SelectedPlaceStopsArray = new BusStops[SelectedPlaceStops.size()];
         SelectedPlaceStops.toArray(SelectedPlaceStopsArray);
 
-        IncomingBusStopSelectorAdapter Ibssa = new IncomingBusStopSelectorAdapter(SelectedPlaceStopsArray,mStop, this,getContext());
+        Ibssa = new IncomingBusStopSelectorAdapter(SelectedPlaceStopsArray,mStop, this,getContext());
 
         RecyclerView StopSelectorRec = view.findViewById(R.id.BusStopListRecView);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
@@ -112,69 +116,95 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
         StopSelectorRec.setNestedScrollingEnabled(false);
 
-        new Thread(new Runnable() {
+        UpdateThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                GetIncommingBuses(view);
+                GetIncommingBusesLoop(view);
             }
-        }).start();
-
-
-
-
+        });
+        UpdateThread.start();
 
         return view;
     }
 
     public void OnStopClick(int Id) {
         ((MainActivity)getActivity()).ChangeStop(Id);
+        mStop = Id;
+        Ibssa.setSelectedStop(mStop);
+        Ibssa.notifyDataSetChanged();
+        ResetList();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                TukeServerApi serverApi = new TukeServerApi(getActivity());
+                GetIncommingBuses(serverApi);
+            }
+        }).start();
+
     }
 
-    private void GetIncommingBuses(View view) {
+    private void ResetList() {
+        FragmentContainerView Fcv = getView().findViewById(R.id.BusListFragment);
+        getChildFragmentManager().beginTransaction()
+                .replace(R.id.BusListFragment, new LoadingFragment())
+                .commit();
+        InBusFragment = null;
+    }
+
+    private void GetIncommingBusesLoop(View view) {
             TukeServerApi serverApi = new TukeServerApi(this.getActivity());
 
             try {
                 while (true) {
-                    try {
-
-                        if (getContext() == null)
-                            break;
-
-                        IncommingBusRespModel[] BusList = serverApi.getNextIncommingBuses(mStop);
-
-                        Date currentTime = Calendar.getInstance().getTime();
-                        SimpleDateFormat Sdf = new SimpleDateFormat("H", Locale.US);
-                        SimpleDateFormat Sdf2 = new SimpleDateFormat("m", Locale.US);
-
-                        for (int i = 0; i < BusList.length; i++) {
-                            BusJaratok Bj = BusJaratok.BusJaratokByJaratid(BusList[i].getJaratid(), getContext());
-                            if (Bj.getIndulasOra() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getIndulasOra() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getIndulasPerc() <= Integer.parseInt(Sdf2.format(currentTime)))) {
-                                BusList[i].setElindult(serverApi.getIsBusHasStarted(BusList[i].getJaratid()));
-                                //Log.e("ASDASDASDASD", Bj.getIndulasOra() + ":" + Bj.getIndulasPerc() + " " + Integer.parseInt(Sdf.format(currentTime))+ ":" + Integer.parseInt(Sdf2.format(currentTime)));
-                            } else {
-                                BusList[i].setElindult(false);
-                            }
-
-                        }
-
-                        FragmentContainerView Fcv = view.findViewById(R.id.BusListFragment);
-
-                        IncomingBusListFragment InBusFragment = IncomingBusListFragment.newInstance(BusList);
-                        getChildFragmentManager().beginTransaction()
-                                .replace(R.id.BusListFragment, InBusFragment)
-                                .commit();
-
-
-                    } catch (Exception e) {
-                        Log.e("10mp Update error", e.toString());
-                    }
-
+                    if (getContext() == null)
+                        break;
+                    GetIncommingBuses(serverApi);
                     Thread.sleep(10000);
                 }
             } catch (Exception e) {
 
             }
+    }
 
+    private void GetIncommingBuses(TukeServerApi serverApi) {
+        try {
+            Log.i("Update", "Updating List");
+            IncommingBusRespModel[] BusList = serverApi.getNextIncommingBuses(mStop);
 
+            Date currentTime = Calendar.getInstance().getTime();
+            SimpleDateFormat Sdf = new SimpleDateFormat("H", Locale.US);
+            SimpleDateFormat Sdf2 = new SimpleDateFormat("m", Locale.US);
+
+            for (int i = 0; i < BusList.length; i++) {
+                BusJaratok Bj = BusJaratok.BusJaratokByJaratid(BusList[i].getJaratid(), getContext());
+                if (Bj.getIndulasOra() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getIndulasOra() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getIndulasPerc() <= Integer.parseInt(Sdf2.format(currentTime)))) {
+                    BusList[i].setElindult(serverApi.getIsBusHasStarted(BusList[i].getJaratid()));
+                    //Log.e("ASDASDASDASD", Bj.getIndulasOra() + ":" + Bj.getIndulasPerc() + " " + Integer.parseInt(Sdf.format(currentTime))+ ":" + Integer.parseInt(Sdf2.format(currentTime)));
+                } else {
+                    BusList[i].setElindult(false);
+                }
+
+            }
+
+            if (InBusFragment == null) {
+                FragmentContainerView Fcv = getView().findViewById(R.id.BusListFragment);
+
+                InBusFragment = IncomingBusListFragment.newInstance(BusList);
+                getChildFragmentManager().beginTransaction()
+                        .replace(R.id.BusListFragment, InBusFragment)
+                        .commit();
+            } else {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        InBusFragment.UpdateList(BusList);
+                    }
+                });
+
+            }
+        } catch (Exception e) {
+            Log.e("Update bus list error", e.toString());
+        }
     }
 }

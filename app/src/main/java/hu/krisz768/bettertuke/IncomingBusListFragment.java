@@ -24,6 +24,8 @@ public class IncomingBusListFragment extends Fragment {
 
     private IncommingBusRespModel[] mList;
 
+    private IncomingBusListAdapter Ibla;
+
 
     public static IncomingBusListFragment newInstance(IncommingBusRespModel[] List) {
         IncomingBusListFragment fragment = new IncomingBusListFragment();
@@ -53,11 +55,16 @@ public class IncomingBusListFragment extends Fragment {
 
         RecyclerView Recv = view.findViewById(R.id.InBusListRecView);
 
-        IncomingBusListAdapter Ibla = new IncomingBusListAdapter(mList);
+        Ibla = new IncomingBusListAdapter(mList, getContext());
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         Recv.setLayoutManager(mLayoutManager);
         Recv.setAdapter(Ibla);
 
         return view;
+    }
+
+    public void UpdateList(IncommingBusRespModel[] List) {
+        Ibla.UpdateList(List);
+        Ibla.notifyDataSetChanged();
     }
 }

@@ -7,10 +7,12 @@
 
     <TextView
         android:id="@+id/BusArrNumText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="14dp"
+        android:layout_width="65dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bus_number_background_inactive"
+        android:gravity="center"
         android:text="121Y"
         android:textSize="20dp"
         app:layout_constraintStart_toStartOf="parent"

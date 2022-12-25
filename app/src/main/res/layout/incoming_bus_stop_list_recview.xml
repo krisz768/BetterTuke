@@ -7,7 +7,7 @@
 
     <Button
         android:id="@+id/StopButton"
-        android:layout_width="102dp"
+        android:layout_width="110dp"
         android:layout_height="40dp"
         android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"

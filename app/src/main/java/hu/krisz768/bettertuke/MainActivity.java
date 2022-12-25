@@ -81,6 +81,8 @@ public class MainActivity extends AppCompatActivity {
     BusStops[] busStops;
     BusPlaces[] busPlaces;
 
+    private boolean smallMarkerMode = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
         CurrentStop = Id;
         ZoomToMarker();
         MarkBusStops();
-        ShowBottomSheet();
     }
 
     private void SetupGoogleMap() {
@@ -145,6 +146,25 @@ public class MainActivity extends AppCompatActivity {
                     public boolean onMarkerClick(@NonNull Marker marker) {
                         MarkerClickListener(marker);
                         return true;
+                    }
+                });
+
+                googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+                    @Override
+                    public void onCameraMove() {
+                        Log.e("ZOOM", googleMap.getCameraPosition().zoom + "");
+                        final float ZoomLevel = googleMap.getCameraPosition().zoom;
+                        if (ZoomLevel > 13.7) {
+                            if (smallMarkerMode){
+                                smallMarkerMode = false;
+                                MarkBusStops();
+                            }
+                        } else {
+                            if (!smallMarkerMode){
+                                smallMarkerMode = true;
+                                MarkBusStops();
+                            }
+                        }
                     }
                 });
 
@@ -227,7 +247,13 @@ public class MainActivity extends AppCompatActivity {
 
         BitmapDescriptor StopSelected = HelperProvider.BitmapFromVector(R.drawable.bus_stop_svgrepo_com__1___1_, true, this);
         BitmapDescriptor StopNotSelected = HelperProvider.BitmapFromVector(R.drawable.bus_stop_svgrepo_com__1___1_, false, this);
-        BitmapDescriptor Place = HelperProvider.BitmapFromVector(R.drawable.bus_stop_pointer_svgrepo_com, false, this);
+        BitmapDescriptor Place;
+        if (smallMarkerMode) {
+            Place = HelperProvider.BitmapFromVector(R.drawable.bus_marker_small, false, this);
+        } else {
+            Place = HelperProvider.BitmapFromVector(R.drawable.bus_stop_pointer_svgrepo_com, false, this);
+        }
+
 
         for (int i = 0; i < busPlaces.length; i++) {
             if (busPlaces[i].getId() == CurrentPlace) {
