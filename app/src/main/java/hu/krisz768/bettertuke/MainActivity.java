@@ -136,11 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
                 MapStyleOptions style = new MapStyleOptions(HelperProvider.GetMapTheme(ctx));
 
-                googleMap.setMapStyle(style);
-
-                final LatLng Pecs = new LatLng(46.0707, 18.2331);
-                googleMap.moveCamera(CameraUpdateFactory.newLatLng(Pecs));
-                googleMap.moveCamera(CameraUpdateFactory.zoomTo(12));
+                googleMap.setMapStyle(style);;
 
                 googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
@@ -246,6 +242,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
             //CurrentLocationRequest asd = new CurrentLocationRequest.Builder().
+
+            final LatLng Pecs = new LatLng(46.0707, 18.2331);
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(Pecs));
+            googleMap.moveCamera(CameraUpdateFactory.zoomTo(12));
 
             fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, new CancellationToken() {
                 @NonNull
