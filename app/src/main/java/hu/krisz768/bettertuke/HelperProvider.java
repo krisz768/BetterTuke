@@ -41,7 +41,7 @@ public class HelperProvider {
 
         vectorDrawable.draw(canvas);
 
-        return BitmapDescriptorFactory.fromBitmap(addShadow(bitmap, bitmap.getHeight(), bitmap.getWidth(), Color.BLACK, 3, 1, 3));
+        return BitmapDescriptorFactory.fromBitmap(addShadow(bitmap, bitmap.getHeight(), bitmap.getWidth(), Color.BLACK, 10, 3, 5));
     }
 
     public static Bitmap addShadow(final Bitmap bm, final int dstHeight, final int dstWidth, int color, int size, float dx, float dy) {
