@@ -10,11 +10,19 @@ import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
@@ -116,6 +124,8 @@ public class MainActivity extends AppCompatActivity {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
 
+        final Context ctx = this;
+
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull GoogleMap googleMap_) {
@@ -124,9 +134,13 @@ public class MainActivity extends AppCompatActivity {
                 googleMap.getUiSettings().setZoomControlsEnabled(false);
                 googleMap.getUiSettings().setMyLocationButtonEnabled(false);
 
-                MapStyleOptions style = new MapStyleOptions(GetMapTheme());
+                MapStyleOptions style = new MapStyleOptions(HelperProvider.GetMapTheme(ctx));
 
                 googleMap.setMapStyle(style);
+
+                final LatLng Pecs = new LatLng(46.0707, 18.2331);
+                googleMap.moveCamera(CameraUpdateFactory.newLatLng(Pecs));
+                googleMap.moveCamera(CameraUpdateFactory.zoomTo(12));
 
                 googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
@@ -142,11 +156,11 @@ public class MainActivity extends AppCompatActivity {
 
                     MarkBusStops();
                 } else {
+                    MarkBusStops();
+
                     googleMap.setMyLocationEnabled(true);
                     GetClosestStop();
                 }
-
-
             }
         });
     }
@@ -162,13 +176,19 @@ public class MainActivity extends AppCompatActivity {
                     googleMap.setMyLocationEnabled(true);
                     GetClosestStop();
                 } else {
-                    LatLng Pecs = new LatLng(46.0707, 18.2331);
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(Pecs));
-                    googleMap.moveCamera(CameraUpdateFactory.zoomTo(13));
+                    GPSErr();
                 }
             }
         }
 
+    }
+
+    private void GPSErr() {
+        LatLng Pecs = new LatLng(46.0707, 18.2331);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(Pecs));
+        googleMap.moveCamera(CameraUpdateFactory.zoomTo(12));
+
+        Toast.makeText(this, R.string.GPSHint, Toast.LENGTH_LONG).show();
     }
 
     private void MarkerClickListener(Marker marker) {
@@ -192,9 +212,9 @@ public class MainActivity extends AppCompatActivity {
     private void MarkBusStops() {
         googleMap.clear();
 
-        BitmapDescriptor StopSelected = BitmapFromVector(R.drawable.bus_stop_svgrepo_com__1___1_, true);
-        BitmapDescriptor StopNotSelected = BitmapFromVector(R.drawable.bus_stop_svgrepo_com__1___1_, false);
-        BitmapDescriptor Place = BitmapFromVector(R.drawable.bus_stop_pointer_svgrepo_com, false);
+        BitmapDescriptor StopSelected = HelperProvider.BitmapFromVector(R.drawable.bus_stop_svgrepo_com__1___1_, true, this);
+        BitmapDescriptor StopNotSelected = HelperProvider.BitmapFromVector(R.drawable.bus_stop_svgrepo_com__1___1_, false, this);
+        BitmapDescriptor Place = HelperProvider.BitmapFromVector(R.drawable.bus_stop_pointer_svgrepo_com, false, this);
 
         for (int i = 0; i < busPlaces.length; i++) {
             if (busPlaces[i].getId() == CurrentPlace) {
@@ -216,30 +236,6 @@ public class MainActivity extends AppCompatActivity {
                 marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Place, busPlaces[i].getId()));
             }
         }
-    }
-
-    private BitmapDescriptor BitmapFromVector(int vectorResId, boolean primary) {
-        Drawable vectorDrawable = ContextCompat.getDrawable(this, vectorResId);
-
-        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
-
-        TypedValue typedValue = new TypedValue();
-        if (primary) {
-            getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
-        } else {
-            getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
-        }
-
-        int color = ContextCompat.getColor(this, typedValue.resourceId);
-        vectorDrawable.setTint(color);
-
-        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(bitmap);
-
-        vectorDrawable.draw(canvas);
-
-        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
     private void GetClosestStop() {
@@ -265,7 +261,12 @@ public class MainActivity extends AppCompatActivity {
             }).addOnSuccessListener(new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
-                    GetClosestStopFromList(location);
+                    if (location != null) {
+                        GetClosestStopFromList(location);
+                    } else {
+                        GPSErr();
+                    }
+
                 }
             });
             /*fusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -288,6 +289,10 @@ public class MainActivity extends AppCompatActivity {
         int Closest = -1;
 
         double ClosestDistance = Double.MAX_VALUE;
+
+        if(CurrentPlace != -1) {
+            return;
+        }
 
         for(int i = 0; i < busStops.length; i++) {
             double x = location.getLongitude() - busStops[i].getGpsX();
@@ -376,281 +381,5 @@ public class MainActivity extends AppCompatActivity {
                 getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragmentContainerView2, InBusFragment)
                 .commit();
-    }
-
-    private String GetMapTheme() {
-        TypedValue typedValue = new TypedValue();
-        getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
-        String PrimaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
-        String OnPrimaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryContainer, typedValue, true);
-        String PrimaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimaryContainer, typedValue, true);
-        //String OnPrimaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-
-
-
-
-        getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
-        String SecondaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondary, typedValue, true);
-        String OnSecondaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondaryContainer, typedValue, true);
-        String SecondaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondaryContainer, typedValue, true);
-        //String OnSecondaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-
-
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorTertiary, typedValue, true);
-        //String TertiaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnTertiary, typedValue, true);
-        //String OnTertiaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        getTheme().resolveAttribute(com.google.android.material.R.attr.colorTertiaryContainer, typedValue, true);
-        String TertiaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnTertiaryContainer, typedValue, true);
-        //String OnTertiaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.backgroundColor, typedValue, true);
-        //String Background = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnBackground, typedValue, true);
-        //String OnBackground = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurface, typedValue, true);
-        String Surface = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSurface, typedValue, true);
-        //String OnSurface = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurfaceInverse, typedValue, true);
-        String OnSurfaceVariant = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        int TextStroke = 0;
-
-        int nightModeFlags =
-                getResources().getConfiguration().uiMode &
-                        Configuration.UI_MODE_NIGHT_MASK;
-        switch (nightModeFlags) {
-            case Configuration.UI_MODE_NIGHT_YES:
-                TextStroke = -100;
-                break;
-
-            case Configuration.UI_MODE_NIGHT_NO:
-                TextStroke = 0;
-                break;
-
-            case Configuration.UI_MODE_NIGHT_UNDEFINED:
-                TextStroke = 0;
-                break;
-        }
-
-
-        String JSON = "[\n" +
-                "  {\n" +
-                "    \"featureType\": \"all\",\n" +
-                "    \"elementType\": \"geometry\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + Surface  + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"all\",\n" +
-                "    \"elementType\": \"labels.text.stroke\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"lightness\": " + TextStroke + "\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"administrative\",\n" +
-                "    \"elementType\": \"labels.text.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + PrimaryColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"administrative.locality\",\n" +
-                "    \"elementType\": \"labels.text.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + PrimaryColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"poi\",\n" +
-                "    \"elementType\": \"labels.text.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + OnSurfaceVariant + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"poi.park\",\n" +
-                "    \"elementType\": \"geometry\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + TertiaryContainerColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"poi.park\",\n" +
-                "    \"elementType\": \"labels.text.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"#6b9a76\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"road\",\n" +
-                "    \"elementType\": \"geometry.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + PrimaryColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"road\",\n" +
-                "    \"elementType\": \"labels.text.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + SecondaryColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"road.arterial\",\n" +
-                "    \"elementType\": \"geometry.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + PrimaryContainerColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"road.arterial\",\n" +
-                "    \"elementType\": \"geometry.stroke\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + OnSecondaryColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"road.highway\",\n" +
-                "    \"elementType\": \"geometry.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + PrimaryContainerColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"road.highway\",\n" +
-                "    \"elementType\": \"geometry.stroke\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + OnPrimaryColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"road.highway\",\n" +
-                "    \"elementType\": \"labels.text.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + SecondaryColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"road.local\",\n" +
-                "    \"elementType\": \"geometry.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + SecondaryContainerColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"road.local\",\n" +
-                "    \"elementType\": \"geometry.stroke\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"" + PrimaryColor + "\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"transit\",\n" +
-                "    \"elementType\": \"geometry\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"#2f3948\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"transit.station\",\n" +
-                "    \"elementType\": \"labels.text.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"#d59563\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"water\",\n" +
-                "    \"elementType\": \"geometry\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"#17263c\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"water\",\n" +
-                "    \"elementType\": \"labels.text.fill\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"color\": \"#515c6d\"\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"featureType\": \"water\",\n" +
-                "    \"elementType\": \"labels.text.stroke\",\n" +
-                "    \"stylers\": [\n" +
-                "      {\n" +
-                "        \"lightness\": -20\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }\n" +
-                "]";
-
-
-        return JSON;
     }
 }
