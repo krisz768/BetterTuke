@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                 googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
                     @Override
                     public void onCameraMove() {
-                        Log.e("ZOOM", googleMap.getCameraPosition().zoom + "");
+                        //Log.e("ZOOM", googleMap.getCameraPosition().zoom + "");
                         final float ZoomLevel = googleMap.getCameraPosition().zoom;
                         if (ZoomLevel > 13.7) {
                             if (smallMarkerMode){

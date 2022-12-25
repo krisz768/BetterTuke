@@ -52,6 +52,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private IncomingBusStopSelectorAdapter Ibssa;
     private IncomingBusListFragment InBusFragment;
     private Thread UpdateThread;
+    private boolean NewStop = false;
 
     public BottomSheetIncomingBusFragment() {
         // Required empty public constructor
@@ -129,6 +130,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
     public void OnStopClick(int Id) {
         ((MainActivity)getActivity()).ChangeStop(Id);
+        NewStop = true;
         mStop = Id;
         Ibssa.setSelectedStop(mStop);
         Ibssa.notifyDataSetChanged();
@@ -171,6 +173,11 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         try {
             Log.i("Update", "Updating List");
             IncommingBusRespModel[] BusList = serverApi.getNextIncommingBuses(mStop);
+            if (NewStop) {
+                NewStop = false;
+                GetIncommingBuses(serverApi);
+                return;
+            }
 
             Date currentTime = Calendar.getInstance().getTime();
             SimpleDateFormat Sdf = new SimpleDateFormat("H", Locale.US);
