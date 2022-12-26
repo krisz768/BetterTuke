@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         for (int i =0; i < permissions.length; i++) {
-            Log.e("TESZT", permissions[i] + " " + grantResults[i]);
+            //Log.e("TESZT", permissions[i] + " " + grantResults[i]);
             if (permissions[i].equals("android.permission.ACCESS_FINE_LOCATION")) {
                 if (grantResults[i] != -1) {
                     googleMap.setMyLocationEnabled(true);
@@ -202,9 +202,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void GPSErr() {
-        LatLng Pecs = new LatLng(46.0707, 18.2331);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(Pecs));
-        googleMap.moveCamera(CameraUpdateFactory.zoomTo(12));
+        final LatLng Pecs = new LatLng(46.0707, 18.2331);
+
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(Pecs).zoom(12).build();
+
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
         Toast.makeText(this, R.string.GPSHint, Toast.LENGTH_LONG).show();
     }
