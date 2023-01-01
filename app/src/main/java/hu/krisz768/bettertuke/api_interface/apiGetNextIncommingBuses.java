@@ -72,6 +72,7 @@ public class apiGetNextIncommingBuses extends TukeServerApiFunctions<IncommingBu
             }
         } catch (Exception e) {
             super.log("Error :(" + e.toString());
+            ErrorFlag = true;
         }
     }
 }

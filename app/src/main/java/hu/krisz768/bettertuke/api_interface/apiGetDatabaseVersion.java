@@ -14,6 +14,7 @@ public class apiGetDatabaseVersion extends TukeServerApiFunctions<String> implem
             URL url = new URL(API_URL + "android/update.php?id=2");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
+            urlConnection.setConnectTimeout(3000);
 
             try {
                 urlConnection.connect();
@@ -26,6 +27,8 @@ public class apiGetDatabaseVersion extends TukeServerApiFunctions<String> implem
             }
         } catch (Exception e) {
             super.log("Error :(" + e.toString());
+
+            ErrorFlag = true;
         }
     }
 

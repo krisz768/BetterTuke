@@ -1,11 +1,15 @@
 package hu.krisz768.bettertuke;
 
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -55,7 +59,7 @@ public class IncomingBusListFragment extends Fragment {
 
         RecyclerView Recv = view.findViewById(R.id.InBusListRecView);
 
-        Ibla = new IncomingBusListAdapter(mList, getContext());
+        Ibla = new IncomingBusListAdapter(mList, getContext(), this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         Recv.setLayoutManager(mLayoutManager);
         Recv.setAdapter(Ibla);
@@ -64,7 +68,13 @@ public class IncomingBusListFragment extends Fragment {
     }
 
     public void UpdateList(IncommingBusRespModel[] List) {
-        Ibla.UpdateList(List);
-        Ibla.notifyDataSetChanged();
+        if (Ibla != null) {
+            Ibla.UpdateList(List);
+            Ibla.notifyDataSetChanged();
+        }
+    }
+
+    public void OnBusClick(int Id) {
+        ((MainActivity)getActivity()).TrackBus(Id);
     }
 }

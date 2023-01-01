@@ -1,7 +1,9 @@
 package hu.krisz768.bettertuke;
 
+import android.graphics.Color;
 import android.os.Bundle;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
@@ -9,11 +11,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.TextView;
+
+import com.google.android.material.color.ColorRoles;
+import com.google.android.material.color.MaterialColors;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,7 +49,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private static final String PLACELIST = "PlaceList";
     private static final String STOPLIST = "StopList";
 
-    // TODO: Rename and change types of parameters
     private int mPlace;
     private int mStop;
     private BusPlaces[] mPlaceList;
@@ -88,6 +93,9 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_bottom_sheet_incoming_bus_view, container, false);
 
         TextView Teszt = view.findViewById(R.id.BusStopName);
+
+        TypedValue typedValue = new TypedValue();
+        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
 
         List<BusStops> SelectedPlaceStops = new ArrayList<>();
 
@@ -147,7 +155,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     }
 
     private void ResetList() {
-        FragmentContainerView Fcv = getView().findViewById(R.id.BusListFragment);
         getChildFragmentManager().beginTransaction()
                 .replace(R.id.BusListFragment, new LoadingFragment())
                 .commit();
@@ -194,21 +201,31 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
             }
 
-            if (InBusFragment == null) {
-                FragmentContainerView Fcv = getView().findViewById(R.id.BusListFragment);
+            if (BusList.length > 0) {
+                if (InBusFragment == null) {
 
-                InBusFragment = IncomingBusListFragment.newInstance(BusList);
-                getChildFragmentManager().beginTransaction()
-                        .replace(R.id.BusListFragment, InBusFragment)
-                        .commit();
+                    InBusFragment = IncomingBusListFragment.newInstance(BusList);
+                    getChildFragmentManager().beginTransaction()
+                            .replace(R.id.BusListFragment, InBusFragment)
+                            .commit();
+                } else {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (InBusFragment != null) {
+                                InBusFragment.UpdateList(BusList);
+                            }
+
+                        }
+                    });
+                }
             } else {
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        InBusFragment.UpdateList(BusList);
-                    }
-                });
+                InBusFragment = null;
 
+                InfoFragment Ifragment = InfoFragment.newInstance(getResources().getString(R.string.EmptyList), -1);
+                getChildFragmentManager().beginTransaction()
+                        .replace(R.id.BusListFragment, Ifragment)
+                        .commit();
             }
         } catch (Exception e) {
             Log.e("Update bus list error", e.toString());

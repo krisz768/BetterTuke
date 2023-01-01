@@ -26,6 +26,9 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setTheme();
+
         setContentView(R.layout.activity_splash);
 
         Logs = findViewById(R.id.LogView);
@@ -38,6 +41,12 @@ public class SplashActivity extends AppCompatActivity {
                 InitTasks();
             }
         }).start();
+    }
+
+    private void setTheme() {
+        if (Build.VERSION.SDK_INT < 31) {
+            setTheme(R.style.DefaultPre12);
+        }
     }
 
     private void InitTasks() {
@@ -57,30 +66,35 @@ public class SplashActivity extends AppCompatActivity {
 
             AddLog("Server database version = " + OnlineVerison);
 
-            if (Verison.equals(OnlineVerison)) {
-                AddLog("Database is up to date!");
-
-                //END
+            if (OnlineVerison.equals("Err") && !Verison.equals("Err")) {
+                AddLog("Server error, using existing database...");
                 StartMain();
             } else {
-                AddLog("Database version does not match! Updating....");
-
-                Dm.DeleteDatabase();
-
-                if (serverApi.downloadDatabaseFile()) {
-                    AddLog("Database downloaded successfully");
-
-                    Dm.ReloadDatabase();
-                    Verison = Dm.GetDatabaseVerison();
-
-                    AddLog("Database version = " + Verison);
+                if (Verison.equals(OnlineVerison)) {
+                    AddLog("Database is up to date!");
 
                     //END
                     StartMain();
-                }else  {
-                    AddLog("Database download fail!");
+                } else {
+                    AddLog("Database version does not match! Updating....");
 
-                    //FAIL
+                    Dm.DeleteDatabase();
+
+                    if (serverApi.downloadDatabaseFile()) {
+                        AddLog("Database downloaded successfully");
+
+                        Dm.ReloadDatabase();
+                        Verison = Dm.GetDatabaseVerison();
+
+                        AddLog("Database version = " + Verison);
+
+                        //END
+                        StartMain();
+                    }else  {
+                        AddLog("Database download fail!");
+
+                        //FAIL
+                    }
                 }
             }
         } else  {

@@ -121,7 +121,68 @@ public class DatabaseManager {
             BusJaratok ret = null;
             Cursor cursor = Sld.rawQuery("SELECT * FROM jaratok WHERE id_jarat = " + Id + ";", null);
             while(cursor.moveToNext()) {
-                ret = new BusJaratok(cursor.getInt(0), cursor.getString(1), cursor.getInt(2),cursor.getInt(3),cursor.getInt(4), cursor.getString(5),cursor.getInt(6));
+                ret = new BusJaratok(cursor.getInt(0), cursor.getString(1), cursor.getInt(2),cursor.getInt(3),GetBusJaratMenetidoById(cursor.getInt(4)), cursor.getString(5),GetBusJaratNyomvonalById(cursor.getInt(6)), GetBusJaratNyomvonalInfoById(cursor.getInt(6)));
+            }
+            cursor.close();
+
+            return ret;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+
+        }
+    }
+
+    public JaratInfoMenetido[] GetBusJaratMenetidoById (int Id) {
+        try
+        {
+            List<JaratInfoMenetido> Menetido = new ArrayList<>();
+            Cursor cursor = Sld.rawQuery("SELECT * FROM nyomvonal_tetelek WHERE id_menetido = " + Id + " ORDER BY sorrend ASC;", null);
+            while(cursor.moveToNext()) {
+                Menetido.add(new JaratInfoMenetido(cursor.getInt(0), cursor.getInt(1), cursor.getInt(2),cursor.getString(3),cursor.getString(4), cursor.getInt(5),cursor.getInt(6)));
+            }
+            cursor.close();
+
+            JaratInfoMenetido[] ret  = new JaratInfoMenetido[Menetido.size()];
+            Menetido.toArray(ret);
+            return ret;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+
+        }
+    }
+
+    public JaratInfoNyomvonal[] GetBusJaratNyomvonalById (int Id) {
+        try
+        {
+            List<JaratInfoNyomvonal> Nyomvonal = new ArrayList<>();
+            Cursor cursor = Sld.rawQuery("SELECT * FROM onlineroute WHERE id_nyomvonal = " + Id + " ORDER BY szakasz_sorrend ASC;", null);
+            while(cursor.moveToNext()) {
+                Nyomvonal.add(new JaratInfoNyomvonal(cursor.getInt(0), cursor.getFloat(1), cursor.getFloat(2),cursor.getFloat(3)));
+            }
+            cursor.close();
+
+            JaratInfoNyomvonal[] ret  = new JaratInfoNyomvonal[Nyomvonal.size()];
+            Nyomvonal.toArray(ret);
+            return ret;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+
+        }
+    }
+
+    public JaratInfoNyomvonalInfo GetBusJaratNyomvonalInfoById (int Id) {
+        try
+        {
+            JaratInfoNyomvonalInfo ret = null;
+            Cursor cursor = Sld.rawQuery("SELECT * FROM nyomvonalak WHERE id_nyomvonal = " + Id + ";", null);
+            while(cursor.moveToNext()) {
+                ret = new JaratInfoNyomvonalInfo(cursor.getInt(0), cursor.getString(1), cursor.getString(2),cursor.getString(3), cursor.getString(7));
             }
             cursor.close();
 

@@ -11,6 +11,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
+import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
 public class TukeServerApi {
 
@@ -48,6 +49,21 @@ public class TukeServerApi {
         }
 
         return new IncommingBusRespModel[0];
+    }
+
+    public TrackBusRespModel getBusLocation(int jaratId) {
+        try {
+            apiGetBusPosition data = new apiGetBusPosition(jaratId);
+            Thread thread = new Thread(data);
+            thread.start();
+            thread.join();
+            TrackBusRespModel BusList = data.getValue();
+            return BusList;
+        } catch (Exception e) {
+            log(e.toString());
+        }
+
+        return null;
     }
 
     public Boolean getIsBusHasStarted(int jaratid) {

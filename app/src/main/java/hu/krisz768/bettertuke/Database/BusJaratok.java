@@ -2,24 +2,21 @@ package hu.krisz768.bettertuke.Database;
 
 import android.content.Context;
 
-public class BusJaratok {
+import java.io.Serializable;
+
+public class BusJaratok implements Serializable {
 
     private int Jaratid;
     private String Jaratnev;
     private int IndulasOra;
     private int IndulasPerc;
-    private int MenetIdoId;
-    private String KozlekedesiJelek;
-    private int NyomvonalId;
+    private JaratInfoMenetido[] Megallok;
+    private String Kozlekedesi_jel_id;
+    private JaratInfoNyomvonal[] Nyomvonal;
+    private JaratInfoNyomvonalInfo NyomvonalInfo;
 
-    public BusJaratok(int jaratid, String jaratnev, int indulasOra, int indulasPerc, int menetIdoId, String kozlekedesiJelek, int nyomvonalId) {
-        Jaratid = jaratid;
-        Jaratnev = jaratnev;
-        IndulasOra = indulasOra;
-        IndulasPerc = indulasPerc;
-        MenetIdoId = menetIdoId;
-        KozlekedesiJelek = kozlekedesiJelek;
-        NyomvonalId = nyomvonalId;
+    public JaratInfoNyomvonalInfo getNyomvonalInfo() {
+        return NyomvonalInfo;
     }
 
     public int getJaratid() {
@@ -38,16 +35,27 @@ public class BusJaratok {
         return IndulasPerc;
     }
 
-    public int getMenetIdoId() {
-        return MenetIdoId;
+    public JaratInfoMenetido[] getMegallok() {
+        return Megallok;
     }
 
-    public String getKozlekedesiJelek() {
-        return KozlekedesiJelek;
+    public String getKozlekedesi_jel_id() {
+        return Kozlekedesi_jel_id;
     }
 
-    public int getNyomvonalId() {
-        return NyomvonalId;
+    public JaratInfoNyomvonal[] getNyomvonal() {
+        return Nyomvonal;
+    }
+
+    public BusJaratok(int jaratid, String jaratnev, int indulasOra, int indulasPerc, JaratInfoMenetido[] megallok, String kozlekedesi_jel_id, JaratInfoNyomvonal[] nyomvonal, JaratInfoNyomvonalInfo nyomvonalInfo) {
+        Jaratid = jaratid;
+        Jaratnev = jaratnev;
+        IndulasOra = indulasOra;
+        IndulasPerc = indulasPerc;
+        Megallok = megallok;
+        Kozlekedesi_jel_id = kozlekedesi_jel_id;
+        Nyomvonal = nyomvonal;
+        NyomvonalInfo = nyomvonalInfo;
     }
 
     public static BusJaratok BusJaratokByJaratid (int Id, Context ctx) {

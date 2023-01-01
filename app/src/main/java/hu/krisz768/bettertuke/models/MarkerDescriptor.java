@@ -19,6 +19,7 @@ public class MarkerDescriptor {
 
     public enum Types {
         Place,
-        Stop
+        Stop,
+        Bus
     }
 }

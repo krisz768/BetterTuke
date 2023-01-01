@@ -10,18 +10,19 @@ import java.util.List;
 import java.util.Map;
 
 import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
+import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
-public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> implements Runnable{
+public class apiGetBusPosition extends TukeServerApiFunctions<TrackBusRespModel> implements Runnable{
 
-    private int jaratid;
+    private int Jaratid;
 
-    public apiGetIsBusHasStarted(int jaratid) {
-        this.jaratid = jaratid;
+    public apiGetBusPosition(int Jaratid) {
+        this.Jaratid = Jaratid;
     }
 
     @Override
     public void run() {
-        value = false;
+        value = null;
         try {
             URL url = new URL(API_URL + "android/v3/handler.php");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -29,7 +30,7 @@ public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> imple
             urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             Map<String, Object> queryParams = new HashMap<>();
-            queryParams.put("ONWAY", jaratid);
+            queryParams.put("BLATE", Jaratid);
 
             try {
                 urlConnection.connect();
@@ -48,7 +49,7 @@ public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> imple
                     if (line != null ) {//|| line.length() != 0) {
                         String[] parts = line.split("\\|");
 
-                        value = parts[0].equals("0") || parts[0].equals("8");
+                        value = new TrackBusRespModel(parts[0], Integer.parseInt(parts[1]), parts[2],parts[3], Integer.parseInt(parts[4]), Integer.parseInt(parts[5]),parts[6].equals("8"), DateParser(parts[7]), Float.parseFloat(parts[8]), Float.parseFloat(parts[9]),Integer.parseInt(parts[10]),Integer.parseInt(parts[11]),Integer.parseInt(parts[12]));
                     } else {
                         break;
                     }
@@ -58,8 +59,8 @@ public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> imple
                 urlConnection.disconnect();
             }
         } catch (Exception e) {
-            ErrorFlag = true;
             super.log("Error :(" + e.toString());
+            ErrorFlag = true;
         }
     }
 }

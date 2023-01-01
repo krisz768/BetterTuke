@@ -16,6 +16,7 @@ import java.util.Map;
 public class TukeServerApiFunctions<T> {
     protected final String API_URL = "http://menobusz.tukebusz.hu/";
     protected volatile T value;
+    protected volatile boolean ErrorFlag = false;
 
     protected void log (String msg) {
         Log.i(this.getClass().getName(), msg);
@@ -23,6 +24,10 @@ public class TukeServerApiFunctions<T> {
 
     public T getValue (){
         return value;
+    }
+
+    public boolean getError (){
+        return ErrorFlag;
     }
 
 

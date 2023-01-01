@@ -52,7 +52,7 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Incomin
 
            if (Data.getId() != SelectedStop) {
                TypedValue typedValue = new TypedValue();
-               ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
+               ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOutline, typedValue, true);
                int color = ContextCompat.getColor(ctx, typedValue.resourceId);
                button.setBackgroundColor(color);
            } else {

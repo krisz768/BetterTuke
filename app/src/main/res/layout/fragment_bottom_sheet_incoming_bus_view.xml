@@ -15,9 +15,10 @@
             android:id="@+id/BusStopName"
             android:layout_width="match_parent"
             android:layout_height="61dp"
-            android:gravity="center"
             android:text="@string/hello_blank_fragment"
-            android:textSize="25dp" />
+            android:textSize="25dp"
+            android:gravity="left|center"
+            android:layout_marginHorizontal="20dp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/BusStopListRecView"
