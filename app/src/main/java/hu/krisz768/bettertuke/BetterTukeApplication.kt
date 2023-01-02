@@ -6,6 +6,6 @@ import com.google.android.material.color.DynamicColors
 class BetterTukeApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        DynamicColors.applyToActivitiesIfAvailable(this) //Hello World
+        DynamicColors.applyToActivitiesIfAvailable(this)
     }
 }

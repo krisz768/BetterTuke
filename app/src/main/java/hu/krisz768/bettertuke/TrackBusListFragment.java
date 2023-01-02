@@ -1,5 +1,6 @@
 package hu.krisz768.bettertuke;
 
+import android.media.Image;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -12,6 +13,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -21,6 +24,7 @@ import hu.krisz768.bettertuke.Database.BusJaratok;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
+import hu.krisz768.bettertuke.models.BusAttributes;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -108,7 +112,6 @@ public class TrackBusListFragment extends Fragment {
 
         Recv.scrollToPosition(scrollposition);
 
-
         return view;
     }
 
@@ -152,7 +155,7 @@ public class TrackBusListFragment extends Fragment {
     public void OnStopClick(int Id) {
         for (int i = 0; i < mStopList.length; i++) {
             if (mStopList[i].getId() == Id) {
-                ((MainActivity)getActivity()).ZoomTo(new LatLng(mStopList[i].getGpsY(), mStopList[i].getGpsX()));
+                ((MainActivity) getActivity()).ZoomTo(new LatLng(mStopList[i].getGpsY(), mStopList[i].getGpsX()));
                 break;
             }
         }
