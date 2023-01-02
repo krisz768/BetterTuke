@@ -612,8 +612,9 @@ public class MainActivity extends AppCompatActivity {
             params2.bottomMargin = height + dp20;
         } else {
             params.height = getWindow().getDecorView().getHeight();
-            googleMap.setPadding(0, 0, 0, params.height);
-            params2.bottomMargin = params.height + dp20;
+            Log.e("TESZTTESZT", params.height+"");
+            googleMap.setPadding(0, 0, 0, height);
+            params2.bottomMargin = height + dp20;
         }
         Fc.setLayoutParams(params);
         ScheduleButton.setLayoutParams(params2);
