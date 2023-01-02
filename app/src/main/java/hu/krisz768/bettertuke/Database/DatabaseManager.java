@@ -195,6 +195,22 @@ public class DatabaseManager {
         }
     }
 
+    public BusLine[] GetActiveBusLines() {
+        List<BusLine> Lines = new ArrayList<>();
+
+        Cursor cursor = Sld.rawQuery("SELECT DISTINCT v.vonal_nev, v.vonal_leiras FROM vonalak v INNER JOIN nyomvonalak AS n ON n.vonal_nev = v.vonal_nev INNER JOIN jaratok j ON  j.id_nyomvonal = n.id_nyomvonal ORDER BY '0' + v.vonal_nev;", null);
+        while(cursor.moveToNext()) {
+            Lines.add(new BusLine(cursor.getString(0), cursor.getString(1)));
+        }
+        cursor.close();
+
+        BusLine[] ret  = new BusLine[Lines.size()];
+        Lines.toArray(ret);
+        return ret;
+    }
+
+    //SELECT DISTINCT v.vonal_nev, v.vonal_leiras FROM vonalak v INNER JOIN nyomvonalak AS n ON n.vonal_nev = v.vonal_nev INNER JOIN jaratok j ON  j.id_nyomvonal = n.id_nyomvonal ORDER BY '0' + v.vonal_nev;
+
     private void log (String msg) {
         Log.e("DatabaseManager", msg);
     }

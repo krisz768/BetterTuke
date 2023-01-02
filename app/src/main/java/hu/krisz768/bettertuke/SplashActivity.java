@@ -117,8 +117,8 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void StartMain() {
-        Intent myIntent = new Intent(this, MainActivity.class);
-        startActivity(myIntent);
+        Intent mainIntent = new Intent(this, MainActivity.class);
+        startActivity(mainIntent);
     }
 
 

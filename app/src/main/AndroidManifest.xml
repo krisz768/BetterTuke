@@ -18,7 +18,13 @@
         android:theme="@style/Theme.BetterTuke"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-
+        <activity
+            android:name=".ScheduleActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
         <!--
              TODO: Before you run your application, you need a Google Maps API key.
 
@@ -36,10 +42,10 @@
 
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="false"
             android:label="@string/title_activity_main"
-            android:theme="@style/Theme.BetterTuke"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden">
+            android:theme="@style/Theme.BetterTuke">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
@@ -47,7 +53,7 @@
         <activity
             android:name=".SplashActivity"
             android:exported="true"
-            android:noHistory="true" >
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
