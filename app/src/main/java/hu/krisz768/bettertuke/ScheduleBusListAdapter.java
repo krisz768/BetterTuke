@@ -18,36 +18,44 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<ScheduleBusList
 
     private BusLine[] BusLines;
     private Context ctx;
+    private ScheduleBusListFragment Callback;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView Number;
         private TextView Description;
+        private View view;
 
         public ViewHolder(View view) {
             super(view);
             // Define click listener for the ViewHolder's View
 
             Number = view.findViewById(R.id.ScheduleLineNum);
-
-
-
             Description = view.findViewById(R.id.ScheduleLineDesc);
+            this.view = view;
         }
 
-        public void setData(BusLine busLine, Context ctx) {
+        public void setData(BusLine busLine, Context ctx, ScheduleBusListFragment Callback) {
             TypedValue typedValue = new TypedValue();
             ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
 
             Number.setTextColor(ContextCompat.getColor(ctx, typedValue.resourceId));
             Number.setText(busLine.getLineName());
             Description.setText(busLine.getLineDesc());
+
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Callback.OnLineClick(busLine.getLineName());
+                }
+            });
         }
     }
 
-    public ScheduleBusListAdapter(BusLine[] BusLines, Context ctx) {
+    public ScheduleBusListAdapter(BusLine[] BusLines, Context ctx, ScheduleBusListFragment Callback) {
         this.BusLines = BusLines;
         this.ctx = ctx;
+        this.Callback = Callback;
     }
 
     // Create new views (invoked by the layout manager)
@@ -66,7 +74,7 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<ScheduleBusList
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.setData(BusLines[position], ctx);
+        viewHolder.setData(BusLines[position], ctx, Callback);
     }
 
     // Return the size of your dataset (invoked by the layout manager)

@@ -37,7 +37,7 @@ public class ScheduleBusListFragment extends Fragment {
         DatabaseManager Dm = new DatabaseManager(getContext());
         BusLine[] BusLines = Dm.GetActiveBusLines();
 
-        ScheduleBusListAdapter Sbla = new ScheduleBusListAdapter(BusLines, getContext());
+        ScheduleBusListAdapter Sbla = new ScheduleBusListAdapter(BusLines, getContext(), this);
 
         RecyclerView BusLineRecv = view.findViewById(R.id.ScheduleBusLineRec);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
@@ -47,5 +47,16 @@ public class ScheduleBusListFragment extends Fragment {
 
 
         return view;
+    }
+
+    public void OnLineClick(String Line) {
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((ScheduleActivity)getActivity()).selectLine(Line);
+                }
+            });
+        }
     }
 }
