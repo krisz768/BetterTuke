@@ -612,7 +612,6 @@ public class MainActivity extends AppCompatActivity {
             params2.bottomMargin = height + dp20;
         } else {
             params.height = getWindow().getDecorView().getHeight();
-            Log.e("TESZTTESZT", params.height+"");
             googleMap.setPadding(0, 0, 0, height);
             params2.bottomMargin = height + dp20;
         }
