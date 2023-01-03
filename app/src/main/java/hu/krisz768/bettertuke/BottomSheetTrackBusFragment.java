@@ -197,6 +197,12 @@ public class BottomSheetTrackBusFragment extends Fragment {
         AirConditioner = view.findViewById(R.id.AirConditioner);
         Wifi = view.findViewById(R.id.Wifi);
         Usb = view.findViewById(R.id.Usb);
+
+        Electric.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Electric));
+        LowFloor.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Lowfloor));
+        AirConditioner.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Airconditioner));
+        Wifi.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Wifi));
+        Usb.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Usb));
     }
 
     private void showBusAttributes(BusAttributes busAttributes)

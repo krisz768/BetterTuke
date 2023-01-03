@@ -82,8 +82,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             mPlaceList = (BusPlaces[]) getArguments().getSerializable(PLACELIST);
             mStopList = (BusStops[]) getArguments().getSerializable(STOPLIST);
         }
-
-
     }
 
     @Override

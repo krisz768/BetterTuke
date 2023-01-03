@@ -30,7 +30,7 @@ import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class HelperProvider {
 
-    private static Bitmap[] BitmapContainer = new Bitmap[16];
+    private static Bitmap[] BitmapContainer = new Bitmap[21];
     private static JSONObject BusAttributes;
 
     public static void RenderAllBitmap(Context ctx) {
@@ -54,6 +54,12 @@ public class HelperProvider {
         BitmapContainer[13] = overlay(HelperProvider.BitmapFromVector(R.drawable.bustrack_end_inc, com.google.android.material.R.attr.colorOutline, ctx, false),HelperProvider.BitmapFromVector(R.drawable.bustrack_empty_incom, com.google.android.material.R.attr.colorPrimary, ctx, false));
         BitmapContainer[14] = HelperProvider.BitmapFromVector(R.drawable.bustrack_half, com.google.android.material.R.attr.colorPrimary, ctx, false);
         BitmapContainer[15] = HelperProvider.BitmapFromVector(R.drawable.bustrack_full, com.google.android.material.R.attr.colorPrimary, ctx, false);
+
+        BitmapContainer[16] = HelperProvider.BitmapFromVector(R.drawable.electric,com.google.android.material.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[17] = HelperProvider.BitmapFromVector(R.drawable.lowfloor,com.google.android.material.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[18] = HelperProvider.BitmapFromVector(R.drawable.airconditioner,com.google.android.material.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[19] = HelperProvider.BitmapFromVector(R.drawable.wifi,com.google.android.material.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[20] = HelperProvider.BitmapFromVector(R.drawable.usb,com.google.android.material.R.attr.colorPrimary,ctx,false);
     }
 
     public static Bitmap getBitmap(Bitmaps bitmap) {
@@ -90,8 +96,17 @@ public class HelperProvider {
                 return BitmapContainer[14];
             case TrackEndFull:
                 return BitmapContainer[15];
+            case Electric:
+                return BitmapContainer[16];
+            case Lowfloor:
+                return BitmapContainer[17];
+            case Airconditioner:
+                return BitmapContainer[18];
+            case Wifi:
+                return BitmapContainer[19];
+            case Usb:
+                return BitmapContainer[20];
         }
-
         return null;
     }
 
@@ -111,8 +126,12 @@ public class HelperProvider {
         TrackEndEmpty,
         TrackEndInc,
         TrackEndHalf,
-        TrackEndFull
-
+        TrackEndFull,
+        Electric,
+        Lowfloor,
+        Airconditioner,
+        Wifi,
+        Usb
     }
 
     private static Bitmap overlay(Bitmap bmp1, Bitmap bmp2) {
