@@ -12,15 +12,26 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.util.TypedValue;
 
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.color.MaterialColors;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import hu.krisz768.bettertuke.models.BusAttributes;
+
 public class HelperProvider {
 
     private static Bitmap[] BitmapContainer = new Bitmap[16];
+    private static JSONObject BusAttributes;
 
     public static void RenderAllBitmap(Context ctx) {
         //map
@@ -468,5 +479,55 @@ public class HelperProvider {
 
 
         return JSON;
+    }
+
+    public static hu.krisz768.bettertuke.models.BusAttributes getBusAttributes(Context ctx,String platenumber) {
+        hu.krisz768.bettertuke.models.BusAttributes oneBusAttributes = new BusAttributes(platenumber,"",0,-1,0,-1,0,0,0);
+        if (BusAttributes == null) {
+            InputStream inputStream = ctx.getResources().openRawResource(R.raw.buses);
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            String text = "";
+            while (true) {
+                try {
+                    String temp = br.readLine();
+                    if (temp == null)
+                        break;
+                    else
+                        text += temp;
+
+                } catch (Exception e) {
+                    return oneBusAttributes;
+                }
+            }
+            try {
+                BusAttributes = new JSONObject(text);
+            } catch (JSONException e) {
+                return oneBusAttributes;
+            }
+        }
+        int i = 0;
+        try {
+            while(i<BusAttributes.getJSONArray("buses").length()) {
+                if(BusAttributes.getJSONArray("buses").getJSONObject(i).getString("platenumber").equals(platenumber))
+                    break;
+                i++;
+            }
+            if(i==BusAttributes.getJSONArray("buses").length()) {
+                return oneBusAttributes;
+            } else {
+                oneBusAttributes=new BusAttributes(platenumber,
+                        BusAttributes.getJSONArray("buses").getJSONObject(i).getString("type"),
+                        BusAttributes.getJSONArray("buses").getJSONObject(i).getInt("propulsion"),
+                        BusAttributes.getJSONArray("buses").getJSONObject(i).getInt("articulated"),
+                        BusAttributes.getJSONArray("buses").getJSONObject(i).getInt("lowfloor"),
+                        BusAttributes.getJSONArray("buses").getJSONObject(i).getInt("doors"),
+                        BusAttributes.getJSONArray("buses").getJSONObject(i).getInt("airconditioner"),
+                        BusAttributes.getJSONArray("buses").getJSONObject(i).getInt("wifi"),
+                        BusAttributes.getJSONArray("buses").getJSONObject(i).getInt("usb"));
+            }
+        } catch (JSONException e) {
+            return oneBusAttributes;
+        }
+        return oneBusAttributes;
     }
 }

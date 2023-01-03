@@ -5,12 +5,12 @@ import android.os.Bundle;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentContainerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -20,12 +20,8 @@ import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
+import hu.krisz768.bettertuke.models.BusAttributes;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link BottomSheetTrackBusFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class BottomSheetTrackBusFragment extends Fragment {
 
     private static final String PLACE = "Place";
@@ -46,8 +42,18 @@ public class BottomSheetTrackBusFragment extends Fragment {
     Thread UpdateThread;
     TrackBusListFragment TrackBusFragment;
 
+    TextView PlateNumber;
+    TextView BusType;
+    TextView Articulated;
+    TextView Doors;
+    ImageView Electric;
+    ImageView LowFloor;
+    ImageView AirConditioner;
+    ImageView Wifi;
+    ImageView Usb;
+
     public BottomSheetTrackBusFragment() {
-        // Required empty public constructor
+
     }
 
     public static BottomSheetTrackBusFragment newInstance(int Place, int Stop, int Jarat, BusPlaces[] PlaceList, BusStops[] StopList, BusJaratok JaratObj) {
@@ -82,7 +88,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_bottom_sheet_track_bus, container, false);
         // Inflate the layout for this fragment
         TextView BusNum = view.findViewById(R.id.TrackBusNumber);
-        TextView BusText = view.findViewById(R.id.TrackBusNev);
+        TextView BusText = view.findViewById(R.id.TrackBusName);
 
         BusNum.setText(mBusJarat.getNyomvonalInfo().getJaratSzam());
         int Whitecolor = Color.rgb(255,255,255);
@@ -116,11 +122,18 @@ public class BottomSheetTrackBusFragment extends Fragment {
         try {
             TrackBusRespModel BusPosition = serverApi.getBusLocation(mBusJarat.getJaratid());
             TextView BusNum = getView().findViewById(R.id.TrackBusNumber);
+            findBusAttributes(getView());
 
             if (BusPosition != null) {
                 BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_active));
             } else {
                 BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_inactive));
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        hideBusAttributes();
+                    }
+                });
             }
 
 
@@ -135,6 +148,13 @@ public class BottomSheetTrackBusFragment extends Fragment {
             });
 
             if (TrackBusFragment == null) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(BusPosition!=null)
+                            showBusAttributes(HelperProvider.getBusAttributes(getContext(),BusPosition.getRendszam()));
+                    }
+                });
                 TrackBusFragment = TrackBusListFragment.newInstance(mBusJarat, mPlace, mStop, mPlaceList, mStopList, BusPosition);
                 getChildFragmentManager().beginTransaction()
                         .replace(R.id.BusTrackFragmentView, TrackBusFragment)
@@ -158,5 +178,60 @@ public class BottomSheetTrackBusFragment extends Fragment {
         } catch (Exception e) {
             Log.e("Update bus pos error", e.toString());
         }
+    }
+
+    private void findBusAttributes(View view)
+    {
+        PlateNumber = view.findViewById(R.id.PlateNumber);
+        BusType = view.findViewById(R.id.BusType);
+        Articulated = view.findViewById(R.id.Articulated);
+        Doors = view.findViewById(R.id.Doors);
+        Electric = view.findViewById(R.id.Electric);
+        LowFloor = view.findViewById(R.id.LowFloor);
+        AirConditioner = view.findViewById(R.id.AirConditioner);
+        Wifi = view.findViewById(R.id.Wifi);
+        Usb = view.findViewById(R.id.Usb);
+    }
+
+    private void showBusAttributes(BusAttributes busAttributes)
+    {
+        PlateNumber.setText(busAttributes.getPlatenumber());
+
+        if(busAttributes.getDoors()==-1)
+            return;
+
+        BusType.setText(busAttributes.getType());
+
+        if(busAttributes.getArticulated()==0)
+            Articulated.setText("szóló");
+        else if(busAttributes.getArticulated()==1)
+            Articulated.setText("csuklós");
+        else if(busAttributes.getArticulated()==2)
+            Articulated.setText("midi");
+        Doors.setText(busAttributes.getDoors()+" ajtós");
+
+        if(busAttributes.getPropulsion()==1)
+            Electric.setVisibility(View.VISIBLE);
+        if(busAttributes.isLowfloor())
+            LowFloor.setVisibility(View.VISIBLE);
+        if(busAttributes.isAirconditioner())
+            AirConditioner.setVisibility(View.VISIBLE);
+        if(busAttributes.isWifi())
+            Wifi.setVisibility(View.VISIBLE);
+        if(busAttributes.isUsb())
+            Usb.setVisibility(View.VISIBLE);
+    }
+
+    private void hideBusAttributes()
+    {
+        PlateNumber.setText("");
+        BusType.setText("");
+        Articulated.setText("");
+        Doors.setText("");
+        Electric.setVisibility(View.GONE);
+        LowFloor.setVisibility(View.GONE);
+        AirConditioner.setVisibility(View.GONE);
+        Wifi.setVisibility(View.GONE);
+        Usb.setVisibility(View.GONE);
     }
 }
