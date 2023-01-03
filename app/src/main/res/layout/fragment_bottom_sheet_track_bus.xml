@@ -47,7 +47,10 @@
                         android:layout_height="match_parent"
                         android:layout_marginLeft="5dp"
                         android:layout_weight="1"
-                        android:textSize="20sp" />
+                        android:paddingTop="2dp"
+                        android:paddingRight="3dp"
+                        android:textSize="20sp"
+                        app:autoSizeTextType="uniform" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -68,7 +71,7 @@
                         android:id="@+id/BusType"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:layout_marginLeft="5dp" />
+                        android:layout_marginLeft="14dp" />
 
                     <ImageView
                         android:id="@+id/Electric"
@@ -98,7 +101,7 @@
                         android:id="@+id/Doors"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:layout_marginLeft="7dp" />
+                        android:layout_marginLeft="14dp" />
 
                     <ImageView
                         android:id="@+id/LowFloor"
@@ -132,8 +135,6 @@
                         android:id="@+id/Usb"
                         android:layout_width="30dp"
                         android:layout_height="match_parent"
-                        android:paddingTop="2dp"
-                        android:paddingBottom="2dp"
                         android:src="@drawable/usb"
                         android:visibility="gone" />
 

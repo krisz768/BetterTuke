@@ -22,11 +22,6 @@ import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 import hu.krisz768.bettertuke.models.BusAttributes;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link BottomSheetTrackBusFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class BottomSheetTrackBusFragment extends Fragment {
 
     private static final String PLACE = "Place";
@@ -47,8 +42,18 @@ public class BottomSheetTrackBusFragment extends Fragment {
     Thread UpdateThread;
     TrackBusListFragment TrackBusFragment;
 
+    TextView PlateNumber;
+    TextView BusType;
+    TextView Articulated;
+    TextView Doors;
+    ImageView Electric;
+    ImageView LowFloor;
+    ImageView AirConditioner;
+    ImageView Wifi;
+    ImageView Usb;
+
     public BottomSheetTrackBusFragment() {
-        // Required empty public constructor
+
     }
 
     public static BottomSheetTrackBusFragment newInstance(int Place, int Stop, int Jarat, BusPlaces[] PlaceList, BusStops[] StopList, BusJaratok JaratObj) {
@@ -117,11 +122,18 @@ public class BottomSheetTrackBusFragment extends Fragment {
         try {
             TrackBusRespModel BusPosition = serverApi.getBusLocation(mBusJarat.getJaratid());
             TextView BusNum = getView().findViewById(R.id.TrackBusNumber);
+            findBusAttributes(getView());
 
             if (BusPosition != null) {
                 BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_active));
             } else {
                 BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_inactive));
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        hideBusAttributes();
+                    }
+                });
             }
 
 
@@ -139,7 +151,8 @@ public class BottomSheetTrackBusFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        showBusAttributes(getView(),HelperProvider.getBusAttributes(getContext(),BusPosition.getRendszam()));
+                        if(BusPosition!=null)
+                            showBusAttributes(HelperProvider.getBusAttributes(getContext(),BusPosition.getRendszam()));
                     }
                 });
                 TrackBusFragment = TrackBusListFragment.newInstance(mBusJarat, mPlace, mStop, mPlaceList, mStopList, BusPosition);
@@ -167,33 +180,26 @@ public class BottomSheetTrackBusFragment extends Fragment {
         }
     }
 
-
-    private void showBusAttributes(View view, BusAttributes busAttributes)
+    private void findBusAttributes(View view)
     {
-        TextView PlateNumber = view.findViewById(R.id.PlateNumber);
-        TextView BusType = view.findViewById(R.id.BusType);
-        TextView Articulated = view.findViewById(R.id.Articulated);
-        TextView Doors = view.findViewById(R.id.Doors);
-        ImageView Electric = view.findViewById(R.id.Electric);
-        ImageView LowFloor = view.findViewById(R.id.LowFloor);
-        ImageView AirConditioner = view.findViewById(R.id.AirConditioner);
-        ImageView Wifi = view.findViewById(R.id.Wifi);
-        ImageView Usb = view.findViewById(R.id.Usb);
+        PlateNumber = view.findViewById(R.id.PlateNumber);
+        BusType = view.findViewById(R.id.BusType);
+        Articulated = view.findViewById(R.id.Articulated);
+        Doors = view.findViewById(R.id.Doors);
+        Electric = view.findViewById(R.id.Electric);
+        LowFloor = view.findViewById(R.id.LowFloor);
+        AirConditioner = view.findViewById(R.id.AirConditioner);
+        Wifi = view.findViewById(R.id.Wifi);
+        Usb = view.findViewById(R.id.Usb);
+    }
 
+    private void showBusAttributes(BusAttributes busAttributes)
+    {
         PlateNumber.setText(busAttributes.getPlatenumber());
-        BusType.setText("");
-        Articulated.setText("");
-        Doors.setText("");
-        Electric.setVisibility(View.GONE);
-        LowFloor.setVisibility(View.GONE);
-        AirConditioner.setVisibility(View.GONE);
-        Wifi.setVisibility(View.GONE);
-        Usb.setVisibility(View.GONE);
 
         if(busAttributes.getDoors()==-1)
             return;
 
-        PlateNumber.setText(busAttributes.getPlatenumber());
         BusType.setText(busAttributes.getType());
 
         if(busAttributes.getArticulated()==0)
@@ -214,5 +220,18 @@ public class BottomSheetTrackBusFragment extends Fragment {
             Wifi.setVisibility(View.VISIBLE);
         if(busAttributes.isUsb())
             Usb.setVisibility(View.VISIBLE);
+    }
+
+    private void hideBusAttributes()
+    {
+        PlateNumber.setText("");
+        BusType.setText("");
+        Articulated.setText("");
+        Doors.setText("");
+        Electric.setVisibility(View.GONE);
+        LowFloor.setVisibility(View.GONE);
+        AirConditioner.setVisibility(View.GONE);
+        Wifi.setVisibility(View.GONE);
+        Usb.setVisibility(View.GONE);
     }
 }

@@ -24,7 +24,12 @@ public class BusAttributes {
     }
 
     public String getPlatenumber() {
-        return platenumber;
+        String edited_platenumber="";
+        if(platenumber.length()==6)
+            edited_platenumber=platenumber.substring(0,3)+"-"+platenumber.substring(3,6);
+        else if(platenumber.length()==7)
+            edited_platenumber=platenumber.substring(0,4)+"-"+platenumber.substring(4,7);
+        return edited_platenumber;
     }
 
     public String getType() {

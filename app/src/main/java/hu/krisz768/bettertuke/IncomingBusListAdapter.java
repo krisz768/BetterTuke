@@ -72,7 +72,6 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
                 number.setBackground(ContextCompat.getDrawable(ctx, R.drawable.bus_number_background_inactive));
             }
 
-
         }
     }
 
