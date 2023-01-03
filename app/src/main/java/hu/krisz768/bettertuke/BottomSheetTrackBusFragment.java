@@ -39,18 +39,19 @@ public class BottomSheetTrackBusFragment extends Fragment {
     private BusStops[] mStopList;
     private BusJaratok mBusJarat;
 
-    Thread UpdateThread;
-    TrackBusListFragment TrackBusFragment;
+    private Thread UpdateThread;
+    private TrackBusListFragment TrackBusFragment;
+    private TextView PlateNumber;
+    private TextView BusType;
+    private TextView Articulated;
+    private TextView Doors;
+    private ImageView Electric;
+    private ImageView LowFloor;
+    private ImageView AirConditioner;
+    private ImageView Wifi;
+    private ImageView Usb;
 
-    TextView PlateNumber;
-    TextView BusType;
-    TextView Articulated;
-    TextView Doors;
-    ImageView Electric;
-    ImageView LowFloor;
-    ImageView AirConditioner;
-    ImageView Wifi;
-    ImageView Usb;
+    private boolean BusAttributesVisible = false;
 
     public BottomSheetTrackBusFragment() {
 
@@ -126,7 +127,19 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
             if (BusPosition != null) {
                 BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_active));
+                if (!BusAttributesVisible) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(BusPosition!=null)
+                                showBusAttributes(HelperProvider.getBusAttributes(getContext(),BusPosition.getRendszam()));
+                        }
+                    });
+
+                    BusAttributesVisible = true;
+                }
             } else {
+                BusAttributesVisible = false;
                 BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_inactive));
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
@@ -148,13 +161,6 @@ public class BottomSheetTrackBusFragment extends Fragment {
             });
 
             if (TrackBusFragment == null) {
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(BusPosition!=null)
-                            showBusAttributes(HelperProvider.getBusAttributes(getContext(),BusPosition.getRendszam()));
-                    }
-                });
                 TrackBusFragment = TrackBusListFragment.newInstance(mBusJarat, mPlace, mStop, mPlaceList, mStopList, BusPosition);
                 getChildFragmentManager().beginTransaction()
                         .replace(R.id.BusTrackFragmentView, TrackBusFragment)
