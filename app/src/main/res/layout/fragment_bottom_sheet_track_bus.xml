@@ -22,9 +22,9 @@
                 android:id="@+id/TrackBusNumber"
                 android:layout_width="65dp"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="12dp"
+                android:layout_marginLeft="10dp"
                 android:layout_marginTop="18dp"
-                android:layout_marginRight="12dp"
+                android:layout_marginRight="10dp"
                 android:layout_marginBottom="18dp"
                 android:background="@drawable/bus_number_background_inactive"
                 android:gravity="center"
@@ -45,7 +45,6 @@
                         android:id="@+id/TrackBusName"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        android:layout_marginLeft="5dp"
                         android:layout_weight="1"
                         android:paddingTop="2dp"
                         android:paddingRight="3dp"
@@ -64,14 +63,15 @@
                     <TextView
                         android:id="@+id/PlateNumber"
                         android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_marginLeft="5dp" />
+                        android:layout_height="match_parent" />
 
                     <TextView
                         android:id="@+id/BusType"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:layout_marginLeft="14dp" />
+                        android:layout_marginLeft="14dp"
+                        android:paddingRight="2dp"
+                        app:autoSizeTextType="uniform" />
 
                     <ImageView
                         android:id="@+id/Electric"
@@ -94,8 +94,7 @@
                     <TextView
                         android:id="@+id/Articulated"
                         android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_marginLeft="5dp" />
+                        android:layout_height="match_parent" />
 
                     <TextView
                         android:id="@+id/Doors"
