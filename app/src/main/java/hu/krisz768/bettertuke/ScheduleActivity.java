@@ -10,6 +10,8 @@ import android.view.View;
 
 public class ScheduleActivity extends AppCompatActivity {
 
+    private String SelectedLine;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,5 +30,15 @@ public class ScheduleActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT < 31) {
             setTheme(R.style.DefaultPre12);
         }
+    }
+
+    public void selectLine(String LineNum) {
+        this.SelectedLine = LineNum;
+
+        ScheduleBusTimeFragment Sbtf = ScheduleBusTimeFragment.newInstance(LineNum);
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.ScheduleFragmentContainer, Sbtf)
+                .commit();
     }
 }

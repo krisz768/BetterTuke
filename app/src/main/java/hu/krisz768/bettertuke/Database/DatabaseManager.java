@@ -209,7 +209,19 @@ public class DatabaseManager {
         return ret;
     }
 
-    //SELECT DISTINCT v.vonal_nev, v.vonal_leiras FROM vonalak v INNER JOIN nyomvonalak AS n ON n.vonal_nev = v.vonal_nev INNER JOIN jaratok j ON  j.id_nyomvonal = n.id_nyomvonal ORDER BY '0' + v.vonal_nev;
+    public BusScheduleTime[] GetBusScheduleTimeFromStart(String LineNum, String date, String Direction) {
+        List<BusScheduleTime> Lines = new ArrayList<>();
+
+        Cursor cursor = Sld.rawQuery("SELECT j.indulas_ora, j.indulas_perc, ny.nyomvonal_kod FROM jaratok j INNER JOIN nyomvonalak as ny ON j.id_nyomvonal = ny.id_nyomvonal INNER JOIN naptar AS n ON j.id_jarat = n.id_jarat WHERE ny.vonal_nev = " + LineNum + " AND ny.irany = " + Direction + " AND n.datum = " + date + " ORDER BY j.indulas_ora,j.indulas_perc;", null);
+        while(cursor.moveToNext()) {
+            Lines.add(new BusScheduleTime(cursor.getInt(0), cursor.getInt(1),cursor.getString(2)));
+        }
+        cursor.close();
+
+        BusScheduleTime[] ret  = new BusScheduleTime[Lines.size()];
+        Lines.toArray(ret);
+        return ret;
+    }
 
     private void log (String msg) {
         Log.e("DatabaseManager", msg);
