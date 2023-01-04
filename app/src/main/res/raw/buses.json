@@ -1992,7 +1992,7 @@
 			"articulated": 1,
 			"lowfloor": 1,
 			"doors": 3,
-			"airconditioner": 0,
+			"airconditioner": 1,
 			"wifi": 0,
 			"usb": 0
 		},
