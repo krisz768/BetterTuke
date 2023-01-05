@@ -183,13 +183,16 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                     if (getContext() == null)
                         break;
                     if (!UpdateThreadRun) {
-                        Log.e("WAIT", "WAIT");
                         Thread.sleep(1000);
                         continue;
                     }
-                    Log.e("DONE", "DONE");
                     GetIncommingBuses(serverApi, true);
-                    Thread.sleep(10000);
+
+                    for (int i = 0; i < 20; i++) {
+                        Thread.sleep(500);
+                        if (!UpdateThreadRun)
+                            break;
+                    }
                 }
             } catch (Exception e) {
 
