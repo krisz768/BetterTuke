@@ -53,7 +53,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private IncomingBusListFragment InBusFragment;
     private Thread UpdateThread;
     private boolean NewStop = false;
-    private boolean UpdateThreadRun = false;
+    private volatile boolean UpdateThreadRun = true;
 
     public BottomSheetIncomingBusFragment() {
         // Required empty public constructor
@@ -125,10 +125,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     }
 
     private void StartNewUpdateThread(View view) {
-        if (UpdateThreadRun)
-            return;
-
-        UpdateThreadRun = true;
 
         UpdateThread = new Thread(new Runnable() {
             @Override
@@ -151,7 +147,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         super.onResume();
 
         ResetList();
-        StartNewUpdateThread(getView());
+        UpdateThreadRun = true;
     }
 
     public void OnStopClick(int Id) {
@@ -183,9 +179,15 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             TukeServerApi serverApi = new TukeServerApi(this.getActivity());
 
             try {
-                while (UpdateThreadRun) {
+                while (true) {
                     if (getContext() == null)
                         break;
+                    if (!UpdateThreadRun) {
+                        Log.e("WAIT", "WAIT");
+                        Thread.sleep(1000);
+                        continue;
+                    }
+                    Log.e("DONE", "DONE");
                     GetIncommingBuses(serverApi, true);
                     Thread.sleep(10000);
                 }

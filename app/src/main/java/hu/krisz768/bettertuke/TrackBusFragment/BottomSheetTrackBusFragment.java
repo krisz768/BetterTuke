@@ -55,7 +55,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
     private ImageView Usb;
 
     private boolean BusAttributesVisible = false;
-    private boolean UpdateThreadRun = false;
+    private volatile boolean UpdateThreadRun = true;
 
     public BottomSheetTrackBusFragment() {
 
@@ -101,6 +101,8 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
         BusText.setText(mBusJarat.getNyomvonalInfo().getJaratNev());
 
+        findBusAttributes(view);
+
         StartUpdateThread(view);
 
         return view;
@@ -117,13 +119,10 @@ public class BottomSheetTrackBusFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        StartUpdateThread(getView());
+        UpdateThreadRun = true;
     }
 
     private void StartUpdateThread(View view) {
-        if (UpdateThreadRun)
-            return;
-        UpdateThreadRun = true;
 
         UpdateThread = new Thread(new Runnable() {
             @Override
@@ -134,6 +133,10 @@ public class BottomSheetTrackBusFragment extends Fragment {
                     while (true) {
                         if (getContext() == null)
                             break;
+                        if (!UpdateThreadRun) {
+                            Thread.sleep(1000);
+                            continue;
+                        }
                         GetBusPosition(serverApi);
                         Thread.sleep(2000);
                     }
@@ -149,7 +152,6 @@ public class BottomSheetTrackBusFragment extends Fragment {
         try {
             TrackBusRespModel BusPosition = serverApi.getBusLocation(mBusJarat.getJaratid());
             TextView BusNum = getView().findViewById(R.id.TrackBusNumber);
-            findBusAttributes(getView());
 
             if (BusPosition != null) {
                 BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_active));
@@ -209,6 +211,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
             }
         } catch (Exception e) {
             Log.e("Update bus pos error", e.toString());
+            e.printStackTrace();
         }
     }
 
