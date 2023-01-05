@@ -3,12 +3,21 @@ package hu.krisz768.bettertuke.ScheduleFragment;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import hu.krisz768.bettertuke.Database.BusScheduleTime;
+import hu.krisz768.bettertuke.Database.DatabaseManager;
+import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusListAdapter;
 import hu.krisz768.bettertuke.R;
 
 /**
@@ -49,6 +58,57 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         TextView NumText = view.findViewById(R.id.ScheduleBusLineNum);
         NumText.setText(mLineNum);
+
+        DatabaseManager Dm = new DatabaseManager(getContext());
+
+        BusScheduleTime[] Jaratok = Dm.GetBusScheduleTimeFromStart(mLineNum, "2023-01-05", "O");
+
+        List<Integer> HoursList = new ArrayList<>();
+
+        int CurrentHour = -1;
+        for (int i = 0; i < Jaratok.length; i++) {
+            if (Jaratok[i].getOra() != CurrentHour) {
+                HoursList.add(Jaratok[i].getOra());
+                CurrentHour = Jaratok[i].getOra();
+            }
+        }
+
+        int[] Hours = new int[HoursList.size()];
+
+        for (int i = 0; i < HoursList.size(); i++) {
+            Hours[i] = HoursList.get(i);
+        }
+
+        int[][] Minutes = new int[HoursList.size()][];
+        List<Integer> TempMinutes = new ArrayList<>();
+
+        CurrentHour = -1;
+        int HourIndex = -1;
+        for (int i = 0; i < Jaratok.length; i++) {
+            if (Jaratok[i].getOra() != CurrentHour) {
+                if(HourIndex != -1) {
+                    Minutes[HourIndex] = new int[TempMinutes.size()];
+                    for (int j = 0; j < TempMinutes.size(); j++) {
+                        Minutes[HourIndex][j] = TempMinutes.get(j);
+                    }
+                }
+
+                HourIndex++;
+
+                CurrentHour = Jaratok[i].getOra();
+                TempMinutes = new ArrayList<>();
+                TempMinutes.add(Jaratok[i].getPerc());
+            } else {
+                TempMinutes.add(Jaratok[i].getPerc());
+            }
+        }
+
+        RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
+
+        ScheduleBusTimeHourAdapter Sbta = new ScheduleBusTimeHourAdapter(Hours, Minutes);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        Recv.setLayoutManager(mLayoutManager);
+        Recv.setAdapter(Sbta);
 
         return view;
     }
