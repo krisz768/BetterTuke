@@ -55,6 +55,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
     private ImageView Usb;
 
     private boolean BusAttributesVisible = false;
+    private boolean UpdateThreadRun = false;
 
     public BottomSheetTrackBusFragment() {
 
@@ -100,6 +101,30 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
         BusText.setText(mBusJarat.getNyomvonalInfo().getJaratNev());
 
+        StartUpdateThread(view);
+
+        return view;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        UpdateThreadRun = false;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        StartUpdateThread(getView());
+    }
+
+    private void StartUpdateThread(View view) {
+        if (UpdateThreadRun)
+            return;
+        UpdateThreadRun = true;
+
         UpdateThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -118,8 +143,6 @@ public class BottomSheetTrackBusFragment extends Fragment {
             }
         });
         UpdateThread.start();
-
-        return view;
     }
 
     private void GetBusPosition(TukeServerApi serverApi) {

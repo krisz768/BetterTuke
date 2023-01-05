@@ -53,6 +53,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private IncomingBusListFragment InBusFragment;
     private Thread UpdateThread;
     private boolean NewStop = false;
+    private boolean UpdateThreadRun = false;
 
     public BottomSheetIncomingBusFragment() {
         // Required empty public constructor
@@ -118,6 +119,17 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
         StopSelectorRec.setNestedScrollingEnabled(false);
 
+        StartNewUpdateThread(view);
+
+        return view;
+    }
+
+    private void StartNewUpdateThread(View view) {
+        if (UpdateThreadRun)
+            return;
+
+        UpdateThreadRun = true;
+
         UpdateThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -125,8 +137,21 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
         });
         UpdateThread.start();
+    }
 
-        return view;
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        UpdateThreadRun = false;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        ResetList();
+        StartNewUpdateThread(getView());
     }
 
     public void OnStopClick(int Id) {
@@ -141,7 +166,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             @Override
             public void run() {
                 TukeServerApi serverApi = new TukeServerApi(getActivity());
-                GetIncommingBuses(serverApi);
+                GetIncommingBuses(serverApi, false);
             }
         }).start();
 
@@ -158,10 +183,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             TukeServerApi serverApi = new TukeServerApi(this.getActivity());
 
             try {
-                while (true) {
+                while (UpdateThreadRun) {
                     if (getContext() == null)
                         break;
-                    GetIncommingBuses(serverApi);
+                    GetIncommingBuses(serverApi, true);
                     Thread.sleep(10000);
                 }
             } catch (Exception e) {
@@ -169,13 +194,13 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
     }
 
-    private void GetIncommingBuses(TukeServerApi serverApi) {
+    private void GetIncommingBuses(TukeServerApi serverApi, boolean IsFromLoop) {
         try {
             Log.i("Update", "Updating List");
             IncommingBusRespModel[] BusList = serverApi.getNextIncommingBuses(mStop);
-            if (NewStop) {
+            if (NewStop && IsFromLoop) {
                 NewStop = false;
-                GetIncommingBuses(serverApi);
+                GetIncommingBuses(serverApi, true);
                 return;
             }
 
@@ -222,6 +247,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
         } catch (Exception e) {
             Log.e("Update bus list error", e.toString());
+            //e.printStackTrace();
         }
     }
 }
