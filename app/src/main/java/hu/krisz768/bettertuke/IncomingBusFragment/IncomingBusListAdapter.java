@@ -1,11 +1,7 @@
-package hu.krisz768.bettertuke;
+package hu.krisz768.bettertuke.IncomingBusFragment;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
 
 public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusListAdapter.ViewHolder>{

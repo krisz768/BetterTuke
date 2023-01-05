@@ -1,6 +1,5 @@
-package hu.krisz768.bettertuke;
+package hu.krisz768.bettertuke.TrackBusFragment;
 
-import android.media.Image;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -9,12 +8,9 @@ import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -23,8 +19,9 @@ import java.util.Calendar;
 import hu.krisz768.bettertuke.Database.BusJaratok;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
+import hu.krisz768.bettertuke.MainActivity;
+import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
-import hu.krisz768.bettertuke.models.BusAttributes;
 
 /**
  * A simple {@link Fragment} subclass.

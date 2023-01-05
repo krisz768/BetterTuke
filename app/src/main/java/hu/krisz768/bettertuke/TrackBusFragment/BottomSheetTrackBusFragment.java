@@ -1,4 +1,4 @@
-package hu.krisz768.bettertuke;
+package hu.krisz768.bettertuke.TrackBusFragment;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -18,6 +18,9 @@ import com.google.android.gms.maps.model.LatLng;
 import hu.krisz768.bettertuke.Database.BusJaratok;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
+import hu.krisz768.bettertuke.HelperProvider;
+import hu.krisz768.bettertuke.MainActivity;
+import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 import hu.krisz768.bettertuke.models.BusAttributes;

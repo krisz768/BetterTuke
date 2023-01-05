@@ -1,4 +1,4 @@
-package hu.krisz768.bettertuke;
+package hu.krisz768.bettertuke.ScheduleFragment;
 
 import android.os.Bundle;
 
@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import hu.krisz768.bettertuke.R;
 
 /**
  * A simple {@link Fragment} subclass.

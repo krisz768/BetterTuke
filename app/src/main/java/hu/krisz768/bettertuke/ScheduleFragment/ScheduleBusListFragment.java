@@ -1,4 +1,4 @@
-package hu.krisz768.bettertuke;
+package hu.krisz768.bettertuke.ScheduleFragment;
 
 import android.os.Bundle;
 
@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
+import hu.krisz768.bettertuke.R;
+import hu.krisz768.bettertuke.ScheduleActivity;
 
 public class ScheduleBusListFragment extends Fragment {
 

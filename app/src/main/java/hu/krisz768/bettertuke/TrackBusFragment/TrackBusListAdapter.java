@@ -1,11 +1,7 @@
-package hu.krisz768.bettertuke;
+package hu.krisz768.bettertuke.TrackBusFragment;
 
-import android.app.admin.DelegatedAdminReceiver;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.telecom.Call;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +19,8 @@ import java.util.Calendar;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.Database.JaratInfoMenetido;
+import hu.krisz768.bettertuke.HelperProvider;
+import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
 public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapter.ViewHolder>{

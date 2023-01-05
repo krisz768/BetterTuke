@@ -1,23 +1,17 @@
-package hu.krisz768.bettertuke;
+package hu.krisz768.bettertuke.IncomingBusFragment;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import hu.krisz768.bettertuke.Database.BusStops;
-import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
+import hu.krisz768.bettertuke.R;
 
 public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<IncomingBusStopSelectorAdapter.ViewHolder>{
     private BusStops[] BusStopList;

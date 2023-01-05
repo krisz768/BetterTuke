@@ -1,18 +1,17 @@
-package hu.krisz768.bettertuke;
+package hu.krisz768.bettertuke.ScheduleFragment;
 
 import android.content.Context;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import hu.krisz768.bettertuke.Database.BusLine;
-import hu.krisz768.bettertuke.Database.BusStops;
+import hu.krisz768.bettertuke.R;
 
 public class ScheduleBusListAdapter extends RecyclerView.Adapter<ScheduleBusListAdapter.ViewHolder>{
 

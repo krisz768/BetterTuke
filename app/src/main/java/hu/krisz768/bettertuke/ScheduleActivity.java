@@ -1,12 +1,12 @@
 package hu.krisz768.bettertuke;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentContainer;
 
-import android.app.Fragment;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
+
+import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusListFragment;
+import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusTimeFragment;
 
 public class ScheduleActivity extends AppCompatActivity {
 

@@ -1,12 +1,8 @@
-package hu.krisz768.bettertuke;
+package hu.krisz768.bettertuke.IncomingBusFragment;
 
-import android.graphics.Color;
 import android.os.Bundle;
 
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentContainerView;
-import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,11 +11,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.TextView;
-
-import com.google.android.material.color.ColorRoles;
-import com.google.android.material.color.MaterialColors;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,7 +23,10 @@ import java.util.Locale;
 import hu.krisz768.bettertuke.Database.BusJaratok;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
+import hu.krisz768.bettertuke.InfoFragment;
+import hu.krisz768.bettertuke.LoadingFragment;
+import hu.krisz768.bettertuke.MainActivity;
+import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
 
