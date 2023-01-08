@@ -480,7 +480,11 @@ public class MainActivity extends AppCompatActivity {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
-        int dp20 = (int) Math.ceil(20 * displayMetrics.density);
+        int dp20 = Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                20,
+                displayMetrics
+        ));
 
         if (BottomSheetCallback == null) {
             BottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
@@ -583,7 +587,11 @@ public class MainActivity extends AppCompatActivity {
     private void BottomSheetSetNormalParams() {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int dp20 = (int) Math.ceil(20 * displayMetrics.density);
+        int dp20 = Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                20,
+                displayMetrics
+        ));
         int height = displayMetrics.heightPixels / 3;
 
         int MinHeight = (int) Math.ceil(180 * displayMetrics.density);
