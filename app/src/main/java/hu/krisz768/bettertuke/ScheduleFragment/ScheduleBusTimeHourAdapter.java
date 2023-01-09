@@ -3,19 +3,14 @@ package hu.krisz768.bettertuke.ScheduleFragment;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.R;
 
 public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBusTimeHourAdapter.ViewHolder>{
@@ -25,9 +20,9 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
     private Context ctx;
     private int MaxPerLine;
 
-    private int PrimaryColor;
-    private int PrimaryContainerColor;
-    private int OnPrimaryContainerColor;
+    private int SecColor;
+    private int SecContainerColor;
+    private int OnSecContainerColor;
     private Drawable MinBackground;
     private Drawable MinFullBackground;
 
@@ -43,30 +38,30 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
             Recv = view.findViewById(R.id.ScheduleMinuteRecview);
         }
 
-        public void setData(int Hour, int[] Minutes, int MaxPerLine, int PrimaryColor, int PrimaryContainerColor, int OnPrimaryContainerColor, Drawable MinBackground, Drawable MinFullBackground, Context ctx) {
+        public void setData(int Hour, int[] Minutes, int MaxPerLine, int SecColor, int SecContainerColor, int OnSecContainerColor, Drawable MinBackground, Drawable MinFullBackground, Context ctx) {
             HourText.setText(String.format("%02d", Hour));
 
-            HourText.setTextColor(OnPrimaryContainerColor);
+            HourText.setTextColor(OnSecContainerColor);
 
             Drawable background = HourText.getBackground();
             GradientDrawable gradientDrawable = (GradientDrawable) background;
-            gradientDrawable.setColor(PrimaryContainerColor);
+            gradientDrawable.setColor(SecContainerColor);
 
-            ScheduleBusTimeMinuteAdapter Sbta = new ScheduleBusTimeMinuteAdapter(Hour, Minutes, MaxPerLine, PrimaryColor, MinBackground, MinFullBackground);
+            ScheduleBusTimeMinuteAdapter Sbta = new ScheduleBusTimeMinuteAdapter(Hour, Minutes, MaxPerLine, SecColor, MinBackground, MinFullBackground);
             GridLayoutManager mLayoutManager = new GridLayoutManager(ctx, MaxPerLine);
             Recv.setLayoutManager(mLayoutManager);
             Recv.setAdapter(Sbta);
         }
     }
 
-    public ScheduleBusTimeHourAdapter(int[] Hours, int[][] Minutes, int MaxPerLine,int PrimaryColor, int PrimaryContainerColor, int OnPrimaryContainerColor, Drawable MinBackground, Drawable MinFullBackground, Context ctx) {
+    public ScheduleBusTimeHourAdapter(int[] Hours, int[][] Minutes, int MaxPerLine,int SecColor, int SecContainerColor, int OnSecContainerColor, Drawable MinBackground, Drawable MinFullBackground, Context ctx) {
         this.Hours = Hours;
         this.Minutes = Minutes;
         this.ctx = ctx;
         this.MaxPerLine = MaxPerLine;
-        this.PrimaryColor = PrimaryColor;
-        this.PrimaryContainerColor = PrimaryContainerColor;
-        this.OnPrimaryContainerColor = OnPrimaryContainerColor;
+        this.SecColor = SecColor;
+        this.SecContainerColor = SecContainerColor;
+        this.OnSecContainerColor = OnSecContainerColor;
         this.MinBackground = MinBackground;
         this.MinFullBackground = MinFullBackground;
     }
@@ -87,7 +82,7 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.setData(Hours[position], Minutes[position], MaxPerLine, PrimaryColor, PrimaryContainerColor, OnPrimaryContainerColor, MinBackground,MinFullBackground, ctx);
+        viewHolder.setData(Hours[position], Minutes[position], MaxPerLine, SecColor, SecContainerColor, OnSecContainerColor, MinBackground,MinFullBackground, ctx);
     }
 
     // Return the size of your dataset (invoked by the layout manager)

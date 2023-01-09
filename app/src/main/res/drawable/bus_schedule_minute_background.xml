@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <item
-        android:left="-5dp"
-        android:top="-5dp"
-        android:id="@+id/busScheduleMinuteBackgroundRectangle">
-        <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle" >
-            <stroke android:width="2dip" android:color="#FFFFFF"/>
-        </shape>
-    </item>
+        <item
+            android:left="-5dp"
+            android:top="-5dp"
+            android:id="@+id/busScheduleMinuteBackgroundRectangle">
+            <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle" >
+                <stroke android:width="2dip" android:color="#FFFFFF"/>
+            </shape>
+        </item>
 </layer-list>

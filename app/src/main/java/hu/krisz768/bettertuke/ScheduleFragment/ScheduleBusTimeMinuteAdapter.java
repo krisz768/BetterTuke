@@ -23,7 +23,7 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
     private int[] Minutes;
     private int MaxPerLine;
     private Context ctx;
-    private int PrimaryColor;
+    private int SecColor;
     private Drawable Background;
     private Drawable FullBackground;
 
@@ -37,7 +37,7 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
             MinuteText = view.findViewById(R.id.ScheduleMinuteText);
         }
 
-        public void setData(int Hour, int Minute, boolean Firstrow, int PrimaryColor, Drawable Background, Drawable FullBackground) {
+        public void setData(int Hour, int Minute, boolean Firstrow, int SecColor, Drawable Background, Drawable FullBackground) {
             MinuteText.setText(String.format("%02d", Minute));
             if (Firstrow) {
                 MinuteText.setBackground(FullBackground);
@@ -45,17 +45,17 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
                 MinuteText.setBackground(Background);
             }
 
-            MinuteText.setTextColor(PrimaryColor);
+            MinuteText.setTextColor(SecColor);
 
 
         }
     }
 
-    public ScheduleBusTimeMinuteAdapter(int Hour, int[] Minutes, int MaxPerLine,int PrimaryColor, Drawable Background, Drawable FullBackground) {
+    public ScheduleBusTimeMinuteAdapter(int Hour, int[] Minutes, int MaxPerLine,int SecColor, Drawable Background, Drawable FullBackground) {
         this.Hour = Hour;
         this.Minutes = Minutes;
         this.MaxPerLine = MaxPerLine;
-        this.PrimaryColor = PrimaryColor;
+        this.SecColor = SecColor;
         this.Background = Background;
         this.FullBackground = FullBackground;
     }
@@ -76,7 +76,7 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.setData(Hour, Minutes[position], MaxPerLine > position, PrimaryColor, Background,FullBackground);
+        viewHolder.setData(Hour, Minutes[position], MaxPerLine > position, SecColor, Background,FullBackground);
     }
 
     // Return the size of your dataset (invoked by the layout manager)

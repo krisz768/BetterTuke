@@ -53,6 +53,11 @@ public class ScheduleBusTimeFragment extends Fragment {
     private int colorPrimaryContainer;
     private int colorOnPrimaryContainer;
 
+    private int colorSec;
+    private int colorOnSec;
+    private int colorOnSecContainer;
+    private int colorSecContContainer;
+
     private Drawable MinuteBackground;
     private Drawable MinuteBackgroundFull;
 
@@ -121,6 +126,18 @@ public class ScheduleBusTimeFragment extends Fragment {
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimaryContainer, typedValue, true);
         colorOnPrimaryContainer = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
+        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
+        colorSec = ContextCompat.getColor(getContext(), typedValue.resourceId);
+
+        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondary, typedValue, true);
+        colorOnSec = ContextCompat.getColor(getContext(), typedValue.resourceId);
+
+        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondaryContainer, typedValue, true);
+        colorSecContContainer = ContextCompat.getColor(getContext(), typedValue.resourceId);
+
+        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondaryContainer, typedValue, true);
+        colorOnSecContainer = ContextCompat.getColor(getContext(), typedValue.resourceId);
+
         DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
         int StrokeWidth = Math.round(TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
@@ -128,11 +145,17 @@ public class ScheduleBusTimeFragment extends Fragment {
                 displayMetrics
         ));
 
+
+
+
+
         MinuteBackground = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_background);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth,colorPrimaryContainer);
+        ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth,colorSecContContainer);
+        ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorOnSec);
 
         MinuteBackgroundFull = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_fbackground);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFull).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth,colorPrimaryContainer);
+        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFull).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth,colorSecContContainer);
+        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFull).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorOnSec);
     }
 
     private void setColors(View view) {
@@ -256,7 +279,7 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
 
-        ScheduleBusTimeHourAdapter Sbta = new ScheduleBusTimeHourAdapter(Hours, Minutes, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorPrimary, colorPrimaryContainer, colorOnPrimaryContainer, MinuteBackground, MinuteBackgroundFull, getContext());
+        ScheduleBusTimeHourAdapter Sbta = new ScheduleBusTimeHourAdapter(Hours, Minutes, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorSec, colorSecContContainer, colorOnSecContainer, MinuteBackground, MinuteBackgroundFull, getContext());
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         Recv.setLayoutManager(mLayoutManager);
         Recv.setAdapter(Sbta);

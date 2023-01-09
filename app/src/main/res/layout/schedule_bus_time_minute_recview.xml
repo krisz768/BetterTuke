@@ -4,7 +4,7 @@
     android:layout_height="50dp"
     android:clickable="true"
     android:focusable="true"
-    android:background="?android:attr/selectableItemBackground">
+    android:foreground="?android:attr/selectableItemBackground">
 
     <TextView
         android:id="@+id/ScheduleMinuteText"
