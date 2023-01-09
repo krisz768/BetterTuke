@@ -1,8 +1,12 @@
 package hu.krisz768.bettertuke.ScheduleFragment;
 
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,6 +48,14 @@ public class ScheduleBusTimeFragment extends Fragment {
 
     private String SelectedDate;
 
+    private int colorPrimary;
+    private int colorOnPrimary;
+    private int colorPrimaryContainer;
+    private int colorOnPrimaryContainer;
+
+    private Drawable MinuteBackground;
+    private Drawable MinuteBackgroundFull;
+
     public ScheduleBusTimeFragment() {
         // Required empty public constructor
     }
@@ -73,6 +85,10 @@ public class ScheduleBusTimeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_schedule_bus_time, container, false);
 
+        LoadColorsAndBackgrounds();
+
+        setColors(view);
+
         TextView SelectedDateText = view.findViewById(R.id.ScheduleBusLineDate);
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd.");
@@ -89,6 +105,51 @@ public class ScheduleBusTimeFragment extends Fragment {
         ReloadSchedules(view);
 
         return view;
+    }
+
+    private void LoadColorsAndBackgrounds() {
+        TypedValue typedValue = new TypedValue();
+        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+        colorPrimary = ContextCompat.getColor(getContext(), typedValue.resourceId);
+
+        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
+        colorOnPrimary = ContextCompat.getColor(getContext(), typedValue.resourceId);
+
+        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryContainer, typedValue, true);
+        colorPrimaryContainer = ContextCompat.getColor(getContext(), typedValue.resourceId);
+
+        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimaryContainer, typedValue, true);
+        colorOnPrimaryContainer = ContextCompat.getColor(getContext(), typedValue.resourceId);
+
+        DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
+        int StrokeWidth = Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                2,
+                displayMetrics
+        ));
+
+        MinuteBackground = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_background);
+        ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth,colorPrimaryContainer);
+
+        MinuteBackgroundFull = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_fbackground);
+        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFull).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth,colorPrimaryContainer);
+    }
+
+    private void setColors(View view) {
+        TextView NumText = view.findViewById(R.id.ScheduleBusLineNum);
+        NumText.setTextColor(colorOnPrimary);
+
+        View ScheduleBusTimeFirstBar = view.findViewById(R.id.ScheduleBusTimeFirstBar);
+        ((GradientDrawable)ScheduleBusTimeFirstBar.getBackground()).setColor(colorPrimaryContainer);
+
+        View ScheduleBusTimeSecBar = view.findViewById(R.id.ScheduleBusTimeSecBar);
+        ((GradientDrawable)ScheduleBusTimeSecBar.getBackground()).setColor(colorPrimaryContainer);
+
+        TextView ScheduleBusLineDesc = view.findViewById(R.id.ScheduleBusLineDesc);
+        ScheduleBusLineDesc.setTextColor(colorOnPrimaryContainer);
+
+        TextView ScheduleBusLineDate = view.findViewById(R.id.ScheduleBusLineDate);
+        ScheduleBusLineDate.setTextColor(colorOnPrimaryContainer);
     }
 
     private void ShowDatePicker() {
@@ -181,9 +242,9 @@ public class ScheduleBusTimeFragment extends Fragment {
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
 
-        int dp40 = Math.round(TypedValue.applyDimension(
+        int ndp = Math.round(TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
-                40,
+                75,
                 displayMetrics
         ));
 
@@ -195,7 +256,7 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
 
-        ScheduleBusTimeHourAdapter Sbta = new ScheduleBusTimeHourAdapter(Hours, Minutes, (int) Math.floor((float)(width-dp40)/(float) MinuteWidth), getContext());
+        ScheduleBusTimeHourAdapter Sbta = new ScheduleBusTimeHourAdapter(Hours, Minutes, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorPrimary, colorPrimaryContainer, colorOnPrimaryContainer, MinuteBackground, MinuteBackgroundFull, getContext());
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         Recv.setLayoutManager(mLayoutManager);
         Recv.setAdapter(Sbta);

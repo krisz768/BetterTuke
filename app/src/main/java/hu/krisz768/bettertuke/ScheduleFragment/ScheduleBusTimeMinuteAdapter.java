@@ -23,6 +23,9 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
     private int[] Minutes;
     private int MaxPerLine;
     private Context ctx;
+    private int PrimaryColor;
+    private Drawable Background;
+    private Drawable FullBackground;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -34,45 +37,27 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
             MinuteText = view.findViewById(R.id.ScheduleMinuteText);
         }
 
-        public void setData(int Hour, int Minute, boolean Firstrow, Context ctx) {
+        public void setData(int Hour, int Minute, boolean Firstrow, int PrimaryColor, Drawable Background, Drawable FullBackground) {
             MinuteText.setText(String.format("%02d", Minute));
             if (Firstrow) {
-                MinuteText.setBackground(ContextCompat.getDrawable(ctx, R.drawable.bus_schedule_minute_fbackground));
+                MinuteText.setBackground(FullBackground);
             } else {
-                MinuteText.setBackground(ContextCompat.getDrawable(ctx, R.drawable.bus_schedule_minute_background));
+                MinuteText.setBackground(Background);
             }
 
-            TypedValue typedValue = new TypedValue();
-            ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
-            int OutlineColor = ContextCompat.getColor(ctx, typedValue.resourceId);
-
-            ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryContainer, typedValue, true);
-            int PrimaryColor = ContextCompat.getColor(ctx, typedValue.resourceId);
-
-            DisplayMetrics displayMetrics = ctx.getResources().getDisplayMetrics();
-            int StrokeWidth = Math.round(TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP,
-                    2,
-                    displayMetrics
-            ));
-
-            Drawable background = MinuteText.getBackground();
-            LayerDrawable gradientDrawable = (LayerDrawable) background;
-            GradientDrawable gradient = (GradientDrawable) gradientDrawable.findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle);
-            gradient.setStroke(StrokeWidth,PrimaryColor);
-            //gradient.setColor(OutlineColor);
-
-            MinuteText.setTextColor(OutlineColor);
+            MinuteText.setTextColor(PrimaryColor);
 
 
         }
     }
 
-    public ScheduleBusTimeMinuteAdapter(int Hour, int[] Minutes, int MaxPerLine,Context ctx) {
+    public ScheduleBusTimeMinuteAdapter(int Hour, int[] Minutes, int MaxPerLine,int PrimaryColor, Drawable Background, Drawable FullBackground) {
         this.Hour = Hour;
         this.Minutes = Minutes;
         this.MaxPerLine = MaxPerLine;
-        this.ctx = ctx;
+        this.PrimaryColor = PrimaryColor;
+        this.Background = Background;
+        this.FullBackground = FullBackground;
     }
 
     // Create new views (invoked by the layout manager)
@@ -91,7 +76,7 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.setData(Hour, Minutes[position], MaxPerLine > position, ctx);
+        viewHolder.setData(Hour, Minutes[position], MaxPerLine > position, PrimaryColor, Background,FullBackground);
     }
 
     // Return the size of your dataset (invoked by the layout manager)

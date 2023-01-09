@@ -1,28 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ScheduleFragment.ScheduleBusTimeFragment"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/ScheduleBusLineNum"
+    <LinearLayout
+        android:id="@+id/ScheduleBusTimeFirstBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:layout_margin="20dp"
+        android:background="@drawable/bus_schedule_time_title_back"
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/ScheduleBusLineDate"
+        <TextView
+            android:id="@+id/ScheduleBusLineNum"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/schedule_bus_number_background"
+            android:gravity="center"
+            android:text="TextView" />
+
+        <TextView
+            android:id="@+id/ScheduleBusLineDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:text="TextView" />
+
+        <ImageView
+            android:id="@+id/BusLineTimeFavIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:src="@drawable/bus" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ScheduleBusTimeSecBar"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:text="TextView"
-        android:gravity="center"/>
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bus_schedule_time_title_back"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/ScheduleBusLineDate"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="TextView" />
+
+        <ImageView
+            android:id="@+id/BusLineTimeDirectionIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:src="@drawable/bus" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/ScheduleTimeHoursRecView"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"/>
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"/>
 </LinearLayout>

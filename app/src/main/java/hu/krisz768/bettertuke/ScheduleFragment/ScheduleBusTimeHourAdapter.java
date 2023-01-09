@@ -25,6 +25,12 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
     private Context ctx;
     private int MaxPerLine;
 
+    private int PrimaryColor;
+    private int PrimaryContainerColor;
+    private int OnPrimaryContainerColor;
+    private Drawable MinBackground;
+    private Drawable MinFullBackground;
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView HourText;
@@ -37,35 +43,32 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
             Recv = view.findViewById(R.id.ScheduleMinuteRecview);
         }
 
-        public void setData(int Hour, int[] Minutes, int MaxPerLine, Context ctx) {
+        public void setData(int Hour, int[] Minutes, int MaxPerLine, int PrimaryColor, int PrimaryContainerColor, int OnPrimaryContainerColor, Drawable MinBackground, Drawable MinFullBackground, Context ctx) {
             HourText.setText(String.format("%02d", Hour));
 
-            TypedValue typedValue = new TypedValue();
-            ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryContainer, typedValue, true);
-            int OutlineColor = ContextCompat.getColor(ctx, typedValue.resourceId);
-
-            ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimaryContainer, typedValue, true);
-            int SurfaceColor = ContextCompat.getColor(ctx, typedValue.resourceId);
-
-            HourText.setTextColor(SurfaceColor);
+            HourText.setTextColor(OnPrimaryContainerColor);
 
             Drawable background = HourText.getBackground();
-
             GradientDrawable gradientDrawable = (GradientDrawable) background;
-            gradientDrawable.setColor(OutlineColor);
+            gradientDrawable.setColor(PrimaryContainerColor);
 
-            ScheduleBusTimeMinuteAdapter Sbta = new ScheduleBusTimeMinuteAdapter(Hour, Minutes, MaxPerLine, ctx);
+            ScheduleBusTimeMinuteAdapter Sbta = new ScheduleBusTimeMinuteAdapter(Hour, Minutes, MaxPerLine, PrimaryColor, MinBackground, MinFullBackground);
             GridLayoutManager mLayoutManager = new GridLayoutManager(ctx, MaxPerLine);
             Recv.setLayoutManager(mLayoutManager);
             Recv.setAdapter(Sbta);
         }
     }
 
-    public ScheduleBusTimeHourAdapter(int[] Hours, int[][] Minutes, int MaxPerLine, Context ctx) {
+    public ScheduleBusTimeHourAdapter(int[] Hours, int[][] Minutes, int MaxPerLine,int PrimaryColor, int PrimaryContainerColor, int OnPrimaryContainerColor, Drawable MinBackground, Drawable MinFullBackground, Context ctx) {
         this.Hours = Hours;
         this.Minutes = Minutes;
         this.ctx = ctx;
         this.MaxPerLine = MaxPerLine;
+        this.PrimaryColor = PrimaryColor;
+        this.PrimaryContainerColor = PrimaryContainerColor;
+        this.OnPrimaryContainerColor = OnPrimaryContainerColor;
+        this.MinBackground = MinBackground;
+        this.MinFullBackground = MinFullBackground;
     }
 
     // Create new views (invoked by the layout manager)
@@ -84,7 +87,7 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.setData(Hours[position], Minutes[position], MaxPerLine, ctx);
+        viewHolder.setData(Hours[position], Minutes[position], MaxPerLine, PrimaryColor, PrimaryContainerColor, OnPrimaryContainerColor, MinBackground,MinFullBackground, ctx);
     }
 
     // Return the size of your dataset (invoked by the layout manager)
