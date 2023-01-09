@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import hu.krisz768.bettertuke.Database.BusScheduleTime;
+import hu.krisz768.bettertuke.Database.BusVariation;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusListAdapter;
 import hu.krisz768.bettertuke.R;
@@ -47,6 +48,7 @@ public class ScheduleBusTimeFragment extends Fragment {
     private String mLineNum;
 
     private String SelectedDate;
+    private String SelectedWay;
 
     private int colorPrimary;
     private int colorOnPrimary;
@@ -83,6 +85,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         Date date = new Date();
         SelectedDate = formatter.format(date);
+        SelectedWay = "O";
     }
 
     @Override
@@ -94,7 +97,27 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         setColors(view);
 
+        TextView NumText = view.findViewById(R.id.ScheduleBusLineNum);
+        NumText.setText(mLineNum);
+
         TextView SelectedDateText = view.findViewById(R.id.ScheduleBusLineDate);
+        TextView DescText = view.findViewById(R.id.ScheduleBusLineDesc);
+
+        DatabaseManager Dm = new DatabaseManager(getContext());
+        BusVariation[] Variations = Dm.GetBusVariations(mLineNum);
+
+        boolean TwoWay = false;
+
+        boolean IsWayDescTextSetted = false;
+        for (int i = 0; i < Variations.length; i++) {
+            if (Variations[i].getIrany().equals("V")) {
+                TwoWay = true;
+            }
+            if (!IsWayDescTextSetted && SelectedWay.equals(Variations[i].getIrany())) {
+                IsWayDescTextSetted = true;
+                DescText.setText(Variations[i].getNev());
+            }
+        }
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd.");
         Date date = new Date();
@@ -144,10 +167,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                 2,
                 displayMetrics
         ));
-
-
-
-
 
         MinuteBackground = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_background);
         ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth,colorSecContContainer);
@@ -207,12 +226,9 @@ public class ScheduleBusTimeFragment extends Fragment {
     }
 
     private void ReloadSchedules(View view) {
-        TextView NumText = view.findViewById(R.id.ScheduleBusLineNum);
-        NumText.setText(mLineNum);
-
         DatabaseManager Dm = new DatabaseManager(getContext());
 
-        BusScheduleTime[] Jaratok = Dm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, "O");
+        BusScheduleTime[] Jaratok = Dm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
 
         List<Integer> HoursList = new ArrayList<>();
 

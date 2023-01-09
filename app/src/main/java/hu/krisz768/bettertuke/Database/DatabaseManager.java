@@ -1,6 +1,5 @@
 package hu.krisz768.bettertuke.Database;
 
-import android.app.Application;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -219,6 +218,20 @@ public class DatabaseManager {
         cursor.close();
 
         BusScheduleTime[] ret  = new BusScheduleTime[Lines.size()];
+        Lines.toArray(ret);
+        return ret;
+    }
+
+    public BusVariation[] GetBusVariations(String LineNum) {
+        List<BusVariation> Lines = new ArrayList<>();
+
+        Cursor cursor = Sld.rawQuery("SELECT DISTINCT ny.nyomvonal_nev, ny.irany, ny.nyomvonal_kod FROM nyomvonalak ny INNER JOIN jaratok AS j ON ny.id_nyomvonal = j.id_nyomvonal WHERE ny.vonal_nev = \""+ LineNum +"\" ORDER BY ny.nyomvonal_kod, ny.irany;", null);
+        while(cursor.moveToNext()) {
+            Lines.add(new BusVariation(cursor.getString(0), cursor.getString(1),cursor.getString(2)));
+        }
+        cursor.close();
+
+        BusVariation[] ret  = new BusVariation[Lines.size()];
         Lines.toArray(ret);
         return ret;
     }
