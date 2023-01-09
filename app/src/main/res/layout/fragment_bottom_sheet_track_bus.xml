@@ -143,6 +143,12 @@
 
         </LinearLayout>
 
+        <View
+            android:id="@+id/divider6"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/BusTrackFragmentView"
             android:name="hu.krisz768.bettertuke.LoadingFragment"

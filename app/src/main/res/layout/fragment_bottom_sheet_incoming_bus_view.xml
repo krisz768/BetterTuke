@@ -23,7 +23,15 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/BusStopListRecView"
             android:layout_width="match_parent"
-            android:layout_height="50dp" />
+            android:layout_height="50dp" >
+
+        </androidx.recyclerview.widget.RecyclerView>
+
+        <View
+            android:id="@+id/divider5"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/BusListFragment"
