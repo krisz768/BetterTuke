@@ -211,9 +211,9 @@ public class DatabaseManager {
     public BusScheduleTime[] GetBusScheduleTimeFromStart(String LineNum, String date, String Direction) {
         List<BusScheduleTime> Lines = new ArrayList<>();
 
-        Cursor cursor = Sld.rawQuery("SELECT j.indulas_ora, j.indulas_perc, ny.nyomvonal_kod FROM jaratok j INNER JOIN nyomvonalak as ny ON j.id_nyomvonal = ny.id_nyomvonal INNER JOIN naptar AS n ON j.id_jarat = n.id_jarat WHERE ny.vonal_nev = \"" + LineNum + "\" AND ny.irany = \"" + Direction + "\" AND n.datum = \"" + date + "\" ORDER BY j.indulas_ora,j.indulas_perc;", null);
+        Cursor cursor = Sld.rawQuery("SELECT j.indulas_ora, j.indulas_perc, ny.nyomvonal_kod, j.id_jarat FROM jaratok j INNER JOIN nyomvonalak as ny ON j.id_nyomvonal = ny.id_nyomvonal INNER JOIN naptar AS n ON j.id_jarat = n.id_jarat WHERE ny.vonal_nev = \"" + LineNum + "\" AND ny.irany = \"" + Direction + "\" AND n.datum = \"" + date + "\" ORDER BY j.indulas_ora,j.indulas_perc;", null);
         while(cursor.moveToNext()) {
-            Lines.add(new BusScheduleTime(cursor.getInt(0), cursor.getInt(1),cursor.getString(2)));
+            Lines.add(new BusScheduleTime(cursor.getInt(0), cursor.getInt(1),cursor.getString(2), cursor.getInt(3)));
         }
         cursor.close();
 
@@ -234,6 +234,18 @@ public class DatabaseManager {
         BusVariation[] ret  = new BusVariation[Lines.size()];
         Lines.toArray(ret);
         return ret;
+    }
+
+    public int GetBusJaratSumMenetidoById(String JaratId) {
+        int Menetido = 0;
+
+        Cursor cursor = Sld.rawQuery("SELECT ny.osszegzett_menetido FROM nyomvonal_tetelek ny INNER JOIN jaratok as j ON j.id_menetido = ny.id_menetido WHERE j.id_jarat = \"" + JaratId + "\" ORDER BY ny.sorrend DESC LIMIT 1;", null);
+        while(cursor.moveToNext()) {
+            Menetido = cursor.getInt(0);
+        }
+        cursor.close();
+
+        return Menetido;
     }
 
     private void log (String msg) {

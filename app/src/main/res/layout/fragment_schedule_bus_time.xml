@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -36,8 +37,9 @@
         <ImageView
             android:id="@+id/BusLineTimeFavIcon"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="0"
+            android:padding="2dp"
             android:src="@drawable/bus" />
     </LinearLayout>
 
@@ -62,8 +64,9 @@
         <ImageView
             android:id="@+id/BusLineTimeDirectionIcon"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="0"
+            android:padding="2dp"
             android:src="@drawable/bus" />
 
     </LinearLayout>
@@ -106,11 +109,22 @@
         android:layout_marginRight="20dp"
         android:background="?android:attr/listDivider" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/ScheduleTimeHoursRecView"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/swiperefresh"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
         android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"/>
+        android:layout_marginRight="20dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/ScheduleTimeHoursRecView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+
 
 </LinearLayout>

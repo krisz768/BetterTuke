@@ -30,7 +30,7 @@ import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class HelperProvider {
 
-    private static Bitmap[] BitmapContainer = new Bitmap[21];
+    private static Bitmap[] BitmapContainer = new Bitmap[26];
     private static JSONObject BusAttributes;
 
     public static void RenderAllBitmap(Context ctx) {
@@ -60,6 +60,12 @@ public class HelperProvider {
         BitmapContainer[18] = HelperProvider.BitmapFromVector(R.drawable.airconditioner,com.google.android.material.R.attr.colorPrimary,ctx,false);
         BitmapContainer[19] = HelperProvider.BitmapFromVector(R.drawable.wifi,com.google.android.material.R.attr.colorPrimary,ctx,false);
         BitmapContainer[20] = HelperProvider.BitmapFromVector(R.drawable.usb,com.google.android.material.R.attr.colorPrimary,ctx,false);
+
+        BitmapContainer[21] = HelperProvider.BitmapFromVector(R.drawable.favicon_01,com.google.android.material.R.attr.colorOutline,ctx,false);
+        BitmapContainer[22] = HelperProvider.BitmapFromVector(R.drawable.favicon_full_01,com.google.android.material.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[23] = overlay(HelperProvider.BitmapFromVector(R.drawable.directionforwardarrow_01,com.google.android.material.R.attr.colorPrimary,ctx,false),HelperProvider.BitmapFromVector(R.drawable.directionbackwardsarrow_01,com.google.android.material.R.attr.colorOutline,ctx,false));
+        BitmapContainer[24] = overlay(HelperProvider.BitmapFromVector(R.drawable.directionforwardarrow_01,com.google.android.material.R.attr.colorOutline,ctx,false),HelperProvider.BitmapFromVector(R.drawable.directionbackwardsarrow_01,com.google.android.material.R.attr.colorPrimary,ctx,false));
+        BitmapContainer[25] = HelperProvider.BitmapFromVector(R.drawable.direction1wayarrow,com.google.android.material.R.attr.colorPrimary,ctx,false);
     }
 
     public static Bitmap getBitmap(Bitmaps bitmap) {
@@ -106,6 +112,16 @@ public class HelperProvider {
                 return BitmapContainer[19];
             case Usb:
                 return BitmapContainer[20];
+            case FaviconOff:
+                return BitmapContainer[21];
+            case FaviconOn:
+                return BitmapContainer[22];
+            case DirectionForward:
+                return BitmapContainer[23];
+            case DirectionBackwards:
+                return BitmapContainer[24];
+            case DirectionOneWay:
+                return BitmapContainer[25];
         }
         return null;
     }
@@ -131,7 +147,12 @@ public class HelperProvider {
         Lowfloor,
         Airconditioner,
         Wifi,
-        Usb
+        Usb,
+        FaviconOff,
+        FaviconOn,
+        DirectionForward,
+        DirectionBackwards,
+        DirectionOneWay
     }
 
     private static Bitmap overlay(Bitmap bmp1, Bitmap bmp2) {
