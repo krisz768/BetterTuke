@@ -497,7 +497,7 @@ public class ScheduleBusTimeFragment extends Fragment {
 
                             calendar.add(Calendar.MINUTE, MenetidoMin-2);
 
-                            if (calendar.after(Now) && (Jaratok[i].getOra() == CurrentHour && CurrentMinute > Jaratok[i].getPerc())) {
+                            if (calendar.after(Now) && ((Jaratok[i].getOra() == CurrentHour && CurrentMinute > Jaratok[i].getPerc()) || Jaratok[i].getOra() + 1 == CurrentHour || Jaratok[i].getOra() + 2 == CurrentHour)) {
                                 ErrNotStartedList.add(Jaratok[i]);
                             }
                         }
