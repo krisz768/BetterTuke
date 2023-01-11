@@ -9,10 +9,19 @@
     <TextView
         android:id="@+id/textView3"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="20dp"
         android:gravity="center"
         android:text="@string/Schedule"
         android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/ScheduleTargetText"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:text="Összes járat" />
 
     <View
         android:id="@+id/divider7"

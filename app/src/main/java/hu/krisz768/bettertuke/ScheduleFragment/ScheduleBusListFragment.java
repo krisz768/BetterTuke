@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
@@ -17,18 +18,28 @@ import hu.krisz768.bettertuke.ScheduleActivity;
 
 public class ScheduleBusListFragment extends Fragment {
 
+    private static final String STOPID= "StopId";
+
+    private int mStopId;
+
     public ScheduleBusListFragment() {
         // Required empty public constructor
     }
 
-    public static ScheduleBusListFragment newInstance() {
+    public static ScheduleBusListFragment newInstance(int StopId) {
         ScheduleBusListFragment fragment = new ScheduleBusListFragment();
+        Bundle args = new Bundle();
+        args.putInt(STOPID, StopId);
+        fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mStopId = getArguments().getInt(STOPID);
+        }
     }
 
     @Override
@@ -37,7 +48,16 @@ public class ScheduleBusListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_schedule_bus_list, container, false);
 
         DatabaseManager Dm = new DatabaseManager(getContext());
-        BusLine[] BusLines = Dm.GetActiveBusLines();
+        BusLine[] BusLines;
+        if (mStopId == -1) {
+            BusLines = Dm.GetActiveBusLines();
+        } else{
+            BusLines = Dm.GetActiveBusLinesFromStop(mStopId);
+            String StopName = Dm.GetStopName(mStopId);
+            String StopNum = Dm.GetStopNum(mStopId);
+
+            ((TextView)view.findViewById(R.id.ScheduleTargetText)).setText(StopName.trim() + " (" + StopNum + ")");
+        }
 
         ScheduleBusListAdapter Sbla = new ScheduleBusListAdapter(BusLines, getContext(), this);
 

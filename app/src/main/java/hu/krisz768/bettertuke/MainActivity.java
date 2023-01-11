@@ -1,5 +1,9 @@
 package hu.krisz768.bettertuke;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -9,11 +13,13 @@ import androidx.fragment.app.FragmentContainerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -99,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.ShowScheduleButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                OnShowScheduleClick();
+                OnShowScheduleClick(-1);
             }
         });
 
@@ -580,6 +586,11 @@ public class MainActivity extends AppCompatActivity {
         AddBackStack();
         CurrentBusTrack = Id;
         busJarat = BusJaratok.BusJaratokByJaratid(Id, this);
+        if (BusMarker != null) {
+            BusMarker.remove();
+            BusMarker = null;
+        }
+
         MarkerRenderer();
         ShowBottomSheetTrackBus();
     }
@@ -708,6 +719,11 @@ public class MainActivity extends AppCompatActivity {
 
         backStack.remove(backStack.size()-1);
 
+        if (BusMarker != null) {
+            BusMarker.remove();
+            BusMarker = null;
+        }
+
         switch (DetermineMode()) {
             case IncBus:
                 ShowBottomSheetIncommingBuses();
@@ -742,8 +758,20 @@ public class MainActivity extends AppCompatActivity {
         backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busJarat));
     }
 
-    private void OnShowScheduleClick() {
+    public void OnShowScheduleClick(int StopId) {
         Intent scheduleIntent = new Intent(this, ScheduleActivity.class);
-        startActivity(scheduleIntent);
+        scheduleIntent.putExtra("StopId", StopId);
+        scheduleResultLaunch.launch(scheduleIntent);
     }
+
+    ActivityResultLauncher<Intent> scheduleResultLaunch = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        TrackBus(result.getData().getExtras().getInt("ScheduleId"));
+                    }
+                }
+    });
 }

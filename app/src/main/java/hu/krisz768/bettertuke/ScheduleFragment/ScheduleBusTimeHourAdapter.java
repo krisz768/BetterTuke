@@ -40,6 +40,8 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
     private BusScheduleTime[] Started;
     private BusScheduleTime[] ErrNotStarted;
 
+    private ScheduleBusTimeFragment Callback;
+
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -53,7 +55,7 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
             Recv = view.findViewById(R.id.ScheduleMinuteRecview);
         }
 
-        public void setData(int Hour, int[] Minutes, int MaxPerLine, int SecColor, int SecContainerColor, int OnSecContainerColor, int OnPrimColor, int OnErrColor, Drawable MinBackground, Drawable MinFullBackground, Drawable MinBackgroundStarted, Drawable MinFullBackgroundStarted, Drawable MinBackgroundErr, Drawable MinFullBackgroundErr,BusScheduleTime[] Started,BusScheduleTime[] ErrNotStarted, Context ctx) {
+        public void setData(int Hour, int[] Minutes, int MaxPerLine, int SecColor, int SecContainerColor, int OnSecContainerColor, int OnPrimColor, int OnErrColor, Drawable MinBackground, Drawable MinFullBackground, Drawable MinBackgroundStarted, Drawable MinFullBackgroundStarted, Drawable MinBackgroundErr, Drawable MinFullBackgroundErr,BusScheduleTime[] Started,BusScheduleTime[] ErrNotStarted, Context ctx, ScheduleBusTimeFragment Callback) {
             HourText.setText(String.format("%02d", Hour));
 
             HourText.setTextColor(OnSecContainerColor);
@@ -62,14 +64,14 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
             GradientDrawable gradientDrawable = (GradientDrawable) background;
             gradientDrawable.setColor(SecContainerColor);
 
-            ScheduleBusTimeMinuteAdapter Sbta = new ScheduleBusTimeMinuteAdapter(Hour, Minutes, MaxPerLine, SecColor, OnPrimColor, OnErrColor, MinBackground, MinFullBackground, MinBackgroundStarted, MinFullBackgroundStarted, MinBackgroundErr, MinFullBackgroundErr, Started, ErrNotStarted);
+            ScheduleBusTimeMinuteAdapter Sbta = new ScheduleBusTimeMinuteAdapter(Hour, Minutes, MaxPerLine, SecColor, OnPrimColor, OnErrColor, MinBackground, MinFullBackground, MinBackgroundStarted, MinFullBackgroundStarted, MinBackgroundErr, MinFullBackgroundErr, Started, ErrNotStarted, Callback);
             GridLayoutManager mLayoutManager = new GridLayoutManager(ctx, MaxPerLine);
             Recv.setLayoutManager(mLayoutManager);
             Recv.setAdapter(Sbta);
         }
     }
 
-    public ScheduleBusTimeHourAdapter(int[] Hours, int[][] Minutes, int MaxPerLine, int SecColor, int SecContainerColor, int OnSecContainerColor, int OnPrimColor, int OnErrColor, Drawable MinBackground, Drawable MinFullBackground, Drawable MinBackgroundStarted, Drawable MinFullBackgroundStarted, Drawable MinBackgroundErr, Drawable MinFullBackgroundErr, Context ctx) {
+    public ScheduleBusTimeHourAdapter(int[] Hours, int[][] Minutes, int MaxPerLine, int SecColor, int SecContainerColor, int OnSecContainerColor, int OnPrimColor, int OnErrColor, Drawable MinBackground, Drawable MinFullBackground, Drawable MinBackgroundStarted, Drawable MinFullBackgroundStarted, Drawable MinBackgroundErr, Drawable MinFullBackgroundErr, Context ctx, ScheduleBusTimeFragment Callback) {
         this.Hours = Hours;
         this.Minutes = Minutes;
         this.ctx = ctx;
@@ -88,6 +90,8 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
 
         Started = new BusScheduleTime[0];
         ErrNotStarted =new BusScheduleTime[0];
+
+        this.Callback = Callback;
     }
 
     public void UpdateData(int[] Hours, int[][] Minutes) {
@@ -119,7 +123,7 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.setData(Hours[position], Minutes[position], MaxPerLine, SecColor, SecContainerColor, OnSecContainerColor, OnPrimColor, OnErrColor, MinBackground,MinFullBackground, MinBackgroundStarted, MinFullBackgroundStarted, MinBackgroundErr, MinFullBackgroundErr, Started, ErrNotStarted, ctx);
+        viewHolder.setData(Hours[position], Minutes[position], MaxPerLine, SecColor, SecContainerColor, OnSecContainerColor, OnPrimColor, OnErrColor, MinBackground,MinFullBackground, MinBackgroundStarted, MinFullBackgroundStarted, MinBackgroundErr, MinFullBackgroundErr, Started, ErrNotStarted, ctx, Callback);
     }
 
     // Return the size of your dataset (invoked by the layout manager)

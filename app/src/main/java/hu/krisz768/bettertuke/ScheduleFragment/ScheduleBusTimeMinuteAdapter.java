@@ -43,6 +43,8 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
     private Drawable MinBackgroundErr;
     private Drawable MinFullBackgroundErr;
 
+    private ScheduleBusTimeFragment Callback;
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView MinuteText;
@@ -53,7 +55,7 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
             MinuteText = view.findViewById(R.id.ScheduleMinuteText);
         }
 
-        public void setData(int Hour, int Minute, boolean Firstrow, int SecColor, int OnPrimColor, int OnErrColor, Drawable Background, Drawable FullBackground, Drawable MinBackgroundStarted, Drawable MinFullBackgroundStarted, Drawable MinBackgroundErr, Drawable MinFullBackgroundErr,BusScheduleTime[] Started,BusScheduleTime[] ErrNotStarted) {
+        public void setData(int Hour, int Minute, boolean Firstrow, int SecColor, int OnPrimColor, int OnErrColor, Drawable Background, Drawable FullBackground, Drawable MinBackgroundStarted, Drawable MinFullBackgroundStarted, Drawable MinBackgroundErr, Drawable MinFullBackgroundErr,BusScheduleTime[] Started,BusScheduleTime[] ErrNotStarted, ScheduleBusTimeFragment Callback) {
             MinuteText.setText(String.format("%02d", Minute));
 
             boolean IsStarted = false;
@@ -94,10 +96,17 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
                 MinuteText.setTextColor(SecColor);
             }
 
+            MinuteText.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Callback.OnScheduleClick(Hour, Minute);
+                }
+            });
+
         }
     }
 
-    public ScheduleBusTimeMinuteAdapter(int Hour, int[] Minutes,int MaxPerLine,int SecColor, int OnPrimColor, int OnErrColor, Drawable Background, Drawable FullBackground, Drawable MinBackgroundStarted, Drawable MinFullBackgroundStarted, Drawable MinBackgroundErr, Drawable MinFullBackgroundErr,BusScheduleTime[] Started,BusScheduleTime[] ErrNotStarted) {
+    public ScheduleBusTimeMinuteAdapter(int Hour, int[] Minutes,int MaxPerLine,int SecColor, int OnPrimColor, int OnErrColor, Drawable Background, Drawable FullBackground, Drawable MinBackgroundStarted, Drawable MinFullBackgroundStarted, Drawable MinBackgroundErr, Drawable MinFullBackgroundErr,BusScheduleTime[] Started,BusScheduleTime[] ErrNotStarted, ScheduleBusTimeFragment Callback) {
         this.Hour = Hour;
         this.Minutes = Minutes;
         this.MaxPerLine = MaxPerLine;
@@ -113,6 +122,8 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
         this.MinFullBackgroundStarted = MinFullBackgroundStarted;
         this.MinBackgroundErr = MinBackgroundErr;
         this.MinFullBackgroundErr = MinFullBackgroundErr;
+
+        this.Callback = Callback;
     }
 
     // Create new views (invoked by the layout manager)
@@ -131,7 +142,7 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.setData(Hour, Minutes[position], MaxPerLine > position, SecColor, OnPrimColor, OnErrColor, Background,FullBackground, MinBackgroundStarted, MinFullBackgroundStarted, MinBackgroundErr, MinFullBackgroundErr,Started, ErrNotStarted);
+        viewHolder.setData(Hour, Minutes[position], MaxPerLine > position, SecColor, OnPrimColor, OnErrColor, Background,FullBackground, MinBackgroundStarted, MinFullBackgroundStarted, MinBackgroundErr, MinFullBackgroundErr,Started, ErrNotStarted, Callback);
     }
 
     // Return the size of your dataset (invoked by the layout manager)

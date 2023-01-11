@@ -37,6 +37,7 @@ import hu.krisz768.bettertuke.Database.BusVariation;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.R;
+import hu.krisz768.bettertuke.ScheduleActivity;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
 /**
@@ -47,8 +48,11 @@ import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 public class ScheduleBusTimeFragment extends Fragment {
 
     private static final String LINENUM= "lineNum";
+    private static final String STOPID= "StopId";
+
 
     private String mLineNum;
+    private int mStopId;
 
     private String SelectedDate;
     private String SelectedWay;
@@ -82,10 +86,11 @@ public class ScheduleBusTimeFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static ScheduleBusTimeFragment newInstance(String lineNum) {
+    public static ScheduleBusTimeFragment newInstance(String lineNum, int StopId) {
         ScheduleBusTimeFragment fragment = new ScheduleBusTimeFragment();
         Bundle args = new Bundle();
         args.putString(LINENUM, lineNum);
+        args.putInt(STOPID, StopId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -95,6 +100,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mLineNum = getArguments().getString(LINENUM);
+            mStopId = getArguments().getInt(STOPID);
         }
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -119,12 +125,20 @@ public class ScheduleBusTimeFragment extends Fragment {
         TextView DescText = view.findViewById(R.id.ScheduleBusLineDesc);
 
         DatabaseManager Dm = new DatabaseManager(getContext());
-        BusVariation[] Variations = Dm.GetBusVariations(mLineNum);
+        BusVariation[] Variations;
+
+        ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
+
+        if (mStopId == -1) {
+            Variations = Dm.GetBusVariations(mLineNum);
+        } else {
+            Variations = Dm.GetBusVariationsFromStop(mLineNum, mStopId);
+        }
 
         boolean IsForwWayDescTextSetted = false;
         boolean IsBackwWayDescTextSetted = false;
         for (int i = 0; i < Variations.length; i++) {
-            if (Variations[i].getIrany().equals("V")) {
+            if (Variations[i].getIrany().equals("V") && Variations.length > 1) {
                 TwoWay = true;
             }
             if (!IsForwWayDescTextSetted && SelectedWay.equals(Variations[i].getIrany())) {
@@ -136,6 +150,15 @@ public class ScheduleBusTimeFragment extends Fragment {
                 IsBackwWayDescTextSetted = true;
                 WayDescStringbackw = Variations[i].getNev();
             }
+        }
+
+        if (!IsForwWayDescTextSetted && IsBackwWayDescTextSetted) {
+            DescText.setText(WayDescStringbackw);
+            SelectedWay = "V";
+        }
+
+        if (mStopId != -1 && !TwoWay) {
+            BusLineTimeDirectionIcon.setVisibility(View.GONE);
         }
 
         ImageView BusLineTimeFavIcon = view.findViewById(R.id.BusLineTimeFavIcon);
@@ -152,7 +175,7 @@ public class ScheduleBusTimeFragment extends Fragment {
             }
         });
 
-        ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
+
         BusLineTimeDirectionIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -348,7 +371,21 @@ public class ScheduleBusTimeFragment extends Fragment {
         }
 
 
-        CurrentJaratok = Dm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
+
+
+        if (mStopId == -1) {
+            CurrentJaratok = Dm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
+        } else {
+            CurrentJaratok = Dm.GetBusScheduleTimeFromStop(mLineNum, SelectedDate, SelectedWay, mStopId);
+
+
+
+            for (int i = 0; i < CurrentJaratok.length; i++) {
+                int StopDelta = Dm.GetBusJaratStopMenetidoById(Integer.toString(CurrentJaratok[i].getJaratId()), mStopId);
+                CurrentJaratok[i].AdjustToStop(StopDelta);
+            }
+        }
+
 
         List<Integer> HoursList = new ArrayList<>();
 
@@ -418,7 +455,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         Calendar Now = Calendar.getInstance();
 
         if (Sbta == null) {
-            Sbta = new ScheduleBusTimeHourAdapter(CurrentHours, CurrentMinutes, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorSec, colorSecContainer, colorOnSecContainer, colorOnPrimary, colorOnError, MinuteBackground, MinuteBackgroundFull, MinuteBackgroundStarted, MinuteBackgroundFullStarted, MinuteBackgroundErr, MinuteBackgroundFullErr, getContext());
+            Sbta = new ScheduleBusTimeHourAdapter(CurrentHours, CurrentMinutes, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorSec, colorSecContainer, colorOnSecContainer, colorOnPrimary, colorOnError, MinuteBackground, MinuteBackgroundFull, MinuteBackgroundStarted, MinuteBackgroundFullStarted, MinuteBackgroundErr, MinuteBackgroundFullErr, getContext(), this);
             RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
             Recv.setLayoutManager(mLayoutManager);
             Recv.setAdapter(Sbta);
@@ -478,27 +515,59 @@ public class ScheduleBusTimeFragment extends Fragment {
 
 
                 for (int i = 0; i < Jaratok.length; i++) {
-                    if ((Jaratok[i].getOra() == CurrentHour && CurrentMinute >= Jaratok[i].getPerc()) || Jaratok[i].getOra() + 1 == CurrentHour || Jaratok[i].getOra() + 2 == CurrentHour) {
-                        TukeServerApi tukeServerApi = new TukeServerApi(ctx);
-                        boolean IsStarted = tukeServerApi.getIsBusHasStarted(Jaratok[i].getJaratId());
+                    if (mStopId == -1) {
+                        if ((Jaratok[i].getOra() == CurrentHour && CurrentMinute >= Jaratok[i].getPerc()) || Jaratok[i].getOra() + 1 == CurrentHour || Jaratok[i].getOra() + 2 == CurrentHour) {
+                            TukeServerApi tukeServerApi = new TukeServerApi(ctx);
+                            boolean IsStarted = tukeServerApi.getIsBusHasStarted(Jaratok[i].getJaratId());
 
-                        if (IsStarted) {
-                            StartedList.add(Jaratok[i]);
-                        } else {
-                            DatabaseManager Dm = new DatabaseManager(ctx);
-                            int MenetidoMin = Dm.GetBusJaratSumMenetidoById(Integer.toString(Jaratok[i].getJaratId()));
+                            if (IsStarted) {
+                                StartedList.add(Jaratok[i]);
+                            } else {
+                                DatabaseManager Dm = new DatabaseManager(ctx);
+                                int MenetidoMin = Dm.GetBusJaratSumMenetidoById(Integer.toString(Jaratok[i].getJaratId()));
 
 
+
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.setTime(new Date());
+                                calendar.set(Calendar.HOUR_OF_DAY, Jaratok[i].getOra());
+                                calendar.set(Calendar.MINUTE, Jaratok[i].getPerc());
+
+                                calendar.add(Calendar.MINUTE, MenetidoMin-2);
+
+                                if (calendar.after(Now) && ((Jaratok[i].getOra() == CurrentHour && CurrentMinute > Jaratok[i].getPerc()) || Jaratok[i].getOra() + 1 == CurrentHour || Jaratok[i].getOra() + 2 == CurrentHour)) {
+                                    ErrNotStartedList.add(Jaratok[i]);
+                                }
+                            }
+                        }
+                    } else {
+                        if (Jaratok[i].getOra() == CurrentHour || Jaratok[i].getOra() + 1 == CurrentHour || Jaratok[i].getOra() -1 == CurrentHour) {
+                            TukeServerApi tukeServerApi = new TukeServerApi(ctx);
+                            boolean IsStarted = tukeServerApi.getIsBusHasStarted(Jaratok[i].getJaratId());
 
                             Calendar calendar = Calendar.getInstance();
                             calendar.setTime(new Date());
                             calendar.set(Calendar.HOUR_OF_DAY, Jaratok[i].getOra());
                             calendar.set(Calendar.MINUTE, Jaratok[i].getPerc());
 
-                            calendar.add(Calendar.MINUTE, MenetidoMin-2);
+                            DatabaseManager Dm = new DatabaseManager(ctx);
+                            int StopDelta = Dm.GetBusJaratStopMenetidoById(Integer.toString(Jaratok[i].getJaratId()), mStopId);
+                            calendar.add(Calendar.MINUTE, StopDelta*-1);
 
-                            if (calendar.after(Now) && ((Jaratok[i].getOra() == CurrentHour && CurrentMinute > Jaratok[i].getPerc()) || Jaratok[i].getOra() + 1 == CurrentHour || Jaratok[i].getOra() + 2 == CurrentHour)) {
-                                ErrNotStartedList.add(Jaratok[i]);
+                            if (IsStarted) {
+                                if (((calendar.get(Calendar.HOUR_OF_DAY) == CurrentHour && CurrentMinute >= calendar.get(Calendar.MINUTE) || calendar.get(Calendar.HOUR_OF_DAY) + 1 == CurrentHour || calendar.get(Calendar.HOUR_OF_DAY) + 2 == CurrentHour))) {
+                                    StartedList.add(Jaratok[i]);
+                                }
+                            } else {
+
+                                int MenetidoMin = Dm.GetBusJaratSumMenetidoById(Integer.toString(Jaratok[i].getJaratId()));
+
+                                Calendar calendar1 = (Calendar) calendar.clone();
+                                calendar1.add(Calendar.MINUTE, MenetidoMin-2);
+
+                                if (calendar1.after(Now) && ((calendar.get(Calendar.HOUR_OF_DAY) == CurrentHour && CurrentMinute > calendar.get(Calendar.MINUTE) || calendar.get(Calendar.HOUR_OF_DAY) + 1 == CurrentHour || calendar.get(Calendar.HOUR_OF_DAY) + 2 == CurrentHour))) {
+                                    ErrNotStartedList.add(Jaratok[i]);
+                                }
                             }
                         }
                     }
@@ -520,5 +589,14 @@ public class ScheduleBusTimeFragment extends Fragment {
                 }
             }
         }).start();
+    }
+
+    public void OnScheduleClick(int Hour, int Minute) {
+        for (int i = 0; i < CurrentJaratok.length; i++) {
+            if (CurrentJaratok[i].getOra() == Hour && CurrentJaratok[i].getPerc() == Minute) {
+                ((ScheduleActivity)getActivity()).OnSelectedSchedule(CurrentJaratok[i].getJaratId());
+                return;
+            }
+        }
     }
 }
