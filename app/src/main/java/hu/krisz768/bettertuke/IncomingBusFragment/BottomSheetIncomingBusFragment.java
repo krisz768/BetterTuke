@@ -51,14 +51,13 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private static final String STOPLIST = "StopList";
 
     private int mPlace;
-    private int mStop;
+    private volatile int mStop;
     private BusPlaces[] mPlaceList;
     private BusStops[] mStopList;
 
     private IncomingBusStopSelectorAdapter Ibssa;
     private IncomingBusListFragment InBusFragment;
     private Thread UpdateThread;
-    private boolean NewStop = false;
     private volatile boolean UpdateThreadRun = true;
 
     public BottomSheetIncomingBusFragment() {
@@ -165,7 +164,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
     public void OnStopClick(int Id) {
         ((MainActivity)getActivity()).ChangeStop(Id);
-        NewStop = true;
         mStop = Id;
         Ibssa.setSelectedStop(mStop);
         Ibssa.notifyDataSetChanged();
@@ -175,7 +173,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             @Override
             public void run() {
                 TukeServerApi serverApi = new TukeServerApi(getActivity());
-                GetIncommingBuses(serverApi, false);
+                GetIncommingBuses(serverApi);
             }
         }).start();
 
@@ -199,7 +197,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                         Thread.sleep(1000);
                         continue;
                     }
-                    GetIncommingBuses(serverApi, true);
+                    GetIncommingBuses(serverApi);
 
                     for (int i = 0; i < 20; i++) {
                         Thread.sleep(500);
@@ -212,15 +210,11 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
     }
 
-    private void GetIncommingBuses(TukeServerApi serverApi, boolean IsFromLoop) {
+    private void GetIncommingBuses(TukeServerApi serverApi) {
         try {
+            final int SendStopid = mStop;
             Log.i("Update", "Updating List");
             IncommingBusRespModel[] BusList = serverApi.getNextIncommingBuses(mStop);
-            if (NewStop && IsFromLoop) {
-                NewStop = false;
-                GetIncommingBuses(serverApi, true);
-                return;
-            }
 
             Date currentTime = Calendar.getInstance().getTime();
             SimpleDateFormat Sdf = new SimpleDateFormat("H", Locale.US);
@@ -235,6 +229,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                     BusList[i].setElindult(false);
                 }
 
+            }
+
+            if(SendStopid != mStop) {
+                return;
             }
 
             if (BusList.length > 0) {
