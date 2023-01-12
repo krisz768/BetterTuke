@@ -49,7 +49,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="10dp"
         android:background="@drawable/bus_schedule_time_title_back"
         android:orientation="horizontal">
 
@@ -70,6 +70,15 @@
             android:src="@drawable/bus" />
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/StartPosText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="6dp"
+        android:layout_weight="0"
+        android:text="TextView" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -97,8 +106,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:layout_weight="1"
+            android:layout_weight="0"
             android:text="Perc:" />
+
     </LinearLayout>
 
     <View
@@ -110,7 +120,6 @@
         android:background="?android:attr/listDivider" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/swiperefresh"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
@@ -120,11 +129,16 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/ScheduleTimeHoursRecView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
+            android:layout_height="wrap_content" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/ScheduleTimeFragmentContainer"
+        android:name="hu.krisz768.bettertuke.LoadingFragment"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        tools:layout="@layout/fragment_loading" />
 
 
 </LinearLayout>

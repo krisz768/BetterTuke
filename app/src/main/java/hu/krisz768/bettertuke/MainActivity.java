@@ -51,7 +51,9 @@ import com.google.android.gms.tasks.OnTokenCanceledListener;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import hu.krisz768.bettertuke.Database.BusJaratok;
@@ -582,10 +584,18 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    public void TrackBus(int Id) {
+    public void TrackBus(int Id, String Date) {
         AddBackStack();
         CurrentBusTrack = Id;
         busJarat = BusJaratok.BusJaratokByJaratid(Id, this);
+        if (Date != null) {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            java.util.Date date = new Date();
+            if (!Date.equals(formatter.format(date))) {
+                busJarat.setDate(Date);
+            }
+        }
+
         if (BusMarker != null) {
             BusMarker.remove();
             BusMarker = null;
@@ -770,7 +780,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == Activity.RESULT_OK) {
-                        TrackBus(result.getData().getExtras().getInt("ScheduleId"));
+                        TrackBus(result.getData().getExtras().getInt("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
                     }
                 }
     });

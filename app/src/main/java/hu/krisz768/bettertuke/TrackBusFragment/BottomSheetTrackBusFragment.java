@@ -15,6 +15,8 @@ import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.Date;
+
 import hu.krisz768.bettertuke.Database.BusJaratok;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
@@ -103,7 +105,15 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
         findBusAttributes(view);
 
-        StartUpdateThread(view);
+        if (mBusJarat.getDate() == null) {
+            StartUpdateThread(view);
+        } else {
+            TrackBusFragment = TrackBusListFragment.newInstance(mBusJarat, mPlace, mStop, mPlaceList, mStopList, null);
+            getChildFragmentManager().beginTransaction()
+                    .replace(R.id.BusTrackFragmentView, TrackBusFragment)
+                    .commit();
+        }
+
 
         return view;
     }

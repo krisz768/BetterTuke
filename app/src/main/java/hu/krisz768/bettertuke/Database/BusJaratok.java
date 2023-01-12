@@ -14,6 +14,7 @@ public class BusJaratok implements Serializable {
     private String Kozlekedesi_jel_id;
     private JaratInfoNyomvonal[] Nyomvonal;
     private JaratInfoNyomvonalInfo NyomvonalInfo;
+    private String Date;
 
     public JaratInfoNyomvonalInfo getNyomvonalInfo() {
         return NyomvonalInfo;
@@ -62,5 +63,13 @@ public class BusJaratok implements Serializable {
         DatabaseManager Dm = new DatabaseManager(ctx);
 
         return Dm.GetBusJaratById(Id);
+    }
+
+    public String getDate() {
+        return Date;
+    }
+
+    public void setDate(String date) {
+        Date = date;
     }
 }

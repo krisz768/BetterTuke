@@ -90,7 +90,7 @@ public class TrackBusListFragment extends Fragment {
         Calendar calendar = Calendar.getInstance();
         calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), mJarat.getIndulasOra(), mJarat.getIndulasPerc());
 
-        Tbla = new TrackBusListAdapter(mJarat.getMegallok(), mPlaceList, mStopList, calendar, mBusPosition, mStop, this, getContext());
+        Tbla = new TrackBusListAdapter(mJarat.getMegallok(), mPlaceList, mStopList, calendar, mBusPosition, mStop, this, getContext(), mJarat.getDate());
 
         Recv = view.findViewById(R.id.BusTrackListRecv);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());

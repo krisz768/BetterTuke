@@ -15,4 +15,5 @@
     <string name="EmptyList">Ebből a megállóból a közeljövőben nem indul járat.</string>
     <string name="GPSLoad">GPS pozició lekérése...</string>
     <string name="Schedule">Menetrend</string>
+    <string name="EmptySchedule">Ma ez a járat, ebbe az irányba vagy megállóba nem közlekedik.</string>
 </resources>

@@ -73,6 +73,6 @@ public class IncomingBusListFragment extends Fragment {
     }
 
     public void OnBusClick(int Id) {
-        ((MainActivity)getActivity()).TrackBus(Id);
+        ((MainActivity)getActivity()).TrackBus(Id, null);
     }
 }

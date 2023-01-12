@@ -53,9 +53,10 @@ public class ScheduleActivity extends AppCompatActivity {
                 .commit();
     }
 
-    public void OnSelectedSchedule(int ScheduleId) {
+    public void OnSelectedSchedule(int ScheduleId, String Date) {
         Intent returnIntent = new Intent();
         returnIntent.putExtra("ScheduleId",ScheduleId);
+        returnIntent.putExtra("ScheduleDate",Date);
         setResult(Activity.RESULT_OK,returnIntent);
         finish();
     }
