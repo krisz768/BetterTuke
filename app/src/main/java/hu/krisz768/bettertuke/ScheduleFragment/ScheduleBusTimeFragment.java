@@ -262,7 +262,6 @@ public class ScheduleBusTimeFragment extends Fragment {
         if (Sbta != null) {
             ReloadSchedules(getView());
         }
-
     }
 
     private void LoadColorsAndBackgrounds() {
@@ -500,7 +499,6 @@ public class ScheduleBusTimeFragment extends Fragment {
 
                 RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
 
-                Calendar Now = Calendar.getInstance();
 
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(new Runnable() {
@@ -519,33 +517,20 @@ public class ScheduleBusTimeFragment extends Fragment {
                                 Recv.setLayoutManager(mLayoutManager);
                                 Recv.setAdapter(Sbta);
 
-                                RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
+                                //wait a frame
+                                new Thread(new Runnable() {
                                     @Override
-                                    protected int getVerticalSnapPreference() {
-                                        return LinearSmoothScroller.SNAP_TO_START;
-                                    }
-
-                                    @Override
-                                    protected float calculateSpeedPerPixel(DisplayMetrics displayMetrics) {
-                                        return super.calculateSpeedPerPixel(displayMetrics) *2;
-                                    }
-                                };
-
-
-                                int NowHour = Now.get(Calendar.HOUR_OF_DAY);
-
-                                smoothScroller.setTargetPosition(0);
-                                for (int i = 0; i < CurrentHours.length; i++) {
-                                    if ( CurrentHours[i] >= NowHour) {
-                                        if (i > 0) {
-                                            smoothScroller.setTargetPosition(i-1);
+                                    public void run() {
+                                        if (getActivity() != null) {
+                                            getActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    ScrollToCurrentHour(view);
+                                                }
+                                            });
                                         }
-
-                                        break;
                                     }
-                                }
-
-                                Recv.getLayoutManager().startSmoothScroll(smoothScroller);
+                                }).start();
                             } else {
                                 Sbta.UpdateData(CurrentHours, CurrentMinutes);
                                 Sbta.notifyDataSetChanged();
@@ -564,6 +549,35 @@ public class ScheduleBusTimeFragment extends Fragment {
                 }
             }
         }).start();
+    }
+
+    private void ScrollToCurrentHour(View view) {
+        RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
+            @Override
+            protected int getVerticalSnapPreference() {
+                return LinearSmoothScroller.SNAP_TO_START;
+            }
+
+            @Override
+            protected float calculateSpeedPerPixel(DisplayMetrics displayMetrics) {
+                return super.calculateSpeedPerPixel(displayMetrics) *2;
+            }
+        };
+
+        Calendar Now = Calendar.getInstance();
+        int NowHour = Now.get(Calendar.HOUR_OF_DAY);
+        smoothScroller.setTargetPosition(0);
+        for (int i = 0; i < CurrentHours.length; i++) {
+            if ( CurrentHours[i] >= NowHour) {
+                if (i > 0) {
+                    smoothScroller.setTargetPosition(i-1);
+                }
+
+                break;
+            }
+        }
+        RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
+        Recv.getLayoutManager().startSmoothScroll(smoothScroller);
     }
 
     private void GetLiveData(BusScheduleTime[] Jaratok) {
