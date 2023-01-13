@@ -102,6 +102,10 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<ScheduleBus
         ErrNotStarted =new BusScheduleTime[0];
     }
 
+    public void updateMaxPerLine(int MaxPerLine) {
+        this.MaxPerLine = MaxPerLine;
+    }
+
     public void AttachLiveData(BusScheduleTime[] Started, BusScheduleTime[] ErrNotStarted) {
         this.Started = Started;
         this.ErrNotStarted = ErrNotStarted;

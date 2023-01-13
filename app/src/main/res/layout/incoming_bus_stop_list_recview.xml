@@ -7,13 +7,14 @@
 
     <Button
         android:id="@+id/StopButton"
-        android:layout_width="110dp"
+        android:layout_width="123dp"
         android:layout_height="40dp"
         android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="4dp"
-        android:text="Button"
+        android:maxLines="1"
+        android:text="10. megálló"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

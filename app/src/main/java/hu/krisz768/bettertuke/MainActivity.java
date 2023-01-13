@@ -50,6 +50,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.OnTokenCanceledListener;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.search.SearchBar;
+import com.google.android.material.search.SearchView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -71,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
     View BottomSheet;
     BottomSheetBehavior bottomSheetBehavior;
     private BottomSheetBehavior.BottomSheetCallback BottomSheetCallback;
+
+    private SearchView searchView;
 
     private Integer CurrentPlace = -1;
     private Integer CurrentStop = -1;
@@ -103,6 +107,11 @@ public class MainActivity extends AppCompatActivity {
         bottomSheetBehavior = BottomSheetBehavior.from(BottomSheet);
 
         SetupBottomSheet();
+
+        searchView = findViewById(R.id.search_view);
+        SearchBar searchBar = findViewById(R.id.search_bar);
+
+        searchView.setupWithSearchBar(searchBar);
 
         findViewById(R.id.ShowScheduleButton).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -464,7 +473,16 @@ public class MainActivity extends AppCompatActivity {
 
             LatLngBounds Bounds = new LatLngBounds(First,Second);
 
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(Bounds, 350));
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+            int dp20 = Math.round(TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    20,
+                    displayMetrics
+            ));
+
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(Bounds, dp20*4));
         } catch (Exception e) {
             if (BusMarker != null) {
                 ZoomTo(location2);
@@ -497,6 +515,9 @@ public class MainActivity extends AppCompatActivity {
         if (BottomSheetCallback == null) {
             BottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
 
+                float DismissOffset = 0.8F;
+                float CurrentOffset = 0;
+
                 @Override
                 public void onStateChanged(@NonNull View bottomSheet, int newState) {
                     ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
@@ -504,13 +525,27 @@ public class MainActivity extends AppCompatActivity {
 
                     if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                         params.height = bottomSheetBehavior.getPeekHeight();
-                        params2.bottomMargin = params.height + dp20;
-                        googleMap.setPadding(0, 0, 0, params.height);
+
+                        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                            googleMap.setPadding(0, dp20*4, 0, 0);
+                            params2.bottomMargin = dp20;
+                        } else {
+                            googleMap.setPadding(0, dp20*4, 0, params.height);
+                            params2.bottomMargin = params.height + dp20;
+                        }
                     } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                         params.height = bottomSheet.getHeight();
                     } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                        googleMap.setPadding(0, 0, 0, 0);
+                        googleMap.setPadding(0, dp20*4, 0, 0);
                         params2.bottomMargin = dp20;
+                    }else if (newState == BottomSheetBehavior.STATE_SETTLING) {
+                        Log.e("saDSADADS", CurrentOffset+ " " +DismissOffset);
+                        if (Math.abs(CurrentOffset) < DismissOffset) {
+                            bottomSheetBehavior.setGestureInsetBottomIgnored(true);
+                        } else {
+                            //bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+                        }
                     }
 
                     fragmentView.setLayoutParams(params);
@@ -519,6 +554,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                    CurrentOffset = slideOffset;
 
                     ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
                     ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
@@ -527,9 +563,13 @@ public class MainActivity extends AppCompatActivity {
                         params.height = Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheet.getHeight() - bottomSheetBehavior.getPeekHeight()) * slideOffset));
                     } else if (slideOffset < 0) {
                         params.height = bottomSheetBehavior.getPeekHeight();
-                        googleMap.setPadding(0, 0, 0, Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheetBehavior.getPeekHeight()) * slideOffset)));
-                        params2.bottomMargin = Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheetBehavior.getPeekHeight()) * slideOffset)) + dp20;
-
+                        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                            googleMap.setPadding(0, dp20*4, 0, 0);
+                            params2.bottomMargin = dp20;
+                        } else {
+                            googleMap.setPadding(0, dp20*4, 0, Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheetBehavior.getPeekHeight()) * slideOffset)));
+                            params2.bottomMargin = Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheetBehavior.getPeekHeight()) * slideOffset)) + dp20;
+                        }
                     }
 
                     fragmentView.setLayoutParams(params);
@@ -546,9 +586,12 @@ public class MainActivity extends AppCompatActivity {
             bottomSheetBehavior.setMaxHeight(height);
             bottomSheetBehavior.setHideable(false);
 
-            ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
-            params2.bottomMargin = height + dp20;
-            ScheduleButton.setLayoutParams(params2);
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
+                params2.bottomMargin = height + dp20;
+                ScheduleButton.setLayoutParams(params2);
+            }
+
 
             GPSLoadFragment InBusFragment = GPSLoadFragment.newInstance();
             getSupportFragmentManager().beginTransaction()
@@ -567,8 +610,15 @@ public class MainActivity extends AppCompatActivity {
             ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
 
             if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_HIDDEN) {
-                googleMap.setPadding(0, 0, 0, height);
-                params2.bottomMargin = height + dp20;
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    googleMap.setPadding(0, dp20*4, 0, 0);
+                    params2.bottomMargin = dp20;
+                } else {
+                    googleMap.setPadding(0, dp20*4, 0, height);
+                    params2.bottomMargin = height + dp20;
+                }
+
+
 
                 ScheduleButton.setLayoutParams(params2);
             }
@@ -637,11 +687,15 @@ public class MainActivity extends AppCompatActivity {
 
         if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
             params.height = height;
-            googleMap.setPadding(0, 0, 0, height);
-            params2.bottomMargin = height + dp20;
         } else {
             params.height = getWindow().getDecorView().getHeight();
-            googleMap.setPadding(0, 0, 0, height);
+        }
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            googleMap.setPadding(0, dp20*4, 0, 0);
+            params2.bottomMargin = dp20;
+        } else {
+            googleMap.setPadding(0, dp20*4, 0, height);
             params2.bottomMargin = height + dp20;
         }
         Fc.setLayoutParams(params);
@@ -702,6 +756,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        if (searchView.isShowing()) {
+            searchView.hide();
+            return;
+        }
+
         if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             //googleMap.setPadding(0, 0, 0, bottomSheetBehavior.getPeekHeight());

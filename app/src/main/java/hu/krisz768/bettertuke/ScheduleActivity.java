@@ -1,9 +1,11 @@
 package hu.krisz768.bettertuke;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -15,6 +17,8 @@ public class ScheduleActivity extends AppCompatActivity {
     private String SelectedLine;
 
     private int StopId = -1;
+
+    private ScheduleBusTimeFragment Sbtf;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +50,7 @@ public class ScheduleActivity extends AppCompatActivity {
     public void selectLine(String LineNum) {
         this.SelectedLine = LineNum;
 
-        ScheduleBusTimeFragment Sbtf = ScheduleBusTimeFragment.newInstance(LineNum, StopId);
+        Sbtf = ScheduleBusTimeFragment.newInstance(LineNum, StopId);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.ScheduleFragmentContainer, Sbtf)
@@ -73,6 +77,17 @@ public class ScheduleActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.ScheduleFragmentContainer, Sblf)
                     .commit();
+
+            Sbtf = null;
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (Sbtf != null) {
+            Sbtf.UpdateMaxPerLine();
         }
     }
 }

@@ -682,4 +682,31 @@ public class ScheduleBusTimeFragment extends Fragment {
             }
         }
     }
+
+    public void UpdateMaxPerLine() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+
+        int ndp = Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                75,
+                displayMetrics
+        ));
+
+        int MinuteWidth = Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                50,
+                displayMetrics
+        ));
+
+
+        int MaxPerLine = (int) Math.floor((float)(width-ndp)/(float) MinuteWidth);
+
+        if (Sbta != null) {
+            Sbta.updateMaxPerLine(MaxPerLine);
+            Sbta.notifyDataSetChanged();
+        }
+
+    }
 }
