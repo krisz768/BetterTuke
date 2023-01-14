@@ -34,6 +34,12 @@
         android:hint="Keresés"
         android:elevation="8dp">
         <!-- Search suggestions/results go here (ScrollView, RecyclerView, etc.). -->
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/SerchViewFragmentContainer"
+            android:name="hu.krisz768.bettertuke.LoadingFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:layout="@layout/fragment_loading" />
     </com.google.android.material.search.SearchView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

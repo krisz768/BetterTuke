@@ -21,17 +21,15 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <TextView
-        android:id="@+id/ScheduleLineNum"
+    <ImageView
+        android:id="@+id/SearchStopIcon"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="10dp"
-        android:background="@drawable/schedule_bus_number_background"
-        android:gravity="center"
-        android:text="TextView"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/divider3"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/bus_stop" />
 
     <FrameLayout
         android:id="@+id/frameLayout"
@@ -41,16 +39,20 @@
         android:layout_marginEnd="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/ScheduleLineNum"
+        app:layout_constraintStart_toEndOf="@+id/SearchStopIcon"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/SearchBusStopName"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="10dp"
-            android:text="asdasd" />
+            android:layout_marginBottom="10dp"
+            android:gravity="center_vertical"
+            android:text="asdasd"
+            android:textSize="20sp"
+            app:autoSizeMaxTextSize="20sp"
+            app:autoSizeTextType="uniform" />
     </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

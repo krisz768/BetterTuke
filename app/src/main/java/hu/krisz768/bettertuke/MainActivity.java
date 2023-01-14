@@ -22,11 +22,17 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -59,12 +65,16 @@ import java.util.Date;
 import java.util.List;
 
 import hu.krisz768.bettertuke.Database.BusJaratok;
+import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
+import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.IncomingBusFragment.BottomSheetIncomingBusFragment;
+import hu.krisz768.bettertuke.SearchFragment.SearchViewFragment;
 import hu.krisz768.bettertuke.TrackBusFragment.BottomSheetTrackBusFragment;
 import hu.krisz768.bettertuke.models.BackStack;
 import hu.krisz768.bettertuke.models.MarkerDescriptor;
+import hu.krisz768.bettertuke.models.SearchResult;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -75,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
     private BottomSheetBehavior.BottomSheetCallback BottomSheetCallback;
 
     private SearchView searchView;
+    SearchViewFragment Svf;
 
     private Integer CurrentPlace = -1;
     private Integer CurrentStop = -1;
@@ -108,10 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
         SetupBottomSheet();
 
-        searchView = findViewById(R.id.search_view);
-        SearchBar searchBar = findViewById(R.id.search_bar);
-
-        searchView.setupWithSearchBar(searchBar);
+        SetupSearchView();
 
         findViewById(R.id.ShowScheduleButton).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -405,7 +413,8 @@ public class MainActivity extends AppCompatActivity {
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(Pecs).zoom(12).build();
 
-            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            //googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
             fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, new CancellationToken() {
                 @NonNull
@@ -843,4 +852,59 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
     });
+
+    private void SetupSearchView() {
+        searchView = findViewById(R.id.search_view);
+        SearchBar searchBar = findViewById(R.id.search_bar);
+
+        searchView.setupWithSearchBar(searchBar);
+
+
+
+        searchView.addTransitionListener(
+        (searchView, previousState, newState) -> {
+            if (newState == SearchView.TransitionState.SHOWING) {
+                List<SearchResult> AllItemList = new ArrayList<>();
+
+                for (int i = 0; i < busPlaces.length; i++) {
+                    AllItemList.add(new SearchResult(SearchResult.SearchType.Stop, busPlaces[i].getName(), busPlaces[i]));
+                }
+
+                DatabaseManager Dm = new DatabaseManager(this);
+
+                BusLine[] BusLines = Dm.GetActiveBusLines();
+
+                for (int i = 0; i < BusLines.length; i++) {
+                    AllItemList.add(new SearchResult(SearchResult.SearchType.Line, BusLines[i].getLineName(), BusLines[i]));
+                }
+
+                SearchResult[] AllItem = new SearchResult[AllItemList.size()];
+
+                AllItemList.toArray(AllItem);
+
+                Svf = SearchViewFragment.newInstance(AllItem);
+
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.SerchViewFragmentContainer, Svf)
+                        .commit();
+            }
+        });
+
+        searchView.getEditText().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                Svf.OnSearchTextChanged(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+    }
 }

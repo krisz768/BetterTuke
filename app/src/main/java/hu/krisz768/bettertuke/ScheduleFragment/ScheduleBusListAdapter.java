@@ -30,7 +30,7 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<ScheduleBusList
             // Define click listener for the ViewHolder's View
 
             Number = view.findViewById(R.id.ScheduleLineNum);
-            Description = view.findViewById(R.id.ScheduleLineDesc);
+            Description = view.findViewById(R.id.SearchBusStopName);
             this.view = view;
         }
 
