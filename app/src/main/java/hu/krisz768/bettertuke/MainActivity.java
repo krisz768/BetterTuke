@@ -67,6 +67,7 @@ import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.IncomingBusFragment.BottomSheetIncomingBusFragment;
 import hu.krisz768.bettertuke.SearchFragment.SearchViewFragment;
 import hu.krisz768.bettertuke.TrackBusFragment.BottomSheetTrackBusFragment;
+import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.models.BackStack;
 import hu.krisz768.bettertuke.models.MarkerDescriptor;
 import hu.krisz768.bettertuke.models.ScheduleBackStack;
@@ -86,16 +87,18 @@ public class MainActivity extends AppCompatActivity {
     private Integer CurrentPlace = -1;
     private Integer CurrentStop = -1;
     private Integer CurrentBusTrack = -1;
+    private BusJaratok busJarat;
+
     private GoogleMap googleMap;
 
     private BusStops[] busStops;
     private BusPlaces[] busPlaces;
-    private BusJaratok busJarat;
 
     private List<BackStack> backStack = new ArrayList<>();
 
-
     private boolean smallMarkerMode = false;
+
+    private boolean IsBackButtonCollapse = true;
 
     private Marker BusMarker;
 
@@ -302,11 +305,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
         CurrentPlace = PlaceId;
+
+        List<Integer> StopIds = new ArrayList<>();
+
         for (int i = 0; i < busStops.length; i++) {
             if (busStops[i].getFoldhely() == CurrentPlace) {
-                CurrentStop = busStops[i].getId();
-                break;
+                StopIds.add(busStops[i].getId());
+                //CurrentStop = busStops[i].getId();
+                //break;
             }
+        }
+
+        UserDatabase userDatabase = new UserDatabase(this);
+
+        int Favid = Integer.MAX_VALUE;
+
+        for (int i = 0; i < StopIds.size(); i++) {
+            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, StopIds.get(i).toString())) {
+                int tFavId = userDatabase.GetId(StopIds.get(i).toString(), UserDatabase.FavoriteType.Stop);
+                if (Favid > tFavId) {
+                    CurrentStop = StopIds.get(i);
+                    Favid = tFavId;
+                }
+            }
+        }
+
+        if ( Favid == Integer.MAX_VALUE) {
+            CurrentStop = StopIds.get(0);
         }
 
         ZoomToMarker();
@@ -541,6 +566,8 @@ public class MainActivity extends AppCompatActivity {
                     ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
 
                     if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                        IsBackButtonCollapse = true;
+
                         params.height = bottomSheetBehavior.getPeekHeight();
 
                         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -668,6 +695,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void BottomSheetSetNormalParams() {
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+            IsBackButtonCollapse = false;
+        } else {
+            IsBackButtonCollapse = true;
+        }
+
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int dp20 = Math.round(TypedValue.applyDimension(
@@ -781,9 +814,13 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-            //googleMap.setPadding(0, 0, 0, bottomSheetBehavior.getPeekHeight());
+            return;
+        }
+
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED && IsBackButtonCollapse) {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             return;
         }
 
@@ -834,6 +871,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
+        IsBackButtonCollapse = PrevState.isBackButtonCollapse();
+
         MarkerRenderer();
     }
 
@@ -854,7 +893,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void AddBackStack() {
-        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busJarat, null));
+        Log.e("asd", IsBackButtonCollapse+ "");
+        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busJarat, null, IsBackButtonCollapse));
     }
 
     public void ShowSchedule(int StopId, String LineNum, String Direction, String Date, boolean PreSelected) {
@@ -875,7 +915,7 @@ public class MainActivity extends AppCompatActivity {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         TrackBus(result.getData().getExtras().getInt("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
 
-                        backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"),result.getData().getExtras().getInt("StopId"),result.getData().getExtras().getBoolean("PreSelected"))));
+                        backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"),result.getData().getExtras().getInt("StopId"),result.getData().getExtras().getBoolean("PreSelected")), false));
                     }
                 }
     });

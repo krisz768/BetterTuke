@@ -7,15 +7,17 @@ public class BackStack {
     private Integer CurrentStop = -1;
     private Integer CurrentBusTrack = -1;
     private ScheduleBackStack scheduleBackStack;
+    private boolean IsBackButtonCollapse;
 
     private BusJaratok busJarat;
 
-    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusJaratok busJarat, ScheduleBackStack scheduleBackStack) {
+    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusJaratok busJarat, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse) {
         CurrentPlace = currentPlace;
         CurrentStop = currentStop;
         CurrentBusTrack = currentBusTrack;
         this.busJarat = busJarat;
         this.scheduleBackStack = scheduleBackStack;
+        this.IsBackButtonCollapse = IsBackButtonCollapse;
     }
 
     public Integer getCurrentPlace() {
@@ -36,5 +38,9 @@ public class BackStack {
 
     public ScheduleBackStack getScheduleBackStack() {
         return scheduleBackStack;
+    }
+
+    public boolean isBackButtonCollapse() {
+        return IsBackButtonCollapse;
     }
 }

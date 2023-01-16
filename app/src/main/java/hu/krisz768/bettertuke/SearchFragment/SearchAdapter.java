@@ -198,7 +198,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         switch (viewHolder.getItemViewType()) {
             case -1:
-                ((ViewHolderLabel)viewHolder).setData("Kedvecek:");
+                ((ViewHolderLabel)viewHolder).setData("Kedvencek:");
                 break;
             case 0:
                 ((ViewHolderStop)viewHolder).setData((BusPlaces) Results[position].getData(), ctx, Callback);
