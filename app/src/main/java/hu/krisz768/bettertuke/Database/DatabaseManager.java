@@ -137,7 +137,10 @@ public class DatabaseManager {
             Cursor cursor = Sld.rawQuery("SELECT * FROM foldhelyek WHERE 1", null);
             List<BusPlaces> AllPlaces = new ArrayList<>();
             while(cursor.moveToNext()) {
-                AllPlaces.add(new BusPlaces(cursor.getInt(0), cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3), cursor.getInt(5)));
+                String PlaceName = cursor.getString(1);
+                if (!PlaceName.contains("KEDPLASMA plazma központ")) {
+                    AllPlaces.add(new BusPlaces(cursor.getInt(0), cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3), cursor.getInt(5)));
+                }
             }
             cursor.close();
 

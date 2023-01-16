@@ -157,6 +157,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void ChangeStop(int Id) {
+        AddBackStack();
+
         CurrentStop = Id;
         ZoomToMarker();
         MarkerRenderer();
