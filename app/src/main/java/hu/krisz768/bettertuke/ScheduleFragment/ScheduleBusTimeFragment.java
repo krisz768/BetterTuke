@@ -26,6 +26,7 @@ import android.widget.TextView;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -51,10 +52,14 @@ public class ScheduleBusTimeFragment extends Fragment {
 
     private static final String LINENUM= "lineNum";
     private static final String STOPID= "StopId";
+    private static final String DIRECTION= "Direction";
+    private static final String DATE= "Date";
 
 
     private String mLineNum;
     private int mStopId;
+    private String mDirection;
+    private String mDate;
 
     private String SelectedDate;
     private String SelectedWay;
@@ -88,11 +93,13 @@ public class ScheduleBusTimeFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static ScheduleBusTimeFragment newInstance(String lineNum, int StopId) {
+    public static ScheduleBusTimeFragment newInstance(String lineNum, int StopId, String Direction, String Date) {
         ScheduleBusTimeFragment fragment = new ScheduleBusTimeFragment();
         Bundle args = new Bundle();
         args.putString(LINENUM, lineNum);
         args.putInt(STOPID, StopId);
+        args.putString(DIRECTION, Direction);
+        args.putString(DATE, Date);
         fragment.setArguments(args);
         return fragment;
     }
@@ -103,12 +110,12 @@ public class ScheduleBusTimeFragment extends Fragment {
         if (getArguments() != null) {
             mLineNum = getArguments().getString(LINENUM);
             mStopId = getArguments().getInt(STOPID);
+            mDirection = getArguments().getString(DIRECTION);
+            mDate = getArguments().getString(DATE);
         }
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-        SelectedDate = formatter.format(date);
-        SelectedWay = "O";
+        SelectedDate = mDate;
+        SelectedWay = mDirection;
     }
 
     @Override
@@ -178,8 +185,21 @@ public class ScheduleBusTimeFragment extends Fragment {
         ImageView BusLineTimeFavIcon = view.findViewById(R.id.BusLineTimeFavIcon);
         BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
 
+        BusLineTimeFavIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd.");
+        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd");
         Date date = new Date();
+        try {
+            date = formatter2.parse(SelectedDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         SelectedDateText.setText(formatter.format(date));
 
         SelectedDateText.setOnClickListener(new View.OnClickListener() {
@@ -213,35 +233,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                     public void onRefresh() {
                         ReloadSchedules(view);
 
-                        RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
-
-                        Calendar Now = Calendar.getInstance();
-                        int NowHour = Now.get(Calendar.HOUR_OF_DAY);
-
-                        RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
-                            @Override
-                            protected int getVerticalSnapPreference() {
-                                return LinearSmoothScroller.SNAP_TO_START;
-                            }
-
-                            @Override
-                            protected float calculateSpeedPerPixel(DisplayMetrics displayMetrics) {
-                                return super.calculateSpeedPerPixel(displayMetrics) *2;
-                            }
-                        };
-
-                        smoothScroller.setTargetPosition(0);
-                        for (int i = 0; i < CurrentHours.length; i++) {
-                            if ( CurrentHours[i] >= NowHour) {
-                                if (i > 0) {
-                                    smoothScroller.setTargetPosition(i-1);
-                                }
-
-                                break;
-                            }
-                        }
-
-                        Recv.getLayoutManager().startSmoothScroll(smoothScroller);
+                        ScrollToCurrentHour(view);
 
                         swipeRefreshLayout.setRefreshing(false);
                     }
@@ -552,6 +544,14 @@ public class ScheduleBusTimeFragment extends Fragment {
     }
 
     private void ScrollToCurrentHour(View view) {
+        Calendar Now = Calendar.getInstance();
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+        if (!SelectedDate.equals(formatter.format(date))) {
+            return;
+        }
+
         RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
             @Override
             protected int getVerticalSnapPreference() {
@@ -564,7 +564,7 @@ public class ScheduleBusTimeFragment extends Fragment {
             }
         };
 
-        Calendar Now = Calendar.getInstance();
+
         int NowHour = Now.get(Calendar.HOUR_OF_DAY);
         smoothScroller.setTargetPosition(0);
         for (int i = 0; i < CurrentHours.length; i++) {
@@ -677,7 +677,7 @@ public class ScheduleBusTimeFragment extends Fragment {
     public void OnScheduleClick(int Hour, int Minute) {
         for (int i = 0; i < CurrentJaratok.length; i++) {
             if (CurrentJaratok[i].getOra() == Hour && CurrentJaratok[i].getPerc() == Minute) {
-                ((ScheduleActivity)getActivity()).OnSelectedSchedule(CurrentJaratok[i].getJaratId(), SelectedDate);
+                ((ScheduleActivity)getActivity()).OnSelectedSchedule(CurrentJaratok[i].getJaratId(), SelectedDate, SelectedWay);
                 return;
             }
         }

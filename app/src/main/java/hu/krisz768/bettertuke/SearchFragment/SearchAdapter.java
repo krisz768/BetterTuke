@@ -21,24 +21,33 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private SearchResult[] Results;
     private Context ctx;
+    private SearchViewFragment Callback;
 
     public static class ViewHolderStop extends RecyclerView.ViewHolder {
 
         private ImageView icon;
         private TextView StopName;
+        private View view;
 
         public ViewHolderStop(View view) {
             super(view);
             // Define click listener for the ViewHolder's View
             icon = view.findViewById(R.id.SearchStopIcon);
             StopName = view.findViewById(R.id.SearchBusStopName);
-
+            this.view = view;
         }
 
-        public void setData(BusPlaces stop, Context ctx) {
+        public void setData(BusPlaces stop, Context ctx, SearchViewFragment Callback) {
             icon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected));
 
             StopName.setText(stop.getName());
+
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Callback.OnResultClick(new SearchResult(SearchResult.SearchType.Stop, "", stop));
+                }
+            });
         }
     }
 
@@ -47,6 +56,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         private TextView Number;
         private TextView Description;
+        private View view;
 
         public ViewHolderLine(View view) {
             super(view);
@@ -54,21 +64,30 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             Number = view.findViewById(R.id.ScheduleLineNum);
             Description = view.findViewById(R.id.SearchBusStopName);
+            this.view = view;
         }
 
-        public void setData(BusLine busLine, Context ctx) {
+        public void setData(BusLine busLine, Context ctx, SearchViewFragment Callback) {
             TypedValue typedValue = new TypedValue();
             ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
 
             Number.setTextColor(ContextCompat.getColor(ctx, typedValue.resourceId));
             Number.setText(busLine.getLineName());
             Description.setText(busLine.getLineDesc());
+
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Callback.OnResultClick(new SearchResult(SearchResult.SearchType.Line, "", busLine));
+                }
+            });
         }
     }
 
-    public SearchAdapter(SearchResult[] Results, Context ctx) {
+    public SearchAdapter(SearchResult[] Results, Context ctx, SearchViewFragment Callback) {
         this.Results = Results;
         this.ctx = ctx;
+        this.Callback = Callback;
     }
 
     public void UpdateResults(SearchResult[] Results) {
@@ -119,10 +138,10 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         switch (viewHolder.getItemViewType()) {
             case 0:
-                ((ViewHolderStop)viewHolder).setData((BusPlaces) Results[position].getData(), ctx);
+                ((ViewHolderStop)viewHolder).setData((BusPlaces) Results[position].getData(), ctx, Callback);
                 break;
             case 1:
-                ((ViewHolderLine)viewHolder).setData((BusLine) Results[position].getData(), ctx);
+                ((ViewHolderLine)viewHolder).setData((BusLine) Results[position].getData(), ctx, Callback);
                 break;
 
         }

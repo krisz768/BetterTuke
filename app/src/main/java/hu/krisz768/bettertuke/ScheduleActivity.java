@@ -9,6 +9,9 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusListFragment;
 import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusTimeFragment;
 
@@ -16,9 +19,13 @@ public class ScheduleActivity extends AppCompatActivity {
 
     private String SelectedLine;
 
+    private String Date;
+
     private int StopId = -1;
 
     private ScheduleBusTimeFragment Sbtf;
+
+    private boolean PreSelected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,18 +34,33 @@ public class ScheduleActivity extends AppCompatActivity {
         setTheme();
         setContentView(R.layout.activity_schedule);
         Bundle b = getIntent().getExtras();
+
+        String LineNum = null;
+        String Direction = null;
+
         if (b != null) {
             StopId = b.getInt("StopId");
+            LineNum = b.getString("LineNum");
+            Direction = b.getString("Direction");
+            Date = b.getString("Date");
+            PreSelected = b.getBoolean("PreSelected");
         }
 
-        ScheduleBusListFragment Sblf = ScheduleBusListFragment.newInstance(StopId);
+        if (LineNum != null) {
+            this.SelectedLine = LineNum;
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.ScheduleFragmentContainer, Sblf)
-                .commit();
+            Sbtf = ScheduleBusTimeFragment.newInstance(LineNum, StopId, Direction, Date);
 
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.ScheduleFragmentContainer, Sbtf)
+                    .commit();
+        } else {
+            ScheduleBusListFragment Sblf = ScheduleBusListFragment.newInstance(StopId);
 
-
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.ScheduleFragmentContainer, Sblf)
+                    .commit();
+        }
     }
 
     private void setTheme() {
@@ -50,24 +72,33 @@ public class ScheduleActivity extends AppCompatActivity {
     public void selectLine(String LineNum) {
         this.SelectedLine = LineNum;
 
-        Sbtf = ScheduleBusTimeFragment.newInstance(LineNum, StopId);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+        Sbtf = ScheduleBusTimeFragment.newInstance(LineNum, StopId, "O", formatter.format(date));
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.ScheduleFragmentContainer, Sbtf)
                 .commit();
     }
 
-    public void OnSelectedSchedule(int ScheduleId, String Date) {
+    public void OnSelectedSchedule(int ScheduleId, String Date, String Direction) {
         Intent returnIntent = new Intent();
         returnIntent.putExtra("ScheduleId",ScheduleId);
         returnIntent.putExtra("ScheduleDate",Date);
+
+        returnIntent.putExtra("StopId",StopId);
+        returnIntent.putExtra("LineNum",SelectedLine);
+        returnIntent.putExtra("Direction",Direction);
+        returnIntent.putExtra("PreSelected",PreSelected);
+
+
         setResult(Activity.RESULT_OK,returnIntent);
         finish();
     }
 
     @Override
     public void onBackPressed() {
-        if (SelectedLine == null) {
+        if (SelectedLine == null || PreSelected) {
             finish();
         } else {
             SelectedLine = null;

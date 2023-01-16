@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.models.SearchResult;
 
@@ -62,7 +63,7 @@ public class SearchViewFragment extends Fragment {
         recyclerView = view.findViewById(R.id.SearchResultRecView);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(mLayoutManager);
-        searchAdapter = new SearchAdapter(new SearchResult[0], getContext());
+        searchAdapter = new SearchAdapter(new SearchResult[0], getContext(), this);
         recyclerView.setAdapter(searchAdapter);
 
         return view;
@@ -88,6 +89,12 @@ public class SearchViewFragment extends Fragment {
 
             searchAdapter.UpdateResults(Results);
             searchAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public void OnResultClick(SearchResult searchResult) {
+        if (getActivity() != null) {
+            ((MainActivity)getActivity()).OnSearchResultClick(searchResult);
         }
     }
 }

@@ -6,14 +6,16 @@ public class BackStack {
     private Integer CurrentPlace = -1;
     private Integer CurrentStop = -1;
     private Integer CurrentBusTrack = -1;
+    private ScheduleBackStack scheduleBackStack;
 
     private BusJaratok busJarat;
 
-    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusJaratok busJarat) {
+    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusJaratok busJarat, ScheduleBackStack scheduleBackStack) {
         CurrentPlace = currentPlace;
         CurrentStop = currentStop;
         CurrentBusTrack = currentBusTrack;
         this.busJarat = busJarat;
+        this.scheduleBackStack = scheduleBackStack;
     }
 
     public Integer getCurrentPlace() {
@@ -30,5 +32,9 @@ public class BackStack {
 
     public BusJaratok getBusJarat() {
         return busJarat;
+    }
+
+    public ScheduleBackStack getScheduleBackStack() {
+        return scheduleBackStack;
     }
 }
