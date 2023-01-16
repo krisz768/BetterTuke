@@ -2,7 +2,9 @@ package hu.krisz768.bettertuke.SearchFragment;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,8 +16,12 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
+import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusListAdapter;
+import hu.krisz768.bettertuke.UserDatabase.Favorite;
+import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.models.SearchResult;
 
 /**
@@ -31,6 +37,8 @@ public class SearchViewFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private SearchAdapter searchAdapter;
+
+    private boolean Fav;
 
 
     public SearchViewFragment() {
@@ -52,6 +60,8 @@ public class SearchViewFragment extends Fragment {
         if (getArguments() != null) {
             mAllItem = (SearchResult[]) getArguments().getSerializable(ALLITEM);
         }
+
+        Fav = true;
     }
 
     @Override
@@ -63,19 +73,82 @@ public class SearchViewFragment extends Fragment {
         recyclerView = view.findViewById(R.id.SearchResultRecView);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(mLayoutManager);
-        searchAdapter = new SearchAdapter(new SearchResult[0], getContext(), this);
+
+
+
+        searchAdapter = new SearchAdapter(GetFavoriteStops(), getContext(), this);
         recyclerView.setAdapter(searchAdapter);
 
+        UserDatabase userDatabase = new UserDatabase(getContext());
+
+        ItemTouchHelper.Callback callback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                if (target.getAdapterPosition() != 0) {
+                    searchAdapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+
+                    int FirstId = userDatabase.GetId(((SearchAdapter.ViewHolderStop)viewHolder).GetStopId(), UserDatabase.FavoriteType.Stop);
+                    int SecId = userDatabase.GetId(((SearchAdapter.ViewHolderStop)target).GetStopId(), UserDatabase.FavoriteType.Stop);
+
+                    userDatabase.SwapId(FirstId, SecId);
+                    return true;
+                } else {
+                    return false;
+
+                }
+
+            }
+
+            @Override
+            public int getDragDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                return viewHolder.getAdapterPosition() != 0 ? super.getDragDirs(recyclerView, viewHolder) : 0;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            }
+
+            @Override
+            public boolean isLongPressDragEnabled() {
+
+                return Fav;
+            }
+        };
+
+        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(callback);
+        mItemTouchHelper.attachToRecyclerView(recyclerView);
+
         return view;
+    }
+
+    private SearchResult[] GetFavoriteStops() {
+        UserDatabase userDatabase = new UserDatabase(getContext());
+
+        Favorite[] favorites = userDatabase.GetFavorites(UserDatabase.FavoriteType.Stop);
+
+        List<SearchResult> searchResultList = new ArrayList<>();
+
+        for (int i = 0; i < favorites.length; i++) {
+            searchResultList.add(new SearchResult(SearchResult.SearchType.FavStop, "", favorites[i].getData()));
+        }
+
+        SearchResult[] searchResults = new SearchResult[searchResultList.size()];
+        searchResultList.toArray(searchResults);
+
+        return searchResults;
     }
 
     public void OnSearchTextChanged(String text) {
         if (searchAdapter != null) {
             if (text.equals("")) {
-                searchAdapter.UpdateResults(new SearchResult[0]);
+                Fav = true;
+                searchAdapter.UpdateResults(GetFavoriteStops(), true);
                 searchAdapter.notifyDataSetChanged();
                 return;
             }
+
+            Fav = false;
             List<SearchResult> ResultsList = new ArrayList<>();
 
             for (int i = 0; i < mAllItem.length; i++) {
@@ -87,7 +160,7 @@ public class SearchViewFragment extends Fragment {
             SearchResult[] Results = new SearchResult[ResultsList.size()];
             ResultsList.toArray(Results);
 
-            searchAdapter.UpdateResults(Results);
+            searchAdapter.UpdateResults(Results, false);
             searchAdapter.notifyDataSetChanged();
         }
     }

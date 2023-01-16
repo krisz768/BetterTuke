@@ -28,6 +28,7 @@ public class SearchResult implements Serializable {
 
     public enum SearchType {
         Stop,
+        FavStop,
         Line,
         Map
     }

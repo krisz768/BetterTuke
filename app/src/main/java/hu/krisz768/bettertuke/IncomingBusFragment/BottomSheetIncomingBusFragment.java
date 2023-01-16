@@ -28,6 +28,7 @@ import hu.krisz768.bettertuke.InfoFragment;
 import hu.krisz768.bettertuke.LoadingFragment;
 import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
+import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
 
@@ -98,11 +99,25 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         });
 
         ImageView FavButton = view.findViewById(R.id.StopFavoriteButton);
-        FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+
+        UserDatabase userDatabase = new UserDatabase(getContext());
+
+        if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
+            FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
+        } else {
+            FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+        }
+
         FavButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
+                    userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop));
+                    FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+                } else {
+                    userDatabase.AddFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop));
+                    FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
+                }
             }
         });
 
@@ -172,6 +187,15 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         Ibssa.setSelectedStop(mStop);
         Ibssa.notifyDataSetChanged();
         ResetList();
+
+        ImageView FavButton = getView().findViewById(R.id.StopFavoriteButton);
+
+        UserDatabase userDatabase = new UserDatabase(getContext());
+        if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
+            FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
+        } else {
+            FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+        }
 
         new Thread(new Runnable() {
             @Override

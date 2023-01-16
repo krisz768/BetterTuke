@@ -942,6 +942,8 @@ public class MainActivity extends AppCompatActivity {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             Date date = new Date();
             ShowSchedule(-1, ((BusLine)searchResult.getData()).getLineName(), "O", formatter.format(date), true);
+        } else if (searchResult.getType() == SearchResult.SearchType.FavStop) {
+            SelectStop((int)searchResult.getData());
         } else if (searchResult.getType() == SearchResult.SearchType.Stop) {
             SelectPlace(((BusPlaces)searchResult.getData()).getId());
         }

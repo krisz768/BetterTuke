@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +40,7 @@ import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.InfoFragment;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.ScheduleActivity;
+import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
 /**
@@ -183,12 +183,27 @@ public class ScheduleBusTimeFragment extends Fragment {
         }
 
         ImageView BusLineTimeFavIcon = view.findViewById(R.id.BusLineTimeFavIcon);
-        BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+
+        UserDatabase userDatabase = new UserDatabase(getContext());
+
+        if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Line, mLineNum)) {
+            BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
+        } else {
+            BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+        }
+
+
 
         BusLineTimeFavIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Line, mLineNum)) {
+                    userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Line, mLineNum);
+                    BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+                } else {
+                    userDatabase.AddFavorite(UserDatabase.FavoriteType.Line, mLineNum);
+                    BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
+                }
             }
         });
 

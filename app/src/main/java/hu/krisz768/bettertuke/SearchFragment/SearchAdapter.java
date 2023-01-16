@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
+import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.models.SearchResult;
@@ -22,12 +23,15 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private SearchResult[] Results;
     private Context ctx;
     private SearchViewFragment Callback;
+    private boolean Fav;
 
     public static class ViewHolderStop extends RecyclerView.ViewHolder {
 
         private ImageView icon;
         private TextView StopName;
         private View view;
+
+        private String StopId;
 
         public ViewHolderStop(View view) {
             super(view);
@@ -48,6 +52,29 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     Callback.OnResultClick(new SearchResult(SearchResult.SearchType.Stop, "", stop));
                 }
             });
+        }
+
+        public void setFavData(String StopId, Context ctx, SearchViewFragment Callback) {
+            this.StopId = StopId;
+            icon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected));
+
+            DatabaseManager Dm = new DatabaseManager(ctx);
+
+            String StopName = Dm.GetStopName(Integer.parseInt(StopId));
+            String StopNum = Dm.GetStopNum(Integer.parseInt(StopId));
+
+            this.StopName.setText(StopName.trim() + " (" + StopNum + ")");
+
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Callback.OnResultClick(new SearchResult(SearchResult.SearchType.FavStop, "", Integer.parseInt(StopId)));
+                }
+            });
+        }
+
+        public String GetStopId() {
+            return StopId;
         }
     }
 
@@ -84,25 +111,51 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
+    public static class ViewHolderLabel extends RecyclerView.ViewHolder {
+
+        private TextView Label;
+
+        public ViewHolderLabel(View view) {
+            super(view);
+            // Define click listener for the ViewHolder's View
+
+            Label = view.findViewById(R.id.labelText);
+        }
+
+        public void setData(String LabeText) {
+            Label.setText(LabeText);
+        }
+    }
+
     public SearchAdapter(SearchResult[] Results, Context ctx, SearchViewFragment Callback) {
         this.Results = Results;
         this.ctx = ctx;
         this.Callback = Callback;
+        this.Fav = true;
     }
 
-    public void UpdateResults(SearchResult[] Results) {
+    public void UpdateResults(SearchResult[] Results, boolean Fav) {
         this.Results = Results;
+        this.Fav = Fav;
     }
 
     @Override
     public int getItemViewType(int position) {
-        switch (Results[position].getType()) {
-            case Stop:
-                return 0;
-            case Line:
+        if (Fav) {
+            if (position == 0) {
+                return -1;
+            } else {
                 return 1;
-            case Map:
-                return 3;
+            }
+        } else {
+            switch (Results[position].getType()) {
+                case Stop:
+                    return 0;
+                case Line:
+                    return 2;
+                case Map:
+                    return 3;
+            }
         }
 
         return 0;
@@ -112,12 +165,19 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         switch (viewType) {
+            case -1:
+                View Labelview = LayoutInflater.from(viewGroup.getContext())
+                        .inflate(R.layout.recview_label, viewGroup, false);
+
+                return new SearchAdapter.ViewHolderLabel(Labelview);
             case 0:
+            case 1:
                 View Stopview = LayoutInflater.from(viewGroup.getContext())
                         .inflate(R.layout.search_stop_recview, viewGroup, false);
 
                 return new SearchAdapter.ViewHolderStop(Stopview);
-            case 1:
+
+            case 2:
                 View Lineview = LayoutInflater.from(viewGroup.getContext())
                         .inflate(R.layout.schedule_line_list_recview, viewGroup, false);
 
@@ -137,10 +197,16 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         // contents of the view with that element,
 
         switch (viewHolder.getItemViewType()) {
+            case -1:
+                ((ViewHolderLabel)viewHolder).setData("Kedvecek:");
+                break;
             case 0:
                 ((ViewHolderStop)viewHolder).setData((BusPlaces) Results[position].getData(), ctx, Callback);
                 break;
             case 1:
+                ((ViewHolderStop)viewHolder).setFavData((String)Results[position-1].getData(), ctx, Callback);
+                break;
+            case 2:
                 ((ViewHolderLine)viewHolder).setData((BusLine) Results[position].getData(), ctx, Callback);
                 break;
 
@@ -150,6 +216,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return Results.length;
+        if (Fav) {
+            return Results.length+1;
+        } else {
+            return Results.length;
+        }
+
     }
 }
