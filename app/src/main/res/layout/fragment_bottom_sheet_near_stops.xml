@@ -49,18 +49,6 @@
                     app:autoSizeTextType="uniform" />
             </LinearLayout>
 
-            <ImageView
-                android:id="@+id/NearStopDirButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_margin="5dp"
-                android:layout_weight="0"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                android:padding="5dp"
-                android:src="@drawable/favicon_01" />
-
         </LinearLayout>
 
         <View

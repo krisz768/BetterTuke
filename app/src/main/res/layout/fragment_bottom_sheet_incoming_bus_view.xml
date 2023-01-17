@@ -44,18 +44,6 @@
                 android:src="@drawable/favicon_01" />
 
             <ImageView
-                android:id="@+id/StopDirButton"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_margin="5dp"
-                android:layout_weight="0"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                android:padding="5dp"
-                android:src="@drawable/favicon_01" />
-
-            <ImageView
                 android:id="@+id/StopScheduleButton"
                 android:layout_width="40dp"
                 android:layout_height="match_parent"

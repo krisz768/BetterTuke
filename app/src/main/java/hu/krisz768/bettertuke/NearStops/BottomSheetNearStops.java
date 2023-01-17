@@ -82,9 +82,6 @@ public class BottomSheetNearStops extends Fragment {
 
         NearStopLocationText.setText(mLatitude + ", " + mLongitude);
 
-        ImageView NearStopDirButton = view.findViewById(R.id.NearStopDirButton);
-        NearStopDirButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Navigation));
-
         GetStreetName(view);
 
         GetNearestPlaces(view);

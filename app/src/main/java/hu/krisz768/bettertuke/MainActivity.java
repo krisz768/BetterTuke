@@ -71,6 +71,7 @@ import hu.krisz768.bettertuke.IncomingBusFragment.BottomSheetIncomingBusFragment
 import hu.krisz768.bettertuke.NearStops.BottomSheetNearStops;
 import hu.krisz768.bettertuke.SearchFragment.SearchViewFragment;
 import hu.krisz768.bettertuke.TrackBusFragment.BottomSheetTrackBusFragment;
+import hu.krisz768.bettertuke.UserDatabase.Favorite;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.models.BackStack;
 import hu.krisz768.bettertuke.models.MarkerDescriptor;
@@ -411,6 +412,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(SelectedPlace.latitude, SelectedPlace.longitude)).icon(PlaceSelected));
                 marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.PinPoint, -1));
+                marker.setZIndex(Float.MAX_VALUE);
             }
 
             for (int i = 0; i < busPlaces.length; i++) {
@@ -506,7 +508,8 @@ public class MainActivity extends AppCompatActivity {
                 public void onSuccess(Location location) {
                     if (location != null) {
                         findViewById(R.id.PosButton).setVisibility(View.VISIBLE);
-                        GetClosestStopFromList(location);
+                        GetStartupStop(location);
+                        //GetClosestStopFromList(location);
                     } else {
                         GPSErr();
                     }
@@ -518,7 +521,76 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void GetClosestStopFromList(Location location) {
+    private void GetStartupStop(Location location)
+    {
+        UserDatabase userDatabase = new UserDatabase(this);
+        Favorite[] favoriteStops = userDatabase.GetFavorites(UserDatabase.FavoriteType.Stop);
+
+        float Closest = Float.MAX_VALUE;
+        int ClosestId = -1;
+        BusStops ClosestStop = null;
+
+        for (int i = 0; i < busStops.length; i++) {
+            Location stopLocation = new Location("");
+            stopLocation.setLongitude(busStops[i].getGpsX());
+            stopLocation.setLatitude(busStops[i].getGpsY());
+
+            float Distance = location.distanceTo(stopLocation);
+            if (Distance < 17.5F) {
+                Closest = Distance;
+                ClosestId = busStops[i].getId();
+                ClosestStop = busStops[i];
+            }
+        }
+
+        if (ClosestId != -1) {
+            SelectStop(ClosestId);
+            ZoomClose(new LatLng(ClosestStop.getGpsY(), ClosestStop.getGpsX()), new LatLng(location.getLatitude(), location.getLongitude()));
+            return;
+        }
+
+        for (int i = 0; i < favoriteStops.length; i++) {
+            for (int j = 0; j < busStops.length; j++) {
+                if (Integer.parseInt(favoriteStops[i].getData()) == busStops[j].getId()) {
+                    Location stopLocation = new Location("");
+                    stopLocation.setLongitude(busStops[j].getGpsX());
+                    stopLocation.setLatitude(busStops[j].getGpsY());
+
+                    float Distance = location.distanceTo(stopLocation);
+                    if (Distance < 500 && Distance < Closest) {
+                        Closest = Distance;
+                        ClosestId = busStops[j].getId();
+                        ClosestStop = busStops[j];
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        if (ClosestId != -1) {
+            SelectStop(ClosestId);
+            ZoomClose(new LatLng(ClosestStop.getGpsY(), ClosestStop.getGpsX()), new LatLng(location.getLatitude(), location.getLongitude()));
+        } else {
+            for (int i = 0; i < busStops.length; i++) {
+                Location stopLocation = new Location("");
+                stopLocation.setLongitude(busStops[i].getGpsX());
+                stopLocation.setLatitude(busStops[i].getGpsY());
+
+                float Distance = location.distanceTo(stopLocation);
+                if (Distance < Closest) {
+                    Closest = Distance;
+                    ClosestId = busStops[i].getId();
+                    ClosestStop = busStops[i];
+                }
+            }
+
+            SelectStop(ClosestId);
+            ZoomClose(new LatLng(ClosestStop.getGpsY(), ClosestStop.getGpsX()), new LatLng(location.getLatitude(), location.getLongitude()));
+        }
+    }
+
+    /*private void GetClosestStopFromList(Location location) {
         int Closest = -1;
 
         double ClosestDistance = Double.MAX_VALUE;
@@ -552,7 +624,7 @@ public class MainActivity extends AppCompatActivity {
 
         MarkerRenderer();
         ShowBottomSheetIncommingBuses();
-    }
+    }*/
 
     private void ZoomClose(LatLng location, LatLng location2) {
         try {
@@ -948,7 +1020,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void AddBackStack() {
-        Log.e("asd", IsBackButtonCollapse + "");
         backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busJarat, null, IsBackButtonCollapse, SelectedPlace));
     }
 
@@ -1088,6 +1159,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void SelectPosUserPos() {
+
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

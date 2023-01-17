@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -89,6 +90,8 @@ public class ScheduleBusTimeFragment extends Fragment {
 
     private ScheduleBusTimeHourAdapter Sbta;
 
+    private BusVariation[] Variations;
+
     public ScheduleBusTimeFragment() {
         // Required empty public constructor
     }
@@ -145,8 +148,6 @@ public class ScheduleBusTimeFragment extends Fragment {
         TextView SelectedDateText = view.findViewById(R.id.ScheduleBusLineDate);
         TextView DescText = view.findViewById(R.id.ScheduleBusLineDesc);
 
-        BusVariation[] Variations;
-
         ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
 
         if (mStopId == -1) {
@@ -158,6 +159,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         boolean IsForwWayDescTextSetted = false;
         boolean IsBackwWayDescTextSetted = false;
         for (int i = 0; i < Variations.length; i++) {
+
             if (!IsForwWayDescTextSetted && SelectedWay.equals(Variations[i].getIrany())) {
                 IsForwWayDescTextSetted = true;
                 WayDescStringForw = Variations[i].getNev();
@@ -488,6 +490,18 @@ public class ScheduleBusTimeFragment extends Fragment {
                     }
                 }
 
+                String[][] BusCodes = new String[CurrentHours.length][];
+
+                int Counter = 0;
+                for (int i = 0; i < CurrentHours.length; i++) {
+                    BusCodes[i] = new String[CurrentMinutes[i].length];
+                    for (int j = 0; j < CurrentMinutes[i].length; j++){
+                        BusCodes[i][j] = CurrentJaratok[Counter].getLineCode().replace(mLineNum, "");
+                        Counter++;
+                    }
+                }
+
+
                 DisplayMetrics displayMetrics = new DisplayMetrics();
                 getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
                 int width = displayMetrics.widthPixels;
@@ -519,7 +533,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                                 FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
                                 fragmentContainerView.setVisibility(View.GONE);
 
-                                Sbta = new ScheduleBusTimeHourAdapter(CurrentHours, CurrentMinutes, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorSec, colorSecContainer, colorOnSecContainer, colorOnPrimary, colorOnError, MinuteBackground, MinuteBackgroundFull, MinuteBackgroundStarted, MinuteBackgroundFullStarted, MinuteBackgroundErr, MinuteBackgroundFullErr, getContext(), Callback);
+                                Sbta = new ScheduleBusTimeHourAdapter(CurrentHours, CurrentMinutes,BusCodes, Variations, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorSec, colorSecContainer, colorOnSecContainer, colorOnPrimary, colorOnError, MinuteBackground, MinuteBackgroundFull, MinuteBackgroundStarted, MinuteBackgroundFullStarted, MinuteBackgroundErr, MinuteBackgroundFullErr, getContext(), Callback);
                                 RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
                                 Recv.setLayoutManager(mLayoutManager);
                                 Recv.setAdapter(Sbta);
@@ -539,7 +553,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                                     }
                                 }).start();
                             } else {
-                                Sbta.UpdateData(CurrentHours, CurrentMinutes);
+                                Sbta.UpdateData(CurrentHours, CurrentMinutes, BusCodes);
                                 Sbta.notifyDataSetChanged();
                             }
 

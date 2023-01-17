@@ -491,7 +491,7 @@ public class HelperProvider {
                 "    \"elementType\": \"labels.text.fill\",\n" +
                 "    \"stylers\": [\n" +
                 "      {\n" +
-                "        \"color\": \"#d59563\"\n" +
+                "        \"color\": \"" + PrimaryColor + "\"\n" +
                 "      }\n" +
                 "    ]\n" +
                 "  },\n" +

@@ -4,8 +4,10 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -120,9 +122,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
         });
 
-        ImageView StopDirButton = view.findViewById(R.id.StopDirButton);
-        StopDirButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Navigation));
-
 
         List<BusStops> SelectedPlaceStops = new ArrayList<>();
 
@@ -149,6 +148,29 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
         StopSelectorRec.setLayoutManager(mLayoutManager);
         StopSelectorRec.setAdapter(Ibssa);
+
+        RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
+            @Override
+            protected int getVerticalSnapPreference() {
+                return LinearSmoothScroller.SNAP_TO_START;
+            }
+
+            @Override
+            protected float calculateSpeedPerPixel(DisplayMetrics displayMetrics) {
+                return super.calculateSpeedPerPixel(displayMetrics) *4;
+            }
+        };
+
+        int scrollposition = 0;
+        for (int i = 0; i < SelectedPlaceStopsArray.length; i++) {
+            if (SelectedPlaceStopsArray[i].getId() == mStop) {
+                scrollposition = i;
+                break;
+            }
+        }
+
+        smoothScroller.setTargetPosition(scrollposition);
+        StopSelectorRec.getLayoutManager().startSmoothScroll(smoothScroller);
 
         StopSelectorRec.setNestedScrollingEnabled(false);
 
