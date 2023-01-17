@@ -12,7 +12,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.util.TypedValue;
 
 import androidx.core.content.ContextCompat;
@@ -30,7 +29,7 @@ import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class HelperProvider {
 
-    private static Bitmap[] BitmapContainer = new Bitmap[26];
+    private static Bitmap[] BitmapContainer = new Bitmap[28];
     private static JSONObject BusAttributes;
 
     public static void RenderAllBitmap(Context ctx) {
@@ -66,6 +65,8 @@ public class HelperProvider {
         BitmapContainer[23] = overlay(HelperProvider.BitmapFromVector(R.drawable.directionforwardarrow_01,com.google.android.material.R.attr.colorPrimary,ctx,false),HelperProvider.BitmapFromVector(R.drawable.directionbackwardsarrow_01,com.google.android.material.R.attr.colorOutline,ctx,false));
         BitmapContainer[24] = overlay(HelperProvider.BitmapFromVector(R.drawable.directionforwardarrow_01,com.google.android.material.R.attr.colorOutline,ctx,false),HelperProvider.BitmapFromVector(R.drawable.directionbackwardsarrow_01,com.google.android.material.R.attr.colorPrimary,ctx,false));
         BitmapContainer[25] = HelperProvider.BitmapFromVector(R.drawable.direction1wayarrow,com.google.android.material.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[26] = HelperProvider.BitmapFromVector(R.drawable.location_pinpoint,com.google.android.material.R.attr.colorPrimary,ctx,true);
+        BitmapContainer[27] = HelperProvider.BitmapFromVector(R.drawable.navigation,com.google.android.material.R.attr.colorPrimary,ctx,false);
     }
 
     public static Bitmap getBitmap(Bitmaps bitmap) {
@@ -122,6 +123,10 @@ public class HelperProvider {
                 return BitmapContainer[24];
             case DirectionOneWay:
                 return BitmapContainer[25];
+            case LocationPin:
+                return BitmapContainer[26];
+            case Navigation:
+                return BitmapContainer[27];
         }
         return null;
     }
@@ -152,7 +157,9 @@ public class HelperProvider {
         FaviconOn,
         DirectionForward,
         DirectionBackwards,
-        DirectionOneWay
+        DirectionOneWay,
+        LocationPin,
+        Navigation
     }
 
     private static Bitmap overlay(Bitmap bmp1, Bitmap bmp2) {

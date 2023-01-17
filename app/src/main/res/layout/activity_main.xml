@@ -54,6 +54,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/bus" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/PosButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="80dp"
+        android:clickable="true"
+        android:contentDescription="Gps"
+        app:layout_constraintBottom_toBottomOf="@id/ShowScheduleButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/gps"
+        style="?attr/floatingActionButtonSurfaceStyle"/>
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
         android:layout_width="match_parent"

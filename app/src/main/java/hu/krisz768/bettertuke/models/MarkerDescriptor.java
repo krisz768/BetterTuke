@@ -20,6 +20,7 @@ public class MarkerDescriptor {
     public enum Types {
         Place,
         Stop,
-        Bus
+        Bus,
+        PinPoint
     }
 }

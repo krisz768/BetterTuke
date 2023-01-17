@@ -99,7 +99,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         });
 
         ImageView FavButton = view.findViewById(R.id.StopFavoriteButton);
-
         UserDatabase userDatabase = new UserDatabase(getContext());
 
         if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
@@ -120,6 +119,9 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 }
             }
         });
+
+        ImageView StopDirButton = view.findViewById(R.id.StopDirButton);
+        StopDirButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Navigation));
 
 
         List<BusStops> SelectedPlaceStops = new ArrayList<>();

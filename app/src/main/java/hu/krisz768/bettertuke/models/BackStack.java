@@ -1,5 +1,7 @@
 package hu.krisz768.bettertuke.models;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import hu.krisz768.bettertuke.Database.BusJaratok;
 
 public class BackStack {
@@ -8,16 +10,18 @@ public class BackStack {
     private Integer CurrentBusTrack = -1;
     private ScheduleBackStack scheduleBackStack;
     private boolean IsBackButtonCollapse;
+    private LatLng SelectedPlace;
 
     private BusJaratok busJarat;
 
-    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusJaratok busJarat, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse) {
+    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusJaratok busJarat, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace) {
         CurrentPlace = currentPlace;
         CurrentStop = currentStop;
         CurrentBusTrack = currentBusTrack;
         this.busJarat = busJarat;
         this.scheduleBackStack = scheduleBackStack;
         this.IsBackButtonCollapse = IsBackButtonCollapse;
+        this.SelectedPlace = SelectedPlace;
     }
 
     public Integer getCurrentPlace() {
@@ -42,5 +46,9 @@ public class BackStack {
 
     public boolean isBackButtonCollapse() {
         return IsBackButtonCollapse;
+    }
+
+    public LatLng getSelectedPlace() {
+        return SelectedPlace;
     }
 }
