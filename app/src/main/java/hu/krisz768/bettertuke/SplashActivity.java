@@ -1,11 +1,11 @@
 package hu.krisz768.bettertuke;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.splashscreen.SplashScreen;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,7 +15,6 @@ import java.io.File;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
-@SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
 
     private TextView Logs;
@@ -23,9 +22,12 @@ public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+
         super.onCreate(savedInstanceState);
 
-        setTheme();
+        splashScreen.setKeepOnScreenCondition(() -> true );
 
         setContentView(R.layout.activity_splash);
 
@@ -33,18 +35,7 @@ public class SplashActivity extends AppCompatActivity {
 
         AddLog("init...");
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                InitTasks();
-            }
-        }).start();
-    }
-
-    private void setTheme() {
-        if (Build.VERSION.SDK_INT < 31) {
-            setTheme(R.style.DefaultPre12);
-        }
+        new Thread(this::InitTasks).start();
     }
 
     private void InitTasks() {
@@ -56,29 +47,24 @@ public class SplashActivity extends AppCompatActivity {
 
         if (Dm.IsDatabaseExist()) {
             AddLog("Database exist, checking for update...");
-            String Verison = Dm.GetDatabaseVersion();
+            String Version = Dm.GetDatabaseVersion();
 
-            AddLog("Database version = " + Verison);
+            AddLog("Database version = " + Version);
 
-            String OnlineVerison = serverApi.getServerDatabaseVersion();
+            String OnlineVersion = serverApi.getServerDatabaseVersion();
 
-            AddLog("Server database version = " + OnlineVerison);
+            AddLog("Server database version = " + OnlineVersion);
 
-            if (OnlineVerison.equals("Err") && !Verison.equals("Err")) {
+            if (OnlineVersion.equals("Err") && !Version.equals("Err")) {
                 AddLog("Server error, using existing database...");
 
                 Context ctx = getApplicationContext();
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(ctx, "Nem sikerült frissíteni az adatbázist.", Toast.LENGTH_LONG).show();
-                    }
-                });
+                runOnUiThread(() -> Toast.makeText(ctx, "Nem sikerült frissíteni az adatbázist.", Toast.LENGTH_LONG).show());
 
                 StartMain();
             } else {
-                if (Verison.equals(OnlineVerison)) {
+                if (Version.equals(OnlineVersion)) {
                     AddLog("Database is up to date!");
 
                     //END
@@ -94,18 +80,13 @@ public class SplashActivity extends AppCompatActivity {
                         AddLog("Database downloaded successfully");
 
                         Dm.ReloadDatabase();
-                        Verison = Dm.GetDatabaseVersion();
+                        Version = Dm.GetDatabaseVersion();
 
-                        AddLog("Database version = " + Verison);
+                        AddLog("Database version = " + Version);
 
                         Context ctx = getApplicationContext();
 
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(ctx, "Új menetrendre frissítve! Előfordulhatnak válzotások.", Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        runOnUiThread(() -> Toast.makeText(ctx, "Új menetrendre frissítve! Előfordulhatnak válzotások.", Toast.LENGTH_LONG).show());
 
                         //END
                         StartMain();
@@ -121,9 +102,9 @@ public class SplashActivity extends AppCompatActivity {
             if (serverApi.downloadDatabaseFile()) {
                 AddLog("Database downloaded successfully");
                 Dm.ReloadDatabase();
-                String Verison = Dm.GetDatabaseVersion();
+                String Version = Dm.GetDatabaseVersion();
 
-                AddLog("Database version = " + Verison);
+                AddLog("Database version = " + Version);
 
                 //END
                 StartMain();
