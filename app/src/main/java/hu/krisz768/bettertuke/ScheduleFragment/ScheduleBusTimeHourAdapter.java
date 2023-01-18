@@ -3,6 +3,10 @@ package hu.krisz768.bettertuke.ScheduleFragment;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.DynamicDrawableSpan;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -10,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -102,9 +107,32 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
             Desc = view.findViewById(R.id.LegendDesc);
         }
 
-        public void setData(BusVariation variation) {
+        public void setData(BusVariation variation, Context ctx) {
             Legend.setText(variation.getKod());
-            Desc.setText(variation.getNev());
+            if (variation.getIrany().equals("O")) {
+                Drawable arrow = ContextCompat.getDrawable(ctx, R.drawable.right_arrow);
+                arrow.setTint(Desc.getCurrentTextColor());
+                Float ascent = Desc.getPaint().getFontMetrics().ascent;
+                int h = (int) -ascent;
+                arrow.setBounds(0,0,h,h);
+
+                SpannableString stringWithImage = new SpannableString(variation.getNev() + " (*)");
+                stringWithImage.setSpan(new ImageSpan(arrow, DynamicDrawableSpan.ALIGN_BASELINE), variation.getNev().length()+2, variation.getNev().length()+3, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                Desc.setText(stringWithImage);
+
+                //Desc.setText(variation.getNev() + " (\uD83E\uDC60");
+            } else {
+                Drawable arrow = ContextCompat.getDrawable(ctx, R.drawable.left_arrow);
+                arrow.setTint(Desc.getCurrentTextColor());
+                Float ascent = Desc.getPaint().getFontMetrics().ascent;
+                int h = (int) -ascent;
+                arrow.setBounds(0,0,h,h);
+
+                SpannableString stringWithImage = new SpannableString(variation.getNev() + " (*)");
+                stringWithImage.setSpan(new ImageSpan(arrow, DynamicDrawableSpan.ALIGN_BASELINE), variation.getNev().length()+2, variation.getNev().length()+3, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                Desc.setText(stringWithImage);
+            }
+
         }
     }
 
@@ -183,7 +211,7 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
         } else if (viewHolder.getItemViewType() == 1){
             ((ViewHolderLabel)viewHolder).setData("Jelmagyarázat:");
         } else {
-            ((ViewHolderLegend)viewHolder).setData(Variations[position-Hours.length-1]);
+            ((ViewHolderLegend)viewHolder).setData(Variations[position-Hours.length-1], ctx);
         }
 
     }

@@ -30,7 +30,7 @@ public class UserDatabase {
     public boolean IsFavorite(FavoriteType favoriteType, String Data) {
         try
         {
-            Cursor cursor = Sld.rawQuery("SELECT count(Id) FROM Favorites WHERE Type = " + TypeToInt(favoriteType) + " AND Data = " + Data + ";", null);
+            Cursor cursor = Sld.rawQuery("SELECT count(Id) FROM Favorites WHERE Type = " + TypeToInt(favoriteType) + " AND Data = \"" + Data + "\";", null);
             int count = 0;
             while(cursor.moveToNext()) {
                 count = cursor.getInt(0);
@@ -50,7 +50,7 @@ public class UserDatabase {
 
     public void DeleteFavorite(FavoriteType favoriteType, String Data) {
         try {
-            Sld.execSQL("DELETE FROM Favorites WHERE Data = " + Data + " AND Type = " + TypeToInt(favoriteType) + ";");
+            Sld.execSQL("DELETE FROM Favorites WHERE Data = \"" + Data + "\" AND Type = " + TypeToInt(favoriteType) + ";");
         } catch (Exception e) {
             log(e.toString());
         }
@@ -58,7 +58,7 @@ public class UserDatabase {
 
     public void AddFavorite(FavoriteType favoriteType, String Data) {
         try {
-            Sld.execSQL("INSERT INTO Favorites (Type, Data) VALUES (" + TypeToInt(favoriteType) + "," + Data + ");");
+            Sld.execSQL("INSERT INTO Favorites (Type, Data) VALUES (" + TypeToInt(favoriteType) + ",\"" + Data + "\");");
         } catch (Exception e) {
             log(e.toString());
         }
@@ -115,7 +115,7 @@ public class UserDatabase {
     public int GetId(String Data, FavoriteType favoriteType) {
         try
         {
-            Cursor cursor = Sld.rawQuery("SELECT Id FROM Favorites WHERE Type = " + TypeToInt(favoriteType) + " AND Data = " + Data + ";", null);
+            Cursor cursor = Sld.rawQuery("SELECT Id FROM Favorites WHERE Type = " + TypeToInt(favoriteType) + " AND Data = \"" + Data + "\";", null);
             int Id = -1;
             while(cursor.moveToNext()) {
                 Id = cursor.getInt(0);
