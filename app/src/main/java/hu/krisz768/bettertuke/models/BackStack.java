@@ -2,23 +2,23 @@ package hu.krisz768.bettertuke.models;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import hu.krisz768.bettertuke.Database.BusJaratok;
+import hu.krisz768.bettertuke.Database.BusLine;
 
 public class BackStack {
-    private Integer CurrentPlace = -1;
-    private Integer CurrentStop = -1;
-    private Integer CurrentBusTrack = -1;
-    private ScheduleBackStack scheduleBackStack;
-    private boolean IsBackButtonCollapse;
-    private LatLng SelectedPlace;
+    private final Integer CurrentPlace;
+    private final Integer CurrentStop;
+    private final Integer CurrentBusTrack;
+    private final ScheduleBackStack scheduleBackStack;
+    private final boolean IsBackButtonCollapse;
+    private final LatLng SelectedPlace;
 
-    private BusJaratok busJarat;
+    private final BusLine busLine;
 
-    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusJaratok busJarat, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace) {
+    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace) {
         CurrentPlace = currentPlace;
         CurrentStop = currentStop;
         CurrentBusTrack = currentBusTrack;
-        this.busJarat = busJarat;
+        this.busLine = busLine;
         this.scheduleBackStack = scheduleBackStack;
         this.IsBackButtonCollapse = IsBackButtonCollapse;
         this.SelectedPlace = SelectedPlace;
@@ -36,8 +36,8 @@ public class BackStack {
         return CurrentBusTrack;
     }
 
-    public BusJaratok getBusJarat() {
-        return busJarat;
+    public BusLine getBusLine() {
+        return busLine;
     }
 
     public ScheduleBackStack getScheduleBackStack() {

@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,8 +15,8 @@ import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.R;
 
 public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<IncomingBusStopSelectorAdapter.ViewHolder>{
-    private BusStops[] BusStopList;
-    private Context ctx;
+    private final BusStops[] BusStopList;
+    private final Context ctx;
     private int SelectedStop;
     BottomSheetIncomingBusFragment callback;
 
@@ -35,23 +36,17 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Incomin
         }
 
         public void setData(BusStops Data, int SelectedStop, BottomSheetIncomingBusFragment callback, Context ctx) {
-           button.setText(Data.getKocsiallasSzam().trim() + ". megálló");
+           button.setText(Data.getStopNum().trim() + ". megálló");
 
-           button.setOnClickListener(new View.OnClickListener() {
-               @Override
-               public void onClick(View view) {
-                   callback.OnStopClick(Data.getId());
-               }
-           });
+           button.setOnClickListener(view -> callback.OnStopClick(Data.getId()));
 
-           if (Data.getId() != SelectedStop) {
-               TypedValue typedValue = new TypedValue();
-               ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOutline, typedValue, true);
+            TypedValue typedValue = new TypedValue();
+            if (Data.getId() != SelectedStop) {
+                ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOutline, typedValue, true);
                int color = ContextCompat.getColor(ctx, typedValue.resourceId);
                button.setBackgroundColor(color);
            } else {
-               TypedValue typedValue = new TypedValue();
-               ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+                ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
                int color = ContextCompat.getColor(ctx, typedValue.resourceId);
                button.setBackgroundColor(color);
            }
@@ -70,6 +65,7 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Incomin
     }
 
     // Create new views (invoked by the layout manager)
+    @NonNull
     @Override
     public IncomingBusStopSelectorAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item

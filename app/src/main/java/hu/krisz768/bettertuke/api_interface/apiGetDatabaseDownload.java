@@ -1,18 +1,14 @@
 package hu.krisz768.bettertuke.api_interface;
 
-import android.app.DownloadManager;
 import android.content.Context;
-import android.net.Uri;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class apiGetDatabaseDownload implements Runnable {
@@ -33,11 +29,11 @@ public class apiGetDatabaseDownload implements Runnable {
             BufferedInputStream in = new BufferedInputStream(new URL(API_URL + "android/db/track.zip").openStream());
 
             //download
-            File tempfile = File.createTempFile("download", "database", ctx.getCacheDir());
-            tempfile.deleteOnExit();
-            FileOutputStream fileOutputStream = new FileOutputStream(tempfile);
+            File TempFile = File.createTempFile("download", "database", ctx.getCacheDir());
+            TempFile.deleteOnExit();
+            FileOutputStream fileOutputStream = new FileOutputStream(TempFile);
             try {
-                byte dataBuffer[] = new byte[1024];
+                byte[] dataBuffer = new byte[1024];
                 int bytesRead;
                 while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
                     fileOutputStream.write(dataBuffer, 0, bytesRead);
@@ -51,33 +47,39 @@ public class apiGetDatabaseDownload implements Runnable {
             //copy and unzip temp->data
 
             File DatabaseFile = new File(DATABASEFILE);
-            DatabaseFile.getParentFile().mkdirs();
-            DatabaseFile.createNewFile();
+            File ParentDir = DatabaseFile.getParentFile();
 
-            ZipInputStream zis = new ZipInputStream(new FileInputStream(tempfile));
-            try {
-                OutputStream out = new FileOutputStream(DatabaseFile);
-                try {
-                    ZipEntry ze = zis.getNextEntry();
-                    int count;
-                    byte[] buf = new byte[1024];
-                    while ((count = zis.read(buf)) != -1)
-                    {
-                        out.write(buf, 0, count);
-                    }
-                } finally {
-                    out.close();
-                }
-            } finally {
-                zis.close();
+            boolean SuccessfullyCreate = false;
+
+            if (ParentDir != null) {
+                SuccessfullyCreate = ParentDir.mkdirs();
             }
 
+            if (!SuccessfullyCreate) {
+                RetCode = false;
+                return;
+            }
 
-            tempfile.delete();
+            SuccessfullyCreate = DatabaseFile.createNewFile();
+
+            if (!SuccessfullyCreate) {
+                RetCode = false;
+                return;
+            }
+
+            try (ZipInputStream zis = new ZipInputStream(new FileInputStream(TempFile))) {
+                try (OutputStream out = new FileOutputStream(DatabaseFile)) {
+                    int count;
+                    byte[] buf = new byte[1024];
+                    while ((count = zis.read(buf)) != -1) {
+                        out.write(buf, 0, count);
+                    }
+                }
+            }
 
             RetCode = true;
         } catch (Exception e) {
-            log("Error :(" + e.toString());
+            log("Error :(" + e);
             RetCode = false;
         }
 

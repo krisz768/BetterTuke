@@ -11,6 +11,7 @@ import android.os.Bundle;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusListFragment;
 import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusTimeFragment;
@@ -72,7 +73,7 @@ public class ScheduleActivity extends AppCompatActivity {
     public void selectLine(String LineNum) {
         this.SelectedLine = LineNum;
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         Date date = new Date();
         Sbtf = ScheduleBusTimeFragment.newInstance(LineNum, StopId, "O", formatter.format(date));
 

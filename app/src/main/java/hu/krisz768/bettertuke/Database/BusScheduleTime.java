@@ -1,45 +1,44 @@
 package hu.krisz768.bettertuke.Database;
 
 import java.util.Calendar;
-import java.util.Date;
 
 public class BusScheduleTime {
-    int Ora;
-    int Perc;
+    int Hour;
+    int Minute;
     String LineCode;
-    int JaratId;
+    int LineId;
 
-    public BusScheduleTime(int ora, int perc, String lineCode, int jaratId) {
-        Ora = ora;
-        Perc = perc;
+    public BusScheduleTime(int hour, int minute, String lineCode, int lineId) {
+        Hour = hour;
+        Minute = minute;
         LineCode = lineCode;
-        JaratId = jaratId;
+        LineId = lineId;
     }
 
-    public int getOra() {
-        return Ora;
+    public int getHour() {
+        return Hour;
     }
 
-    public int getPerc() {
-        return Perc;
+    public int getMinute() {
+        return Minute;
     }
 
     public String getLineCode() {
         return LineCode;
     }
 
-    public int getJaratId() {
-        return JaratId;
+    public int getLineId() {
+        return LineId;
     }
 
     public void AdjustToStop(int Minute) {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, Ora);
-        calendar.set(Calendar.MINUTE, Perc);
+        calendar.set(Calendar.HOUR_OF_DAY, Hour);
+        calendar.set(Calendar.MINUTE, this.Minute);
 
         calendar.add(Calendar.MINUTE, Minute);
 
-        Ora = calendar.get(Calendar.HOUR_OF_DAY);
-        Perc = calendar.get(Calendar.MINUTE);
+        Hour = calendar.get(Calendar.HOUR_OF_DAY);
+        this.Minute = calendar.get(Calendar.MINUTE);
     }
 }

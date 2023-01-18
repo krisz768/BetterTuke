@@ -20,8 +20,7 @@ public class LoadingFragment extends Fragment {
     }
 
     public static LoadingFragment newInstance() {
-        LoadingFragment fragment = new LoadingFragment();
-        return fragment;
+        return new LoadingFragment();
     }
 
     @Override

@@ -3,14 +3,7 @@ package hu.krisz768.bettertuke.api_interface;
 import android.content.Context;
 import android.util.Log;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
+import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
 public class TukeServerApi {
@@ -27,8 +20,7 @@ public class TukeServerApi {
             Thread thread = new Thread(data);
             thread.start();
             thread.join();
-            String version = data.getValue();
-            return version;
+            return data.getValue();
         } catch (Exception e) {
             log(e.toString());
         }
@@ -36,29 +28,27 @@ public class TukeServerApi {
         return "Err";
     }
 
-    public IncommingBusRespModel[] getNextIncommingBuses(int kocsiallas) {
+    public IncomingBusRespModel[] getNextIncomingBuses(int StopId) {
         try {
-            apiGetNextIncommingBuses data = new apiGetNextIncommingBuses(kocsiallas);
+            apiGetNextIncomingBuses data = new apiGetNextIncomingBuses(StopId);
             Thread thread = new Thread(data);
             thread.start();
             thread.join();
-            IncommingBusRespModel[] BusList = data.getValue();
-            return BusList;
+            return data.getValue();
         } catch (Exception e) {
             log(e.toString());
         }
 
-        return new IncommingBusRespModel[0];
+        return new IncomingBusRespModel[0];
     }
 
-    public TrackBusRespModel getBusLocation(int jaratId) {
+    public TrackBusRespModel getBusLocation(int LineId) {
         try {
-            apiGetBusPosition data = new apiGetBusPosition(jaratId);
+            apiGetBusPosition data = new apiGetBusPosition(LineId);
             Thread thread = new Thread(data);
             thread.start();
             thread.join();
-            TrackBusRespModel BusList = data.getValue();
-            return BusList;
+            return data.getValue();
         } catch (Exception e) {
             log(e.toString());
         }
@@ -66,9 +56,9 @@ public class TukeServerApi {
         return null;
     }
 
-    public Boolean getIsBusHasStarted(int jaratid) {
+    public Boolean getIsBusHasStarted(int LineId) {
         try {
-            apiGetIsBusHasStarted data = new apiGetIsBusHasStarted(jaratid);
+            apiGetIsBusHasStarted data = new apiGetIsBusHasStarted(LineId);
             Thread thread = new Thread(data);
             thread.start();
             thread.join();

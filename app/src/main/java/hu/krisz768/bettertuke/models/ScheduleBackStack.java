@@ -1,11 +1,11 @@
 package hu.krisz768.bettertuke.models;
 
 public class ScheduleBackStack {
-    private String LineNum;
-    private String Direction;
-    private String Date;
-    private int StopId;
-    private boolean PreSelected;
+    private final String LineNum;
+    private final String Direction;
+    private final String Date;
+    private final int StopId;
+    private final boolean PreSelected;
 
     public ScheduleBackStack(String lineNum, String direction, String date, int stopId, boolean PreSelected) {
         LineNum = lineNum;

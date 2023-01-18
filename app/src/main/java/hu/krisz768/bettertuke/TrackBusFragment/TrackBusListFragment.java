@@ -1,5 +1,6 @@
 package hu.krisz768.bettertuke.TrackBusFragment;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -16,7 +17,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.Calendar;
 
-import hu.krisz768.bettertuke.Database.BusJaratok;
+import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.MainActivity;
@@ -30,20 +31,17 @@ import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
  */
 public class TrackBusListFragment extends Fragment {
 
-    private static final String PLACE = "Place";
     private static final String STOP = "Stop";
     private static final String PLACELIST = "PlaceList";
     private static final String STOPLIST = "StopList";
-    private static final String JARATOK = "JaratInfo";
+    private static final String LINES = "LineInfo";
     private static final String POSITION = "BusPosition";
 
-    private int mPlace;
     private int mStop;
-
 
     private BusPlaces[] mPlaceList;
     private BusStops[] mStopList;
-    private BusJaratok mJarat;
+    private BusLine mLine;
     private TrackBusRespModel mBusPosition;
 
     private TrackBusListAdapter Tbla;
@@ -56,11 +54,10 @@ public class TrackBusListFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static TrackBusListFragment newInstance(BusJaratok JaratInfo, int Place, int Stop, BusPlaces[] PlaceList, BusStops[] StopList, TrackBusRespModel BusPosition) {
+    public static TrackBusListFragment newInstance(BusLine LineInfo, int Stop, BusPlaces[] PlaceList, BusStops[] StopList, TrackBusRespModel BusPosition) {
         TrackBusListFragment fragment = new TrackBusListFragment();
         Bundle args = new Bundle();
-        args.putSerializable(JARATOK, JaratInfo);
-        args.putInt(PLACE, Place);
+        args.putSerializable(LINES, LineInfo);
         args.putInt(STOP, Stop);
         args.putSerializable(PLACELIST, PlaceList);
         args.putSerializable(STOPLIST, StopList);
@@ -73,8 +70,7 @@ public class TrackBusListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mJarat = (BusJaratok) getArguments().getSerializable(JARATOK);
-            mPlace = getArguments().getInt(PLACE);
+            mLine = (BusLine) getArguments().getSerializable(LINES);
             mStop = getArguments().getInt(STOP);
             mPlaceList = (BusPlaces[]) getArguments().getSerializable(PLACELIST);
             mStopList = (BusStops[]) getArguments().getSerializable(STOPLIST);
@@ -88,37 +84,41 @@ public class TrackBusListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_track_bus_list, container, false);
 
         Calendar calendar = Calendar.getInstance();
-        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), mJarat.getIndulasOra(), mJarat.getIndulasPerc());
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), mLine.getDepartureHour(), mLine.getDepartureMinute());
 
-        Tbla = new TrackBusListAdapter(mJarat.getMegallok(), mPlaceList, mStopList, calendar, mBusPosition, mStop, this, getContext(), mJarat.getDate());
+        Tbla = new TrackBusListAdapter(mLine.getStops(), mPlaceList, mStopList, calendar, mBusPosition, mStop, this, getContext(), mLine.getDate());
 
         Recv = view.findViewById(R.id.BusTrackListRecv);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         Recv.setLayoutManager(mLayoutManager);
         Recv.setAdapter(Tbla);
 
-        int scrollposition = 0;
+        int scrollPosition = 0;
 
         if (mBusPosition != null) {
-            for (int i = 0; i < mJarat.getMegallok().length; i++) {
-                if (mJarat.getMegallok()[i].getSorrend() == mBusPosition.getMegalloSorszam()) {
-                    scrollposition = i;
+            for (int i = 0; i < mLine.getStops().length; i++) {
+                if (mLine.getStops()[i].getOrder() == mBusPosition.getStopNumber()) {
+                    scrollPosition = i;
                 }
             }
         }
 
-        Recv.scrollToPosition(scrollposition);
+        Recv.scrollToPosition(scrollPosition);
 
         return view;
     }
 
     public void scrollSmoothTo() {
         if (mBusPosition != null) {
-            for (int i = 0; i < mJarat.getMegallok().length; i++) {
-                if (mJarat.getMegallok()[i].getSorrend() == mBusPosition.getMegalloSorszam()) {
-                    int scrollposition = i;
-                    if (mJarat.getMegallok().length > i+1) {
+            for (int i = 0; i < mLine.getStops().length; i++) {
+                if (mLine.getStops()[i].getOrder() == mBusPosition.getStopNumber()) {
+                    int scrollPosition = i;
+                    if (mLine.getStops().length > i+1) {
                         i++;
+                    }
+
+                    if (getContext() == null) {
+                        return;
                     }
 
                     RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
@@ -132,8 +132,10 @@ public class TrackBusListFragment extends Fragment {
                             return super.calculateSpeedPerPixel(displayMetrics) *4;
                         }
                     };
-                    smoothScroller.setTargetPosition(scrollposition);
-                    Recv.getLayoutManager().startSmoothScroll(smoothScroller);
+                    smoothScroller.setTargetPosition(scrollPosition);
+                    if ( Recv.getLayoutManager() != null) {
+                        Recv.getLayoutManager().startSmoothScroll(smoothScroller);
+                    }
                 }
             }
         }
@@ -141,6 +143,7 @@ public class TrackBusListFragment extends Fragment {
 
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void UpdateData(TrackBusRespModel TrackData) {
         if (Tbla != null) {
             Tbla.UpdateList(TrackData);
@@ -150,9 +153,11 @@ public class TrackBusListFragment extends Fragment {
     }
 
     public void OnStopClick(int Id) {
-        for (int i = 0; i < mStopList.length; i++) {
-            if (mStopList[i].getId() == Id) {
-                ((MainActivity) getActivity()).ZoomTo(new LatLng(mStopList[i].getGpsY(), mStopList[i].getGpsX()));
+        for (BusStops busStops : mStopList) {
+            if (busStops.getId() == Id) {
+                if(getActivity() != null){
+                    ((MainActivity) getActivity()).ZoomTo(new LatLng(busStops.getGpsLatitude(), busStops.getGpsLongitude()));
+                }
                 break;
             }
         }

@@ -2,11 +2,8 @@ package hu.krisz768.bettertuke.api_interface;
 
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,7 +27,6 @@ public class TukeServerApiFunctions<T> {
         return ErrorFlag;
     }
 
-
     protected byte[] getParamsByte(Map<String, Object> params) {
         byte[] result = null;
         StringBuilder postData = new StringBuilder();
@@ -43,9 +39,9 @@ public class TukeServerApiFunctions<T> {
             postData.append(this.encodeParam(String.valueOf(param.getValue())));
         }
         try {
-            result = postData.toString().getBytes("UTF-8");
+            result = postData.toString().getBytes(StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log("Encode Error :(" + e.toString());
+            log("Encode Error :(" + e);
         }
         return result;
     }
@@ -55,7 +51,7 @@ public class TukeServerApiFunctions<T> {
         try {
             result = URLEncoder.encode(data, "UTF-8");
         } catch (Exception e) {
-            log("Encode Error :(" + e.toString());
+            log("Encode Error :(" + e);
         }
         return result;
     }
@@ -66,7 +62,7 @@ public class TukeServerApiFunctions<T> {
         try {
             return Sdf.parse(DateString);
         } catch (ParseException e) {
-            log("Date parse Error :(" + e.toString());
+            log("Date parse Error :(" + e);
         }
 
         return null;

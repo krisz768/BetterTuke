@@ -4,29 +4,23 @@ import android.location.Location;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
-import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
-import hu.krisz768.bettertuke.SearchFragment.SearchAdapter;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 
 /**
@@ -84,61 +78,52 @@ public class BottomSheetNearStops extends Fragment {
 
         GetStreetName(view);
 
-        GetNearestPlaces(view);
+        GetNearestPlaces();
 
         return view;
     }
 
     private void GetStreetName(View view) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (getActivity() != null) {
-                    String Name = ((MainActivity)getActivity()).getAddressFromLatLng(new LatLng(mLatitude, mLongitude));
+        new Thread(() -> {
+            if (getActivity() != null) {
+                String Name = ((MainActivity)getActivity()).getAddressFromLatLng(new LatLng(mLatitude, mLongitude));
 
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            TextView NearStopLocationText = view.findViewById(R.id.NearStopLocationText);
-                            NearStopLocationText.setText(Name);
-                        }
-                    });
-                }
+                getActivity().runOnUiThread(() -> {
+                    TextView NearStopLocationText = view.findViewById(R.id.NearStopLocationText);
+                    NearStopLocationText.setText(Name);
+                });
             }
         }).start();
     }
 
-    private void GetNearestPlaces(View view) {
-        BottomSheetNearStops Callback = this;
+    private void GetNearestPlaces() {
+        new Thread(() -> {
+            Location location = new Location("");
+            location.setLongitude(mLongitude);
+            location.setLatitude(mLatitude);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Location location = new Location("");
-                location.setLongitude(mLongitude);
-                location.setLatitude(mLatitude);
+            List<BusPlaces> NearBusPlacesList = new ArrayList<>();
 
-                List<BusPlaces> NearBusPlacesList = new ArrayList<>();
+            for (BusPlaces mPlace : mPlaces) {
+                Location StopLocation = new Location("");
+                StopLocation.setLatitude(mPlace.getGpsLatitude());
+                StopLocation.setLongitude(mPlace.getGpsLongitude());
 
-                for (int i = 0; i < mPlaces.length; i++) {
-                    Location StopLocation = new Location("");
-                    StopLocation.setLatitude(mPlaces[i].getGpsY());
-                    StopLocation.setLongitude(mPlaces[i].getGpsX());
-
-                    if (location.distanceTo(StopLocation) < 500) {
-                        NearBusPlacesList.add(mPlaces[i]);
-                    }
+                if (location.distanceTo(StopLocation) < 500) {
+                    NearBusPlacesList.add(mPlace);
                 }
+            }
 
+            List<BusPlaces> FavNearBusPlacesList = new ArrayList<>();
+
+            if (getContext() != null){
                 UserDatabase userDatabase = new UserDatabase(getContext());
-
-                List<BusPlaces> FavNearBusPlacesList = new ArrayList<>();
 
                 for (int i = 0; i < NearBusPlacesList.size(); i++) {
                     Log.e("b", NearBusPlacesList.get(i).getName());
-                    for (int j = 0; j < mStops.length; j++){
-                        if (NearBusPlacesList.get(i).getId() == mStops[j].getFoldhely()) {
-                            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStops[j].getId()))) {
+                    for (BusStops mStop : mStops) {
+                        if (NearBusPlacesList.get(i).getId() == mStop.getPlace()) {
+                            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop.getId()))) {
                                 FavNearBusPlacesList.add(NearBusPlacesList.get(i));
                                 NearBusPlacesList.remove(i);
                                 i--;
@@ -147,61 +132,49 @@ public class BottomSheetNearStops extends Fragment {
                         }
                     }
                 }
-
-                for (int i = 0; i < FavNearBusPlacesList.size(); i++) {
-                    //
-                }
-
-                Collections.sort(NearBusPlacesList, new Comparator<BusPlaces>() {
-                    @Override
-                    public int compare(BusPlaces busPlaces, BusPlaces t1) {
-                        Location StopLocation1 = new Location("");
-                        StopLocation1.setLatitude(busPlaces.getGpsY());
-                        StopLocation1.setLongitude(busPlaces.getGpsX());
-
-                        Location StopLocation2 = new Location("");
-                        StopLocation2.setLatitude(t1.getGpsY());
-                        StopLocation2.setLongitude(t1.getGpsX());
-
-                        return Math.round(location.distanceTo(StopLocation1) - location.distanceTo(StopLocation2));
-                    }
-                });
-
-                Collections.sort(FavNearBusPlacesList, new Comparator<BusPlaces>() {
-                    @Override
-                    public int compare(BusPlaces busPlaces, BusPlaces t1) {
-                        Location StopLocation1 = new Location("");
-                        StopLocation1.setLatitude(busPlaces.getGpsY());
-                        StopLocation1.setLongitude(busPlaces.getGpsX());
-
-                        Location StopLocation2 = new Location("");
-                        StopLocation2.setLatitude(t1.getGpsY());
-                        StopLocation2.setLongitude(t1.getGpsX());
-
-                        return Math.round(location.distanceTo(StopLocation1) - location.distanceTo(StopLocation2));
-                    }
-                });
-
-                NearBusPlacesList.addAll(0, FavNearBusPlacesList);
-
-                BusPlaces[] busPlaces = new BusPlaces[NearBusPlacesList.size()];
-                NearBusPlacesList.toArray(busPlaces);
-
-                int FavNum = FavNearBusPlacesList.size();
-
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            NearBusStopListFragment NearStopFragment = NearBusStopListFragment.newInstance(busPlaces, FavNum);
-                            getChildFragmentManager().beginTransaction()
-                                    .replace(R.id.NearStopListFragment, NearStopFragment)
-                                    .commit();
-                        }
-                    });
-                }
-
             }
+
+
+            Collections.sort(NearBusPlacesList, (busPlaces, t1) -> {
+                Location StopLocation1 = new Location("");
+                StopLocation1.setLatitude(busPlaces.getGpsLatitude());
+                StopLocation1.setLongitude(busPlaces.getGpsLongitude());
+
+                Location StopLocation2 = new Location("");
+                StopLocation2.setLatitude(t1.getGpsLatitude());
+                StopLocation2.setLongitude(t1.getGpsLongitude());
+
+                return Math.round(location.distanceTo(StopLocation1) - location.distanceTo(StopLocation2));
+            });
+
+            Collections.sort(FavNearBusPlacesList, (busPlaces, t1) -> {
+                Location StopLocation1 = new Location("");
+                StopLocation1.setLatitude(busPlaces.getGpsLatitude());
+                StopLocation1.setLongitude(busPlaces.getGpsLongitude());
+
+                Location StopLocation2 = new Location("");
+                StopLocation2.setLatitude(t1.getGpsLatitude());
+                StopLocation2.setLongitude(t1.getGpsLongitude());
+
+                return Math.round(location.distanceTo(StopLocation1) - location.distanceTo(StopLocation2));
+            });
+
+            NearBusPlacesList.addAll(0, FavNearBusPlacesList);
+
+            BusPlaces[] busPlaces = new BusPlaces[NearBusPlacesList.size()];
+            NearBusPlacesList.toArray(busPlaces);
+
+            int FavNum = FavNearBusPlacesList.size();
+
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    NearBusStopListFragment NearStopFragment = NearBusStopListFragment.newInstance(busPlaces, FavNum);
+                    getChildFragmentManager().beginTransaction()
+                            .replace(R.id.NearStopListFragment, NearStopFragment)
+                            .commit();
+                });
+            }
+
         }).start();
     }
 }

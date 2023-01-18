@@ -16,7 +16,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import hu.krisz768.bettertuke.Database.BusLine;
+import hu.krisz768.bettertuke.Database.BusNum;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.ScheduleActivity;
@@ -54,12 +54,16 @@ public class ScheduleBusListFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_schedule_bus_list, container, false);
 
+        if(getContext() == null) {
+            return view;
+        }
+
         DatabaseManager Dm = new DatabaseManager(getContext());
-        BusLine[] BusLines;
+        BusNum[] busNums;
         if (mStopId == -1) {
-            BusLines = Dm.GetActiveBusLines();
+            busNums = Dm.GetActiveBusLines();
         } else{
-            BusLines = Dm.GetActiveBusLinesFromStop(mStopId);
+            busNums = Dm.GetActiveBusLinesFromStop(mStopId);
             String StopName = Dm.GetStopName(mStopId);
             String StopNum = Dm.GetStopNum(mStopId);
 
@@ -70,21 +74,21 @@ public class ScheduleBusListFragment extends Fragment {
 
         Favorite[] favorites = userDatabase.GetFavorites(UserDatabase.FavoriteType.Line);
 
-        List<BusLine> FavoriteBusLineList = new ArrayList<>();
+        List<BusNum> favoriteBusNumList = new ArrayList<>();
 
-        for (int i = 0; i < favorites.length; i++) {
-            for (int j = 0; j < BusLines.length; j++) {
-                if (favorites[i].getData().equals(BusLines[j].getLineName())) {
-                    FavoriteBusLineList.add(BusLines[j]);
+        for (Favorite favorite : favorites) {
+            for (BusNum busNum : busNums) {
+                if (favorite.getData().equals(busNum.getLineName())) {
+                    favoriteBusNumList.add(busNum);
                     break;
                 }
             }
         }
 
-        BusLine[] FavoriteBusLine = new BusLine[FavoriteBusLineList.size()];
-        FavoriteBusLineList.toArray(FavoriteBusLine);
+        BusNum[] favoriteBusNum = new BusNum[favoriteBusNumList.size()];
+        favoriteBusNumList.toArray(favoriteBusNum);
 
-        ScheduleBusListAdapter Sbla = new ScheduleBusListAdapter(BusLines, FavoriteBusLine, getContext(), this);
+        ScheduleBusListAdapter Sbla = new ScheduleBusListAdapter(busNums, favoriteBusNum, getContext(), this);
 
         RecyclerView BusLineRecv = view.findViewById(R.id.ScheduleBusLineRec);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
@@ -94,7 +98,7 @@ public class ScheduleBusListFragment extends Fragment {
         ItemTouchHelper.Callback callback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                if (target.getAdapterPosition() < FavoriteBusLine.length+1 && target.getAdapterPosition() != 0) {
+                if (target.getAdapterPosition() < favoriteBusNum.length+1 && target.getAdapterPosition() != 0) {
                     Sbla.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
 
                     int FirstId = userDatabase.GetId(((ScheduleBusListAdapter.ViewHolderLine)viewHolder).GetName(), UserDatabase.FavoriteType.Line);
@@ -111,7 +115,7 @@ public class ScheduleBusListFragment extends Fragment {
 
             @Override
             public int getDragDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-                return viewHolder.getAdapterPosition() < FavoriteBusLine.length+1 && viewHolder.getAdapterPosition() != 0 ? super.getDragDirs(recyclerView, viewHolder) : 0;
+                return viewHolder.getAdapterPosition() < favoriteBusNum.length+1 && viewHolder.getAdapterPosition() != 0 ? super.getDragDirs(recyclerView, viewHolder) : 0;
             }
 
             @Override
@@ -122,7 +126,7 @@ public class ScheduleBusListFragment extends Fragment {
             @Override
             public boolean isLongPressDragEnabled() {
 
-                return FavoriteBusLine.length > 0;
+                return favoriteBusNum.length > 0;
             }
         };
 
@@ -134,12 +138,7 @@ public class ScheduleBusListFragment extends Fragment {
 
     public void OnLineClick(String Line) {
         if (getActivity() != null) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    ((ScheduleActivity)getActivity()).selectLine(Line);
-                }
-            });
+            getActivity().runOnUiThread(() -> ((ScheduleActivity)getActivity()).selectLine(Line));
         }
     }
 }

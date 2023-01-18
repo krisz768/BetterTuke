@@ -1,5 +1,6 @@
 package hu.krisz768.bettertuke.SearchFragment;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -8,7 +9,6 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,10 +16,8 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
-import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusListAdapter;
 import hu.krisz768.bettertuke.UserDatabase.Favorite;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.models.SearchResult;
@@ -35,7 +33,6 @@ public class SearchViewFragment extends Fragment {
 
     private SearchResult[] mAllItem;
 
-    private RecyclerView recyclerView;
     private SearchAdapter searchAdapter;
 
     private boolean Fav;
@@ -70,7 +67,7 @@ public class SearchViewFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_search_view, container, false);
 
-        recyclerView = view.findViewById(R.id.SearchResultRecView);
+        RecyclerView recyclerView = view.findViewById(R.id.SearchResultRecView);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(mLayoutManager);
 
@@ -78,6 +75,10 @@ public class SearchViewFragment extends Fragment {
 
         searchAdapter = new SearchAdapter(GetFavoriteStops(), getContext(), this);
         recyclerView.setAdapter(searchAdapter);
+
+        if (getContext() == null) {
+            return view;
+        }
 
         UserDatabase userDatabase = new UserDatabase(getContext());
 
@@ -123,14 +124,18 @@ public class SearchViewFragment extends Fragment {
     }
 
     private SearchResult[] GetFavoriteStops() {
+        if (getContext() == null) {
+            return new SearchResult[0];
+        }
+
         UserDatabase userDatabase = new UserDatabase(getContext());
 
         Favorite[] favorites = userDatabase.GetFavorites(UserDatabase.FavoriteType.Stop);
 
         List<SearchResult> searchResultList = new ArrayList<>();
 
-        for (int i = 0; i < favorites.length; i++) {
-            searchResultList.add(new SearchResult(SearchResult.SearchType.FavStop, "", favorites[i].getData()));
+        for (Favorite favorite : favorites) {
+            searchResultList.add(new SearchResult(SearchResult.SearchType.FavStop, "", favorite.getData()));
         }
 
         SearchResult[] searchResults = new SearchResult[searchResultList.size()];
@@ -139,6 +144,7 @@ public class SearchViewFragment extends Fragment {
         return searchResults;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void OnSearchTextChanged(String text) {
         if (searchAdapter != null) {
             if (text.equals("")) {
@@ -151,9 +157,9 @@ public class SearchViewFragment extends Fragment {
             Fav = false;
             List<SearchResult> ResultsList = new ArrayList<>();
 
-            for (int i = 0; i < mAllItem.length; i++) {
-                if (mAllItem[i].getSearchText().toLowerCase().contains(text.toLowerCase())){
-                    ResultsList.add(mAllItem[i]);
+            for (SearchResult searchResult : mAllItem) {
+                if (searchResult.getSearchText().toLowerCase().contains(text.toLowerCase())) {
+                    ResultsList.add(searchResult);
                 }
             }
 

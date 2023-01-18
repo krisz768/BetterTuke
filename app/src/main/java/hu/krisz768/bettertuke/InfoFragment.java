@@ -1,6 +1,5 @@
 package hu.krisz768.bettertuke;
 
-import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;

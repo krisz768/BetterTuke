@@ -5,18 +5,16 @@ import android.content.Context;
 import java.io.Serializable;
 
 public class BusPlaces implements Serializable {
-    private int Id;
-    private String Name;
-    private float GpsX;
-    private float GpsY;
-    private int SequenceNumber;
+    private final int Id;
+    private final String Name;
+    private final float GpsLongitude;
+    private final float GpsLatitude;
 
-    public BusPlaces(int id, String name, float gpsX, float gpsY, int sequenceNumber) {
+    public BusPlaces(int id, String name, float gpsLongitude, float gpsLatitude) {
         Id = id;
         Name = name;
-        GpsX = gpsX;
-        GpsY = gpsY;
-        SequenceNumber = sequenceNumber;
+        GpsLongitude = gpsLongitude;
+        GpsLatitude = gpsLatitude;
     }
 
     public int getId() {
@@ -27,16 +25,12 @@ public class BusPlaces implements Serializable {
         return Name;
     }
 
-    public float getGpsX() {
-        return GpsX;
+    public float getGpsLongitude() {
+        return GpsLongitude;
     }
 
-    public float getGpsY() {
-        return GpsY;
-    }
-
-    public int getSequenceNumber() {
-        return SequenceNumber;
+    public float getGpsLatitude() {
+        return GpsLatitude;
     }
 
     public static BusPlaces[] getAllBusPlaces(Context ctx) {

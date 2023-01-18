@@ -1,55 +1,45 @@
 package hu.krisz768.bettertuke.ScheduleFragment;
 
-import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.InsetDrawable;
-import android.graphics.drawable.LayerDrawable;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.core.content.ContextCompat;
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.util.Locale;
 
 import hu.krisz768.bettertuke.Database.BusScheduleTime;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.R;
-import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
 public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleBusTimeMinuteAdapter.ViewHolder>{
 
-    private int Hour;
-    private int[] Minutes;
-    private String[] BusCodes;
-    private int MaxPerLine;
-    private int SecColor;
-    private int OnPrimColor;
-    private int OnErrColor;
-    private Drawable Background;
-    private Drawable FullBackground;
+    private final int Hour;
+    private final int[] Minutes;
+    private final String[] BusCodes;
+    private final int MaxPerLine;
+    private final int SecColor;
+    private final int OnPrimColor;
+    private final int OnErrColor;
+    private final Drawable Background;
+    private final Drawable FullBackground;
 
-    private BusScheduleTime[] Started;
-    private BusScheduleTime[] ErrNotStarted;
+    private final BusScheduleTime[] Started;
+    private final BusScheduleTime[] ErrNotStarted;
 
-    private Drawable MinBackgroundStarted;
-    private Drawable MinFullBackgroundStarted;
-    private Drawable MinBackgroundErr;
-    private Drawable MinFullBackgroundErr;
+    private final Drawable MinBackgroundStarted;
+    private final Drawable MinFullBackgroundStarted;
+    private final Drawable MinBackgroundErr;
+    private final Drawable MinFullBackgroundErr;
 
-    private ScheduleBusTimeFragment Callback;
+    private final ScheduleBusTimeFragment Callback;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView MinuteText;
-        private TextView BusCodeText;
+        private final TextView MinuteText;
+        private final TextView BusCodeText;
 
         public ViewHolder(View view) {
             super(view);
@@ -58,28 +48,30 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
             BusCodeText = view.findViewById(R.id.ScheduleMinuteCode);
         }
 
-        public void setData(int Hour, int Minute, String Code, boolean Firstrow, int SecColor, int OnPrimColor, int OnErrColor, Drawable Background, Drawable FullBackground, Drawable MinBackgroundStarted, Drawable MinFullBackgroundStarted, Drawable MinBackgroundErr, Drawable MinFullBackgroundErr,BusScheduleTime[] Started,BusScheduleTime[] ErrNotStarted, ScheduleBusTimeFragment Callback) {
-            MinuteText.setText(String.format("%02d", Minute));
+        public void setData(int Hour, int Minute, String Code, boolean FirstRow, int SecColor, int OnPrimColor, int OnErrColor, Drawable Background, Drawable FullBackground, Drawable MinBackgroundStarted, Drawable MinFullBackgroundStarted, Drawable MinBackgroundErr, Drawable MinFullBackgroundErr,BusScheduleTime[] Started,BusScheduleTime[] ErrNotStarted, ScheduleBusTimeFragment Callback) {
+            MinuteText.setText(String.format(Locale.US, "%02d", Minute));
 
             BusCodeText.setText(Code);
 
             boolean IsStarted = false;
             boolean IsErr = false;
 
-            for (int i = 0; i < Started.length; i++) {
-                if (Started[i].getOra() == Hour && Started[i].getPerc() == Minute) {
+            for (BusScheduleTime busScheduleTime : Started) {
+                if (busScheduleTime.getHour() == Hour && busScheduleTime.getMinute() == Minute) {
                     IsStarted = true;
+                    break;
                 }
             }
 
-            for (int i = 0; i < ErrNotStarted.length; i++) {
-                if (ErrNotStarted[i].getOra() == Hour && ErrNotStarted[i].getPerc() == Minute) {
+            for (BusScheduleTime busScheduleTime : ErrNotStarted) {
+                if (busScheduleTime.getHour() == Hour && busScheduleTime.getMinute() == Minute) {
                     IsErr = true;
+                    break;
                 }
             }
 
             if (IsStarted) {
-                if (Firstrow) {
+                if (FirstRow) {
                     MinuteText.setBackground(MinFullBackgroundStarted);
                 } else {
                     MinuteText.setBackground(MinBackgroundStarted);
@@ -87,7 +79,7 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
                 MinuteText.setTextColor(OnPrimColor);
                 BusCodeText.setTextColor(OnPrimColor);
             } else if (IsErr) {
-                if (Firstrow) {
+                if (FirstRow) {
                     MinuteText.setBackground(MinFullBackgroundErr);
                 } else {
                     MinuteText.setBackground(MinBackgroundErr);
@@ -95,7 +87,7 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
                 MinuteText.setTextColor(OnErrColor);
                 BusCodeText.setTextColor(OnErrColor);
             } else {
-                if (Firstrow) {
+                if (FirstRow) {
                     MinuteText.setBackground(FullBackground);
                 } else {
                     MinuteText.setBackground(Background);
@@ -104,12 +96,7 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
                 BusCodeText.setTextColor(SecColor);
             }
 
-            MinuteText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Callback.OnScheduleClick(Hour, Minute);
-                }
-            });
+            MinuteText.setOnClickListener(view -> Callback.OnScheduleClick(Hour, Minute));
 
         }
     }
@@ -136,6 +123,7 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
     }
 
     // Create new views (invoked by the layout manager)
+    @NonNull
     @Override
     public ScheduleBusTimeMinuteAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item

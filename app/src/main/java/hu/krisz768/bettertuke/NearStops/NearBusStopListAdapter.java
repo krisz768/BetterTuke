@@ -1,43 +1,32 @@
 package hu.krisz768.bettertuke.NearStops;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.core.content.ContextCompat;
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import hu.krisz768.bettertuke.Database.BusPlaces;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
-import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusListAdapter;
-import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusListFragment;
 import hu.krisz768.bettertuke.R;
-import hu.krisz768.bettertuke.SearchFragment.SearchViewFragment;
-import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
-import hu.krisz768.bettertuke.models.SearchResult;
 
 public class NearBusStopListAdapter extends RecyclerView.Adapter<NearBusStopListAdapter.ViewHolder>{
-    private BusPlaces[] busPlaces;
-    private NearBusStopListFragment Callback;
-    private int FavCount;
+    private final BusPlaces[] busPlaces;
+    private final NearBusStopListFragment Callback;
+    private final int FavCount;
 
     /**
      * Provide a reference to the type of views that you are using
      * (custom ViewHolder)
      */
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        private ImageView icon;
-        private ImageView FavIcon;
-        private TextView StopName;
-        private View view;
+        private final ImageView icon;
+        private final ImageView FavIcon;
+        private final TextView StopName;
+        private final View view;
 
         public ViewHolder(View view) {
             super(view);
@@ -59,12 +48,7 @@ public class NearBusStopListAdapter extends RecyclerView.Adapter<NearBusStopList
 
             StopName.setText(stop.getName());
 
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Callback.OnStopClick(stop.getId());
-                }
-            });
+            view.setOnClickListener(view -> Callback.OnStopClick(stop.getId()));
         }
     }
 
@@ -75,6 +59,7 @@ public class NearBusStopListAdapter extends RecyclerView.Adapter<NearBusStopList
     }
 
     // Create new views (invoked by the layout manager)
+    @NonNull
     @Override
     public NearBusStopListAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item

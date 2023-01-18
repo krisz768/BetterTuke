@@ -40,7 +40,7 @@
     <View
         android:id="@+id/divider123"
         android:layout_width="1dp"
-        android:layout_height="23dp"
+        android:layout_height="match_parent"
         android:background="?android:attr/listDivider"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/LegendDesc"

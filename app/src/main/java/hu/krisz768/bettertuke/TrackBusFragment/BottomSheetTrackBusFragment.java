@@ -15,9 +15,11 @@ import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-import hu.krisz768.bettertuke.Database.BusJaratok;
+import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.HelperProvider;
@@ -31,20 +33,17 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
     private static final String PLACE = "Place";
     private static final String STOP = "Stop";
-    private static final String JARAT = "Jarat";
     private static final String PLACELIST = "PlaceList";
     private static final String STOPLIST = "StopList";
-    private static final String JARATOBJ = "JaratObj";
+    private static final String LINEOBJ = "LineObj";
 
     private int mPlace;
     private int mStop;
-    private int mJarat;
 
     private BusPlaces[] mPlaceList;
     private BusStops[] mStopList;
-    private BusJaratok mBusJarat;
+    private BusLine mBusLine;
 
-    private Thread UpdateThread;
     private TrackBusListFragment TrackBusFragment;
     private TextView PlateNumber;
     private TextView BusType;
@@ -57,21 +56,21 @@ public class BottomSheetTrackBusFragment extends Fragment {
     private ImageView Usb;
 
     private boolean BusAttributesVisible = false;
-    private volatile boolean UpdateThreadRun = true;
+
+    ScheduledExecutorService UpdateLoop;
 
     public BottomSheetTrackBusFragment() {
 
     }
 
-    public static BottomSheetTrackBusFragment newInstance(int Place, int Stop, int Jarat, BusPlaces[] PlaceList, BusStops[] StopList, BusJaratok JaratObj) {
+    public static BottomSheetTrackBusFragment newInstance(int Place, int Stop, BusPlaces[] PlaceList, BusStops[] StopList, BusLine LineObj) {
         BottomSheetTrackBusFragment fragment = new BottomSheetTrackBusFragment();
         Bundle args = new Bundle();
         args.putInt(PLACE, Place);
         args.putInt(STOP, Stop);
-        args.putInt(JARAT, Jarat);
         args.putSerializable(PLACELIST, PlaceList);
         args.putSerializable(STOPLIST, StopList);
-        args.putSerializable(JARATOBJ, JaratObj);
+        args.putSerializable(LINEOBJ, LineObj);
         fragment.setArguments(args);
         return fragment;
     }
@@ -82,10 +81,9 @@ public class BottomSheetTrackBusFragment extends Fragment {
         if (getArguments() != null) {
             mPlace = getArguments().getInt(PLACE);
             mStop = getArguments().getInt(STOP);
-            mJarat = getArguments().getInt(JARAT);
             mPlaceList = (BusPlaces[]) getArguments().getSerializable(PLACELIST);
             mStopList = (BusStops[]) getArguments().getSerializable(STOPLIST);
-            mBusJarat = (BusJaratok) getArguments().getSerializable(JARATOBJ);
+            mBusLine = (BusLine) getArguments().getSerializable(LINEOBJ);
         }
     }
 
@@ -97,18 +95,18 @@ public class BottomSheetTrackBusFragment extends Fragment {
         TextView BusNum = view.findViewById(R.id.TrackBusNumber);
         TextView BusText = view.findViewById(R.id.TrackBusName);
 
-        BusNum.setText(mBusJarat.getNyomvonalInfo().getJaratSzam());
-        int Whitecolor = Color.rgb(255,255,255);
-        BusNum.setTextColor(Whitecolor);
+        BusNum.setText(mBusLine.getRouteInfo().getLineNum());
+        int WhiteColor = Color.rgb(255,255,255);
+        BusNum.setTextColor(WhiteColor);
 
-        BusText.setText(mBusJarat.getNyomvonalInfo().getJaratNev());
+        BusText.setText(mBusLine.getRouteInfo().getLineName());
 
         findBusAttributes(view);
 
-        if (mBusJarat.getDate() == null) {
-            StartUpdateThread(view);
+        if (mBusLine.getDate() == null) {
+            StartUpdateThread();
         } else {
-            TrackBusFragment = TrackBusListFragment.newInstance(mBusJarat, mPlace, mStop, mPlaceList, mStopList, null);
+            TrackBusFragment = TrackBusListFragment.newInstance(mBusLine, mStop, mPlaceList, mStopList, null);
             getChildFragmentManager().beginTransaction()
                     .replace(R.id.BusTrackFragmentView, TrackBusFragment)
                     .commit();
@@ -122,98 +120,87 @@ public class BottomSheetTrackBusFragment extends Fragment {
     public void onPause() {
         super.onPause();
 
-        UpdateThreadRun = false;
+        UpdateLoop.shutdown();
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        UpdateThreadRun = true;
+        StartUpdateThread();
     }
 
-    private void StartUpdateThread(View view) {
+    @Override
+    public void onStop() {
+        super.onStop();
+        UpdateLoop.shutdown();
+    }
 
-        UpdateThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                TukeServerApi serverApi = new TukeServerApi(view.getContext());
-
-                try {
-                    while (true) {
-                        if (getContext() == null)
-                            break;
-                        if (!UpdateThreadRun) {
-                            Thread.sleep(1000);
-                            continue;
-                        }
-                        GetBusPosition(serverApi);
-                        Thread.sleep(2000);
-                    }
-                } catch (Exception e) {
-
-                }
+    private void StartUpdateThread() {
+        if (UpdateLoop != null) {
+            if (!UpdateLoop.isShutdown()){
+                return;
             }
-        });
-        UpdateThread.start();
+        }
+
+        TukeServerApi serverApi = new TukeServerApi(this.getActivity());
+
+        UpdateLoop = Executors.newScheduledThreadPool(1);
+        UpdateLoop.scheduleAtFixedRate(() -> GetBusPosition(serverApi), 0, 2, TimeUnit.SECONDS);
     }
 
     private void GetBusPosition(TukeServerApi serverApi) {
         try {
-            TrackBusRespModel BusPosition = serverApi.getBusLocation(mBusJarat.getJaratid());
+            TrackBusRespModel BusPosition = serverApi.getBusLocation(mBusLine.getLineId());
+            if (getView() == null) {
+                return;
+            }
             TextView BusNum = getView().findViewById(R.id.TrackBusNumber);
 
             if (BusPosition != null) {
-                BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_active));
+                if (getContext() != null) {
+                    BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_active));
+                }
                 if (!BusAttributesVisible) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if(BusPosition!=null)
-                                showBusAttributes(HelperProvider.getBusAttributes(getContext(),BusPosition.getRendszam()));
-                        }
-                    });
+                    if (getActivity() != null){
+                        getActivity().runOnUiThread(() -> showBusAttributes(HelperProvider.getBusAttributes(getContext(),BusPosition.getLicensePlateNumber())));
 
-                    BusAttributesVisible = true;
+                        BusAttributesVisible = true;
+                    }
                 }
             } else {
-                BusAttributesVisible = false;
-                BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_inactive));
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        hideBusAttributes();
+                if (getContext() != null && getActivity() != null) {
+                    BusAttributesVisible = false;
+                    BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_inactive));
+
+                    getActivity().runOnUiThread(this::hideBusAttributes);
+                }
+            }
+
+
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    MainActivity mainActivity = (MainActivity)getActivity();
+                    if (TrackBusFragment != null && mainActivity != null) {
+                        mainActivity.BuspositionMarker(BusPosition != null ? new LatLng(BusPosition.getGpsLongitude(), BusPosition.getGpsLatitude()) : null);
                     }
                 });
             }
 
 
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity mainActivity = (MainActivity)getActivity();
-                    if (TrackBusFragment != null && mainActivity != null) {
-                        mainActivity.BuspositionMarker(BusPosition != null ? new LatLng(BusPosition.getGPSY(), BusPosition.getGPSx()) : null);
-                    }
-                }
-            });
-
             if (TrackBusFragment == null) {
-                TrackBusFragment = TrackBusListFragment.newInstance(mBusJarat, mPlace, mStop, mPlaceList, mStopList, BusPosition);
+                TrackBusFragment = TrackBusListFragment.newInstance(mBusLine, mStop, mPlaceList, mStopList, BusPosition);
                 getChildFragmentManager().beginTransaction()
                         .replace(R.id.BusTrackFragmentView, TrackBusFragment)
                         .commit();
             } else {
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (TrackBusFragment != null) {
-                            TrackBusFragment.UpdateData(BusPosition);
-                            MainActivity mainActivity = (MainActivity)getActivity();
-                            if (mainActivity != null) {
-                                if (((MainActivity)getActivity()).IsBottomSheetCollapsed()) {
-                                    TrackBusFragment.scrollSmoothTo();
-                                }
+                getActivity().runOnUiThread(() -> {
+                    if (TrackBusFragment != null) {
+                        TrackBusFragment.UpdateData(BusPosition);
+                        MainActivity mainActivity = (MainActivity)getActivity();
+                        if (mainActivity != null) {
+                            if (((MainActivity)getActivity()).IsBottomSheetCollapsed()) {
+                                TrackBusFragment.scrollSmoothTo();
                             }
                         }
                     }
@@ -238,15 +225,15 @@ public class BottomSheetTrackBusFragment extends Fragment {
         Usb = view.findViewById(R.id.Usb);
 
         Electric.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Electric));
-        LowFloor.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Lowfloor));
-        AirConditioner.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Airconditioner));
+        LowFloor.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.LowFloor));
+        AirConditioner.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.AirConditioner));
         Wifi.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Wifi));
         Usb.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Usb));
     }
 
     private void showBusAttributes(BusAttributes busAttributes)
     {
-        PlateNumber.setText(busAttributes.getPlatenumber());
+        PlateNumber.setText(busAttributes.getPlateNumber());
 
         if(busAttributes.getDoors()==-1)
             return;
@@ -263,9 +250,9 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
         if(busAttributes.getPropulsion()==1)
             Electric.setVisibility(View.VISIBLE);
-        if(busAttributes.isLowfloor())
+        if(busAttributes.isLowFloor())
             LowFloor.setVisibility(View.VISIBLE);
-        if(busAttributes.isAirconditioner())
+        if(busAttributes.isAirConditioner())
             AirConditioner.setVisibility(View.VISIBLE);
         if(busAttributes.isWifi())
             Wifi.setVisibility(View.VISIBLE);

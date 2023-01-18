@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 public class SearchResult implements Serializable {
 
-    private SearchType Type;
-    private String SearchText;
-    private Object Data;
+    private final SearchType Type;
+    private final String SearchText;
+    private final Object Data;
 
     public SearchResult(SearchType type, String searchText, Object data) {
         Type = type;

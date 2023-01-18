@@ -1,8 +1,8 @@
 package hu.krisz768.bettertuke.UserDatabase;
 
 public class Favorite {
-    private int Id;
-    private String Data;
+    private final int Id;
+    private final String Data;
 
     public Favorite(int id, String data) {
         Id = id;

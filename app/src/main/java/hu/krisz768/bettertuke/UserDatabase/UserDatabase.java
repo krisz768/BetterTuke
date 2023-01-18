@@ -12,12 +12,8 @@ import java.util.List;
 public class UserDatabase {
     private static SQLiteDatabase Sld;
 
-    private final String DATABASEFILE;
-    private final Context Ctx;
-
     public  UserDatabase (Context Ctx) {
-        this.Ctx = Ctx;
-        DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "user.db")).getAbsolutePath();
+        String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "user.db")).getAbsolutePath();
 
         if (Sld == null) {
             UserDatabaseHelper Dbh = new UserDatabaseHelper(Ctx, DATABASEFILE);
@@ -117,9 +113,8 @@ public class UserDatabase {
         {
             Cursor cursor = Sld.rawQuery("SELECT Id FROM Favorites WHERE Type = " + TypeToInt(favoriteType) + " AND Data = \"" + Data + "\";", null);
             int Id = -1;
-            while(cursor.moveToNext()) {
+            if (cursor.moveToNext()) {
                 Id = cursor.getInt(0);
-                break;
             }
             cursor.close();
 

@@ -1,5 +1,6 @@
 package hu.krisz768.bettertuke.IncomingBusFragment;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -12,7 +13,7 @@ import android.view.ViewGroup;
 
 import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
-import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
+import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -24,12 +25,12 @@ public class IncomingBusListFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "List";
 
-    private IncommingBusRespModel[] mList;
+    private IncomingBusRespModel[] mList;
 
     private IncomingBusListAdapter Ibla;
 
 
-    public static IncomingBusListFragment newInstance(IncommingBusRespModel[] List) {
+    public static IncomingBusListFragment newInstance(IncomingBusRespModel[] List) {
         IncomingBusListFragment fragment = new IncomingBusListFragment();
         Bundle args = new Bundle();
         args.putSerializable(ARG_PARAM1, List);
@@ -45,7 +46,7 @@ public class IncomingBusListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mList = (IncommingBusRespModel[])getArguments().getSerializable(ARG_PARAM1);
+            mList = (IncomingBusRespModel[])getArguments().getSerializable(ARG_PARAM1);
         }
     }
 
@@ -65,7 +66,8 @@ public class IncomingBusListFragment extends Fragment {
         return view;
     }
 
-    public void UpdateList(IncommingBusRespModel[] List) {
+    @SuppressLint("NotifyDataSetChanged")
+    public void UpdateList(IncomingBusRespModel[] List) {
         if (Ibla != null) {
             Ibla.UpdateList(List);
             Ibla.notifyDataSetChanged();
@@ -73,6 +75,8 @@ public class IncomingBusListFragment extends Fragment {
     }
 
     public void OnBusClick(int Id) {
-        ((MainActivity)getActivity()).TrackBus(Id, null);
+        if (getActivity() != null) {
+            ((MainActivity)getActivity()).TrackBus(Id, null);
+        }
     }
 }

@@ -20,9 +20,8 @@ public class GPSLoadFragment extends Fragment {
     }
 
     public static GPSLoadFragment newInstance() {
-        GPSLoadFragment fragment = new GPSLoadFragment();
 
-        return fragment;
+        return new GPSLoadFragment();
     }
 
     @Override

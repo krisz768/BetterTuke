@@ -7,16 +7,18 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.DynamicDrawableSpan;
 import android.text.style.ImageSpan;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.Locale;
 
 import hu.krisz768.bettertuke.Database.BusScheduleTime;
 import hu.krisz768.bettertuke.Database.BusVariation;
@@ -27,32 +29,32 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
     private int[] Hours;
     private int[][] Minutes;
     private String[][] BusCodes;
-    private BusVariation[] Variations;
-    private Context ctx;
+    private final BusVariation[] Variations;
+    private final Context ctx;
     private int MaxPerLine;
 
-    private int SecColor;
-    private int SecContainerColor;
-    private int OnSecContainerColor;
-    private int OnPrimColor;
-    private int OnErrColor;
-    private Drawable MinBackground;
-    private Drawable MinFullBackground;
-    private Drawable MinBackgroundStarted;
-    private Drawable MinFullBackgroundStarted;
-    private Drawable MinBackgroundErr;
-    private Drawable MinFullBackgroundErr;
+    private final int SecColor;
+    private final int SecContainerColor;
+    private final int OnSecContainerColor;
+    private final int OnPrimColor;
+    private final int OnErrColor;
+    private final Drawable MinBackground;
+    private final Drawable MinFullBackground;
+    private final Drawable MinBackgroundStarted;
+    private final Drawable MinFullBackgroundStarted;
+    private final Drawable MinBackgroundErr;
+    private final Drawable MinFullBackgroundErr;
 
     private BusScheduleTime[] Started;
     private BusScheduleTime[] ErrNotStarted;
 
-    private ScheduleBusTimeFragment Callback;
+    private final ScheduleBusTimeFragment Callback;
 
 
     public static class ViewHolderHour extends RecyclerView.ViewHolder {
 
-        private TextView HourText;
-        private RecyclerView Recv;
+        private final TextView HourText;
+        private final RecyclerView Recv;
 
         public ViewHolderHour(View view) {
             super(view);
@@ -62,7 +64,7 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
         }
 
         public void setData(int Hour, int[] Minutes, String[] BusCodes, int MaxPerLine, int SecColor, int SecContainerColor, int OnSecContainerColor, int OnPrimColor, int OnErrColor, Drawable MinBackground, Drawable MinFullBackground, Drawable MinBackgroundStarted, Drawable MinFullBackgroundStarted, Drawable MinBackgroundErr, Drawable MinFullBackgroundErr,BusScheduleTime[] Started,BusScheduleTime[] ErrNotStarted, Context ctx, ScheduleBusTimeFragment Callback) {
-            HourText.setText(String.format("%02d", Hour));
+            HourText.setText(String.format(Locale.US, "%02d", Hour));
 
             HourText.setTextColor(OnSecContainerColor);
 
@@ -79,7 +81,7 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
 
     public static class ViewHolderLabel extends RecyclerView.ViewHolder {
 
-        private TextView Label;
+        private final TextView Label;
 
         public ViewHolderLabel(View view) {
             super(view);
@@ -88,16 +90,16 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
             Label = view.findViewById(R.id.labelText);
         }
 
-        public void setData(String LabeText) {
-            Label.setText(LabeText);
+        public void setData(String LabelText) {
+            Label.setText(LabelText);
             Label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         }
     }
 
     public static class ViewHolderLegend extends RecyclerView.ViewHolder {
 
-        private TextView Legend;
-        private TextView Desc;
+        private final TextView Legend;
+        private final TextView Desc;
 
         public ViewHolderLegend(View view) {
             super(view);
@@ -108,28 +110,36 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
         }
 
         public void setData(BusVariation variation, Context ctx) {
-            Legend.setText(variation.getKod());
-            if (variation.getIrany().equals("O")) {
+            Legend.setText(variation.getCode());
+            if (variation.getDirection().equals("O")) {
                 Drawable arrow = ContextCompat.getDrawable(ctx, R.drawable.right_arrow);
-                arrow.setTint(Desc.getCurrentTextColor());
-                Float ascent = Desc.getPaint().getFontMetrics().ascent;
+                if (arrow != null) {
+                    arrow.setTint(Desc.getCurrentTextColor());
+                }
+                float ascent = Desc.getPaint().getFontMetrics().ascent;
                 int h = (int) -ascent;
-                arrow.setBounds(0,0,h,h);
+                if (arrow != null) {
+                    arrow.setBounds(0,0,h,h);
+                }
 
-                SpannableString stringWithImage = new SpannableString(variation.getNev() + " (*)");
-                stringWithImage.setSpan(new ImageSpan(arrow, DynamicDrawableSpan.ALIGN_BASELINE), variation.getNev().length()+2, variation.getNev().length()+3, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                SpannableString stringWithImage = new SpannableString(variation.getName() + " (*)");
+                stringWithImage.setSpan(new ImageSpan(arrow, DynamicDrawableSpan.ALIGN_BASELINE), variation.getName().length()+2, variation.getName().length()+3, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 Desc.setText(stringWithImage);
 
                 //Desc.setText(variation.getNev() + " (\uD83E\uDC60");
             } else {
                 Drawable arrow = ContextCompat.getDrawable(ctx, R.drawable.left_arrow);
-                arrow.setTint(Desc.getCurrentTextColor());
-                Float ascent = Desc.getPaint().getFontMetrics().ascent;
+                if (arrow != null) {
+                    arrow.setTint(Desc.getCurrentTextColor());
+                }
+                float ascent = Desc.getPaint().getFontMetrics().ascent;
                 int h = (int) -ascent;
-                arrow.setBounds(0,0,h,h);
+                if (arrow != null) {
+                    arrow.setBounds(0,0,h,h);
+                }
 
-                SpannableString stringWithImage = new SpannableString(variation.getNev() + " (*)");
-                stringWithImage.setSpan(new ImageSpan(arrow, DynamicDrawableSpan.ALIGN_BASELINE), variation.getNev().length()+2, variation.getNev().length()+3, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                SpannableString stringWithImage = new SpannableString(variation.getName() + " (*)");
+                stringWithImage.setSpan(new ImageSpan(arrow, DynamicDrawableSpan.ALIGN_BASELINE), variation.getName().length()+2, variation.getName().length()+3, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 Desc.setText(stringWithImage);
             }
 
@@ -180,24 +190,25 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
     }
 
     // Create new views (invoked by the layout manager)
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
         if (viewType == 0) {
-            View view = LayoutInflater.from(viewGroup.getContext())
+            View HourView = LayoutInflater.from(viewGroup.getContext())
                     .inflate(R.layout.schedule_bus_time_hour_recview, viewGroup, false);
 
-            return new ViewHolderHour(view);
+            return new ViewHolderHour(HourView);
         } else if (viewType == 1) {
-            View Labelview = LayoutInflater.from(viewGroup.getContext())
+            View LabelView = LayoutInflater.from(viewGroup.getContext())
                     .inflate(R.layout.recview_label, viewGroup, false);
 
-            return new ScheduleBusTimeHourAdapter.ViewHolderLabel(Labelview);
+            return new ScheduleBusTimeHourAdapter.ViewHolderLabel(LabelView);
         } else {
-            View Labelview = LayoutInflater.from(viewGroup.getContext())
+            View LegendView = LayoutInflater.from(viewGroup.getContext())
                     .inflate(R.layout.legend_recview, viewGroup, false);
 
-            return new ScheduleBusTimeHourAdapter.ViewHolderLegend(Labelview);
+            return new ScheduleBusTimeHourAdapter.ViewHolderLegend(LegendView);
         }
 
     }

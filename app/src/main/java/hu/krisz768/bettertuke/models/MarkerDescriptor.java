@@ -1,8 +1,8 @@
 package hu.krisz768.bettertuke.models;
 
 public class MarkerDescriptor {
-    private Types Type;
-    private int Id;
+    private final Types Type;
+    private final int Id;
 
     public MarkerDescriptor(Types type, int id) {
         Type = type;

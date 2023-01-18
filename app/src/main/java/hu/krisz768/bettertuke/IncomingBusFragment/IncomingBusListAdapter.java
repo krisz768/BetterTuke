@@ -7,19 +7,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import hu.krisz768.bettertuke.R;
-import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
+import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusListAdapter.ViewHolder>{
-    private IncommingBusRespModel[] BusList;
-    private Context ctx;
-    private IncomingBusListFragment ClickCallBack;
+    private IncomingBusRespModel[] BusList;
+    private final Context ctx;
+    private final IncomingBusListFragment ClickCallBack;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -41,29 +43,24 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
             this.view = view;
         }
 
-        public void setData(IncommingBusRespModel Data, Context ctx, IncomingBusListFragment ClickCallBack) {
+        public void setData(IncomingBusRespModel Data, Context ctx, IncomingBusListFragment ClickCallBack) {
 
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ClickCallBack.OnBusClick(Data.getJaratid());
-                }
-            });
+            view.setOnClickListener(view -> ClickCallBack.OnBusClick(Data.getLineId()));
 
-            number.setText(Data.getJaratszam());
-            desc.setText(Data.getJaratnev());
-            Date Arrtime = Data.getErkezes();
-            SimpleDateFormat Sdf = new SimpleDateFormat("HH:mm");
-            if (Data.isMegalloban()) {
+            number.setText(Data.getLineNum());
+            desc.setText(Data.getLineName());
+            Date Arrtime = Data.getArriveTime();
+            SimpleDateFormat Sdf = new SimpleDateFormat("HH:mm", Locale.US);
+            if (Data.isAtStop()) {
                 arrtime.setText(R.string.BusInStop);
             } else {
-                arrtime.setText(Sdf.format(Arrtime) + " (" + Data.getHatralevoPerc() + " perc) [" + Data.getJaratid() + ", " + Data.getNyomvonalid() + "]");
+                arrtime.setText(Sdf.format(Arrtime) + " (" + Data.getRemainingMin() + " perc) [" + Data.getLineId() + ", " + Data.getRouteId() + "]");
             }
 
-            int Whitecolor = Color.rgb(255,255,255);
-            number.setTextColor(Whitecolor);
+            int WhiteColor = Color.rgb(255,255,255);
+            number.setTextColor(WhiteColor);
 
-            if (Data.isElindult()) {
+            if (Data.isStarted()) {
                 number.setBackground(ContextCompat.getDrawable(ctx, R.drawable.bus_number_background_active));
             } else  {
                 number.setBackground(ContextCompat.getDrawable(ctx, R.drawable.bus_number_background_inactive));
@@ -72,17 +69,18 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
         }
     }
 
-    public void UpdateList(IncommingBusRespModel[] BusList) {
+    public void UpdateList(IncomingBusRespModel[] BusList) {
         this.BusList = BusList;
     }
 
-    public IncomingBusListAdapter(IncommingBusRespModel[] BusList, Context ctx,IncomingBusListFragment ClickCallBack) {
+    public IncomingBusListAdapter(IncomingBusRespModel[] BusList, Context ctx, IncomingBusListFragment ClickCallBack) {
         this.BusList = BusList;
         this.ctx = ctx;
         this.ClickCallBack = ClickCallBack;
     }
 
     // Create new views (invoked by the layout manager)
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item

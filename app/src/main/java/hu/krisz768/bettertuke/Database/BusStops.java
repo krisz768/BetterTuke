@@ -5,45 +5,45 @@ import android.content.Context;
 import java.io.Serializable;
 
 public class BusStops implements Serializable {
-    private int Id;
-    private String Foldhely;
-    private float GpsX;
-    private float GpsY;
-    private String KocsiallasSzam;
+    private final int Id;
+    private final String Place;
+    private final float GpsLongitude;
+    private final float GpsLatitude;
+    private final String StopNum;
 
-    public BusStops(int id, String foldhely, float gpsX, float gpsY, String kocsiallasSzam) {
+    public BusStops(int id, String place, float gpsLongitude, float gpsLatitude, String stopNum) {
         Id = id;
-        Foldhely = foldhely;
-        GpsX = gpsX;
-        GpsY = gpsY;
-        KocsiallasSzam = kocsiallasSzam;
+        Place = place;
+        GpsLongitude = gpsLongitude;
+        GpsLatitude = gpsLatitude;
+        StopNum = stopNum;
     }
 
     public int getId() {
         return Id;
     }
 
-    public int getFoldhely() {
+    public int getPlace() {
         try
         {
-            return Integer.parseInt(Foldhely);
-        } catch (Exception e) {
+            return Integer.parseInt(Place);
+        } catch (Exception ignored) {
 
         }
 
         return -1;
     }
 
-    public float getGpsX() {
-        return GpsX;
+    public float getGpsLongitude() {
+        return GpsLongitude;
     }
 
-    public float getGpsY() {
-        return GpsY;
+    public float getGpsLatitude() {
+        return GpsLatitude;
     }
 
-    public String getKocsiallasSzam() {
-        return KocsiallasSzam;
+    public String getStopNum() {
+        return StopNum;
     }
 
     public static BusStops[] GetAllStops(Context ctx) {

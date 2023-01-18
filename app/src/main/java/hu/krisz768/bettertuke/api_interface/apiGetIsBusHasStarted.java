@@ -4,19 +4,15 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import hu.krisz768.bettertuke.api_interface.models.IncommingBusRespModel;
 
 public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> implements Runnable{
 
-    private int jaratid;
+    private final int LineId;
 
-    public apiGetIsBusHasStarted(int jaratid) {
-        this.jaratid = jaratid;
+    public apiGetIsBusHasStarted(int LineId) {
+        this.LineId = LineId;
     }
 
     @Override
@@ -29,7 +25,7 @@ public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> imple
             urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             Map<String, Object> queryParams = new HashMap<>();
-            queryParams.put("ONWAY", jaratid);
+            queryParams.put("ONWAY", LineId);
 
             try {
                 urlConnection.connect();
@@ -37,8 +33,6 @@ public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> imple
                 byte[] postDataBytes = this.getParamsByte(queryParams);
                 urlConnection.getOutputStream().write(postDataBytes);
 
-
-                List<IncommingBusRespModel> BusList = new ArrayList<>();
                 BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 
                 String line;
@@ -59,7 +53,7 @@ public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> imple
             }
         } catch (Exception e) {
             ErrorFlag = true;
-            super.log("Error :(" + e.toString());
+            super.log("Error :(" + e);
         }
     }
 }

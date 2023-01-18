@@ -1,88 +1,51 @@
 package hu.krisz768.bettertuke.api_interface.models;
 
 import java.io.Serializable;
-import java.util.Date;
 
 public class TrackBusRespModel implements Serializable {
-    private String Rendszam;
-    private int Jaraid;
-    private String Jaratszam;
-    private String Jaratnev;
-    private int MegalloSorszam;
-    private int Megalloid;
-    private boolean Megalloban;
-    private Date UtolsoAdat;
-    private float GPSx;
-    private float GPSY;
-    private int KesesMasodperc;
-    private int KesesPerc;
-    private int JarmuId;
+    private final String LicensePlateNumber;
+    private final int StopNumber;
+    private final int StopId;
+    private final boolean AtStop;
+    private final float GpsLatitude;
+    private final float GpsLongitude;
+    private final int DelayMin;
 
-    public TrackBusRespModel(String rendszam, int jaraid, String jaratszam, String jaratnev, int megalloSorszam, int megalloid, boolean megalloban, Date utolsoAdat, float GPSx, float GPSY, int kesesMasodperc, int kesesPerc, int jarmuId) {
-        Rendszam = rendszam;
-        Jaraid = jaraid;
-        Jaratszam = jaratszam;
-        Jaratnev = jaratnev;
-        MegalloSorszam = megalloSorszam;
-        Megalloid = megalloid;
-        Megalloban = megalloban;
-        UtolsoAdat = utolsoAdat;
-        this.GPSx = GPSx;
-        this.GPSY = GPSY;
-        KesesMasodperc = kesesMasodperc;
-        KesesPerc = kesesPerc;
-        JarmuId = jarmuId;
+    public TrackBusRespModel(String licensePlateNumber, int stopNumber, int stopId, boolean atStop, float GpsLatitude, float GpsLongitude, int delayMin) {
+        LicensePlateNumber = licensePlateNumber;
+        StopNumber = stopNumber;
+        StopId = stopId;
+        AtStop = atStop;
+        this.GpsLatitude = GpsLatitude;
+        this.GpsLongitude = GpsLongitude;
+        DelayMin = delayMin;
     }
 
-    public String getRendszam() {
-        return Rendszam;
+    public String getLicensePlateNumber() {
+        return LicensePlateNumber;
     }
 
-    public int getJaraid() {
-        return Jaraid;
+    public int getStopNumber() {
+        return StopNumber;
     }
 
-    public String getJaratszam() {
-        return Jaratszam;
+    public int getStopId() {
+        return StopId;
     }
 
-    public String getJaratnev() {
-        return Jaratnev;
+    public boolean isAtStop() {
+        return AtStop;
     }
 
-    public int getMegalloSorszam() {
-        return MegalloSorszam;
+    public float getGpsLatitude() {
+        return GpsLatitude;
     }
 
-    public int getMegalloid() {
-        return Megalloid;
+    public float getGpsLongitude() {
+        return GpsLongitude;
     }
 
-    public boolean isMegalloban() {
-        return Megalloban;
-    }
-
-    public Date getUtolsoAdat() {
-        return UtolsoAdat;
-    }
-
-    public float getGPSx() {
-        return GPSx;
-    }
-
-    public float getGPSY() {
-        return GPSY;
-    }
-
-    public int getKesesMasodperc() {
-        return KesesMasodperc;
-    }
-
-    public int getKesesPerc() {
-        return KesesPerc;
-    }
-
-    public int getJarmuId() {
-        return JarmuId;
+    public int getDelayMin() {
+        return DelayMin;
     }
 }

@@ -1,7 +1,5 @@
 package hu.krisz768.bettertuke;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -37,7 +35,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -49,7 +46,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.CancellationToken;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.OnTokenCanceledListener;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -62,8 +58,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import hu.krisz768.bettertuke.Database.BusJaratok;
 import hu.krisz768.bettertuke.Database.BusLine;
+import hu.krisz768.bettertuke.Database.BusNum;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
@@ -83,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     FusedLocationProviderClient fusedLocationClient;
 
     View BottomSheet;
-    BottomSheetBehavior bottomSheetBehavior;
+    BottomSheetBehavior<View> bottomSheetBehavior;
     private BottomSheetBehavior.BottomSheetCallback BottomSheetCallback;
 
     private SearchView searchView;
@@ -92,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
     private Integer CurrentPlace = -1;
     private Integer CurrentStop = -1;
     private Integer CurrentBusTrack = -1;
-    private BusJaratok busJarat;
+    private BusLine busJarat;
     private LatLng SelectedPlace;
 
     private GoogleMap googleMap;
@@ -100,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     private BusStops[] busStops;
     private BusPlaces[] busPlaces;
 
-    private List<BackStack> backStack = new ArrayList<>();
+    private final List<BackStack> backStack = new ArrayList<>();
 
     private boolean smallMarkerMode = false;
 
@@ -126,19 +122,9 @@ public class MainActivity extends AppCompatActivity {
 
         SetupSearchView();
 
-        findViewById(R.id.ShowScheduleButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ShowSchedule(-1, null, null, null, false);
-            }
-        });
+        findViewById(R.id.ShowScheduleButton).setOnClickListener(view -> ShowSchedule(-1, null, null, null, false));
 
-        findViewById(R.id.PosButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SelectPosUserPos();
-            }
-        });
+        findViewById(R.id.PosButton).setOnClickListener(view -> SelectPosUserPos());
 
         findViewById(R.id.PosButton).setVisibility(View.GONE);
 
@@ -185,63 +171,48 @@ public class MainActivity extends AppCompatActivity {
 
         final Context ctx = this;
 
-        mapFragment.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(@NonNull GoogleMap googleMap_) {
-                googleMap = googleMap_;
+        assert mapFragment != null;
+        mapFragment.getMapAsync(googleMap_ -> {
+            googleMap = googleMap_;
 
-                googleMap.getUiSettings().setZoomControlsEnabled(false);
-                googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+            googleMap.getUiSettings().setZoomControlsEnabled(false);
+            googleMap.getUiSettings().setMyLocationButtonEnabled(false);
 
-                MapStyleOptions style = new MapStyleOptions(HelperProvider.GetMapTheme(ctx));
-                googleMap.setMapStyle(style);
+            MapStyleOptions style = new MapStyleOptions(HelperProvider.GetMapTheme(ctx));
+            googleMap.setMapStyle(style);
 
 
-                googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(@NonNull Marker marker) {
-                        MarkerClickListener(marker);
-                        return true;
+            googleMap.setOnMarkerClickListener(marker -> {
+                MarkerClickListener(marker);
+                return true;
+            });
+
+            googleMap.setOnCameraMoveListener(() -> {
+                //Log.e("ZOOM", googleMap.getCameraPosition().zoom + "");
+                final float ZoomLevel = googleMap.getCameraPosition().zoom;
+                if (ZoomLevel > 13.7) {
+                    if (!smallMarkerMode) {
+                        smallMarkerMode = true;
+                        MarkerRenderer();
                     }
-                });
-
-                googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
-                    @Override
-                    public void onCameraMove() {
-                        //Log.e("ZOOM", googleMap.getCameraPosition().zoom + "");
-                        final float ZoomLevel = googleMap.getCameraPosition().zoom;
-                        if (ZoomLevel > 13.7) {
-                            if (!smallMarkerMode) {
-                                smallMarkerMode = true;
-                                MarkerRenderer();
-                            }
-                        } else {
-                            if (smallMarkerMode) {
-                                smallMarkerMode = false;
-                                MarkerRenderer();
-                            }
-                        }
-                    }
-                });
-
-                googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-                    @Override
-                    public void onMapLongClick(@NonNull LatLng latLng) {
-                        OnMapLongClickListener(latLng);
-                    }
-                });
-
-                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(MainActivity.this,
-                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-
-                    MarkerRenderer();
                 } else {
-                    MarkerRenderer();
-
-                    googleMap.setMyLocationEnabled(true);
-                    GetClosestStop();
+                    if (smallMarkerMode) {
+                        smallMarkerMode = false;
+                        MarkerRenderer();
+                    }
                 }
+            });
+
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+
+                MarkerRenderer();
+            } else {
+                MarkerRenderer();
+
+                googleMap.setMyLocationEnabled(true);
+                GetClosestStop();
             }
         });
     }
@@ -281,8 +252,9 @@ public class MainActivity extends AppCompatActivity {
     private void MarkerClickListener(Marker marker) {
         MarkerDescriptor Md = (MarkerDescriptor) marker.getTag();
 
+        assert Md != null;
         if (Md.getType() == MarkerDescriptor.Types.Stop) {
-            SelectStop(Md.getId());
+            SelectStop(Md.getId(), true);
         } else if (Md.getType() == MarkerDescriptor.Types.Place) {
             SelectPlace(Md.getId());
         } else {
@@ -293,8 +265,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void SelectStop(int StopId) {
-        AddBackStack();
+    public void SelectStop(int StopId, boolean SaveBack) {
+        if (SaveBack) {
+            AddBackStack();
+        }
 
         if (CurrentBusTrack != -1) {
             CurrentBusTrack = -1;
@@ -306,11 +280,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         CurrentStop = StopId;
-        for (int i = 0; i < busStops.length; i++) {
-            if (busStops[i].getId() == CurrentStop) {
-                int FoldhelyId = busStops[i].getFoldhely();
-                for (int j = 0; j < busPlaces.length; j++) {
-                    if (busPlaces[j].getId() == FoldhelyId) {
+        for (BusStops busStop : busStops) {
+            if (busStop.getId() == CurrentStop) {
+                int FoldhelyId = busStop.getPlace();
+                for (BusPlaces busPlace : busPlaces) {
+                    if (busPlace.getId() == FoldhelyId) {
                         CurrentPlace = FoldhelyId;
                         break;
                     }
@@ -340,11 +314,9 @@ public class MainActivity extends AppCompatActivity {
 
         List<Integer> StopIds = new ArrayList<>();
 
-        for (int i = 0; i < busStops.length; i++) {
-            if (busStops[i].getFoldhely() == CurrentPlace) {
-                StopIds.add(busStops[i].getId());
-                //CurrentStop = busStops[i].getId();
-                //break;
+        for (BusStops busStop : busStops) {
+            if (busStop.getPlace() == CurrentPlace) {
+                StopIds.add(busStop.getId());
             }
         }
 
@@ -375,10 +347,10 @@ public class MainActivity extends AppCompatActivity {
         if (CurrentStop == -1)
             return;
 
-        for (int i = 0; i < busStops.length; i++) {
-            if (busStops[i].getId() == CurrentStop) {
+        for (BusStops busStop : busStops) {
+            if (busStop.getId() == CurrentStop) {
                 CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(busStops[i].getGpsY(), busStops[i].getGpsX())).zoom(17.5F).build();
+                        .target(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude())).zoom(17.5F).build();
 
                 googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }
@@ -411,52 +383,58 @@ public class MainActivity extends AppCompatActivity {
                 BitmapDescriptor PlaceSelected = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.LocationPin));
 
                 Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(SelectedPlace.latitude, SelectedPlace.longitude)).icon(PlaceSelected));
+                assert marker != null;
                 marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.PinPoint, -1));
                 marker.setZIndex(Float.MAX_VALUE);
             }
 
-            for (int i = 0; i < busPlaces.length; i++) {
-                if (busPlaces[i].getId() == CurrentPlace) {
-                    for (int j = 0; j < busStops.length; j++) {
-                        if (busStops[j].getFoldhely() == CurrentPlace) {
+            for (BusPlaces busPlace : busPlaces) {
+                if (busPlace.getId() == CurrentPlace) {
+                    for (BusStops busStop : busStops) {
+                        if (busStop.getPlace() == CurrentPlace) {
 
-                            if (busStops[j].getId() == CurrentStop && SelectedPlace == null) {
-                                Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStops[j].getGpsY(), busStops[j].getGpsX())).icon(StopSelected));
-                                marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStops[j].getId()));
+                            BitmapDescriptor icon;
+                            if (busStop.getId() == CurrentStop && SelectedPlace == null) {
+                                icon = StopSelected;
                             } else {
-                                Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStops[j].getGpsY(), busStops[j].getGpsX())).icon(StopNotSelected));
-                                marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStops[j].getId()));
+                                icon = StopNotSelected;
                             }
 
+                            Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude())).icon(icon));
+                            assert marker != null;
+                            marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStop.getId()));
                         }
                     }
                 } else {
-                    Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busPlaces[i].getGpsY(), busPlaces[i].getGpsX())).icon(Place));
-                    marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Place, busPlaces[i].getId()));
+                    Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busPlace.getGpsLatitude(), busPlace.getGpsLongitude())).icon(Place));
+                    assert marker != null;
+                    marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Place, busPlace.getId()));
                 }
             }
         } else {
-            for (int i = 0; i < busJarat.getMegallok().length; i++) {
-                for (int j = 0; j < busStops.length; j++) {
-                    if (busJarat.getMegallok()[i].getKocsiallasId() == busStops[j].getId()) {
-                        if (CurrentStop == busStops[j].getId()) {
-                            Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStops[j].getGpsY(), busStops[j].getGpsX())).icon(StopSelected));
-                            marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStops[j].getId()));
-                            break;
+            for (int i = 0; i < busJarat.getStops().length; i++) {
+                for (BusStops busStop : busStops) {
+                    if (busJarat.getStops()[i].getStopId() == busStop.getId()) {
+                        BitmapDescriptor icon;
+                        if (CurrentStop == busStop.getId()) {
+                            icon = StopSelected;
                         } else {
-                            Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStops[j].getGpsY(), busStops[j].getGpsX())).icon(StopNotSelected));
-                            marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStops[j].getId()));
-                            break;
+                            icon = StopNotSelected;
                         }
+
+                        Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude())).icon(icon));
+                        assert marker != null;
+                        marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStop.getId()));
+                        break;
                     }
                 }
             }
 
             PolylineOptions lineOptions = new PolylineOptions();
-            ArrayList<LatLng> points = new ArrayList();
+            ArrayList<LatLng> points = new ArrayList<>();
 
-            for (int i = 0; i < busJarat.getNyomvonal().length; i++) {
-                LatLng position = new LatLng(busJarat.getNyomvonal()[i].getGpsY(), busJarat.getNyomvonal()[i].getGpsX());
+            for (int i = 0; i < busJarat.getRoute().length; i++) {
+                LatLng position = new LatLng(busJarat.getRoute()[i].getGpsLatitude(), busJarat.getRoute()[i].getGpsLongitude());
                 points.add(position);
             }
 
@@ -496,25 +474,22 @@ public class MainActivity extends AppCompatActivity {
                 @NonNull
                 @Override
                 public CancellationToken onCanceledRequested(@NonNull OnTokenCanceledListener onTokenCanceledListener) {
-                    return null;
+                    return this;
                 }
 
                 @Override
                 public boolean isCancellationRequested() {
                     return false;
                 }
-            }).addOnSuccessListener(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    if (location != null) {
-                        findViewById(R.id.PosButton).setVisibility(View.VISIBLE);
-                        GetStartupStop(location);
-                        //GetClosestStopFromList(location);
-                    } else {
-                        GPSErr();
-                    }
-
+            }).addOnSuccessListener(location -> {
+                if (location != null) {
+                    findViewById(R.id.PosButton).setVisibility(View.VISIBLE);
+                    GetStartupStop(location);
+                    //GetClosestStopFromList(location);
+                } else {
+                    GPSErr();
                 }
+
             });
         } catch (Exception e) {
             Log.e("Main", e.toString());
@@ -530,37 +505,37 @@ public class MainActivity extends AppCompatActivity {
         int ClosestId = -1;
         BusStops ClosestStop = null;
 
-        for (int i = 0; i < busStops.length; i++) {
+        for (BusStops busStop : busStops) {
             Location stopLocation = new Location("");
-            stopLocation.setLongitude(busStops[i].getGpsX());
-            stopLocation.setLatitude(busStops[i].getGpsY());
+            stopLocation.setLongitude(busStop.getGpsLongitude());
+            stopLocation.setLatitude(busStop.getGpsLatitude());
 
             float Distance = location.distanceTo(stopLocation);
             if (Distance < 17.5F) {
                 Closest = Distance;
-                ClosestId = busStops[i].getId();
-                ClosestStop = busStops[i];
+                ClosestId = busStop.getId();
+                ClosestStop = busStop;
             }
         }
 
         if (ClosestId != -1) {
-            SelectStop(ClosestId);
-            ZoomClose(new LatLng(ClosestStop.getGpsY(), ClosestStop.getGpsX()), new LatLng(location.getLatitude(), location.getLongitude()));
+            SelectStop(ClosestId, false);
+            ZoomClose(new LatLng(ClosestStop.getGpsLatitude(), ClosestStop.getGpsLongitude()), new LatLng(location.getLatitude(), location.getLongitude()));
             return;
         }
 
-        for (int i = 0; i < favoriteStops.length; i++) {
-            for (int j = 0; j < busStops.length; j++) {
-                if (Integer.parseInt(favoriteStops[i].getData()) == busStops[j].getId()) {
+        for (Favorite favoriteStop : favoriteStops) {
+            for (BusStops busStop : busStops) {
+                if (Integer.parseInt(favoriteStop.getData()) == busStop.getId()) {
                     Location stopLocation = new Location("");
-                    stopLocation.setLongitude(busStops[j].getGpsX());
-                    stopLocation.setLatitude(busStops[j].getGpsY());
+                    stopLocation.setLongitude(busStop.getGpsLongitude());
+                    stopLocation.setLatitude(busStop.getGpsLatitude());
 
                     float Distance = location.distanceTo(stopLocation);
                     if (Distance < 500 && Distance < Closest) {
                         Closest = Distance;
-                        ClosestId = busStops[j].getId();
-                        ClosestStop = busStops[j];
+                        ClosestId = busStop.getId();
+                        ClosestStop = busStop;
                     }
 
                     break;
@@ -569,67 +544,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (ClosestId != -1) {
-            SelectStop(ClosestId);
-            ZoomClose(new LatLng(ClosestStop.getGpsY(), ClosestStop.getGpsX()), new LatLng(location.getLatitude(), location.getLongitude()));
+            SelectStop(ClosestId, false);
+            ZoomClose(new LatLng(ClosestStop.getGpsLatitude(), ClosestStop.getGpsLongitude()), new LatLng(location.getLatitude(), location.getLongitude()));
         } else {
-            for (int i = 0; i < busStops.length; i++) {
+            for (BusStops busStop : busStops) {
                 Location stopLocation = new Location("");
-                stopLocation.setLongitude(busStops[i].getGpsX());
-                stopLocation.setLatitude(busStops[i].getGpsY());
+                stopLocation.setLongitude(busStop.getGpsLongitude());
+                stopLocation.setLatitude(busStop.getGpsLatitude());
 
                 float Distance = location.distanceTo(stopLocation);
                 if (Distance < Closest) {
                     Closest = Distance;
-                    ClosestId = busStops[i].getId();
-                    ClosestStop = busStops[i];
+                    ClosestId = busStop.getId();
+                    ClosestStop = busStop;
                 }
             }
 
-            SelectStop(ClosestId);
-            ZoomClose(new LatLng(ClosestStop.getGpsY(), ClosestStop.getGpsX()), new LatLng(location.getLatitude(), location.getLongitude()));
+            SelectStop(ClosestId,false);
+            if (ClosestStop != null) {
+                ZoomClose(new LatLng(ClosestStop.getGpsLatitude(), ClosestStop.getGpsLongitude()), new LatLng(location.getLatitude(), location.getLongitude()));
+            }
         }
     }
 
-    /*private void GetClosestStopFromList(Location location) {
-        int Closest = -1;
-
-        double ClosestDistance = Double.MAX_VALUE;
-
-        if (CurrentPlace != -1) {
-            return;
-        }
-
-        for (int i = 0; i < busStops.length; i++) {
-            double x = location.getLongitude() - busStops[i].getGpsX();
-            double y = location.getLatitude() - busStops[i].getGpsY();
-
-            double Distance = Math.sqrt((x * x) + (y * y));
-
-            if (Distance < ClosestDistance) {
-                ClosestDistance = Distance;
-                Closest = i;
-            }
-        }
-
-        if (Closest != -1) {
-            if (SelectedPlace != null) {
-                SelectedPlace = null;
-            }
-
-            CurrentPlace = busStops[Closest].getFoldhely();
-            CurrentStop = busStops[Closest].getId();
-            BottomSheetSetNormalParams();
-            ZoomClose(new LatLng(busStops[Closest].getGpsY(), busStops[Closest].getGpsX()), new LatLng(location.getLatitude(), location.getLongitude()));
-        }
-
-        MarkerRenderer();
-        ShowBottomSheetIncommingBuses();
-    }*/
-
     private void ZoomClose(LatLng location, LatLng location2) {
         try {
-            LatLng First = new LatLng(location.latitude > location2.latitude ? location2.latitude : location.latitude, location.longitude > location2.longitude ? location2.longitude : location.longitude);
-            LatLng Second = new LatLng(location.latitude > location2.latitude ? location.latitude : location2.latitude, location.longitude > location2.longitude ? location.longitude : location2.longitude);
+            LatLng First = new LatLng(Math.min(location.latitude, location2.latitude), Math.min(location.longitude, location2.longitude));
+            LatLng Second = new LatLng(Math.max(location.latitude, location2.latitude), Math.max(location.longitude, location2.longitude));
 
             LatLngBounds Bounds = new LatLngBounds(First, Second);
 
@@ -697,7 +638,6 @@ public class MainActivity extends AppCompatActivity {
                     } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                         googleMap.setPadding(0, dp20 * 4, 0, 0);
                         params2.bottomMargin = dp20;
-                    } else if (newState == BottomSheetBehavior.STATE_SETTLING) {
                     }
 
                     fragmentView.setLayoutParams(params);
@@ -795,9 +735,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         CurrentBusTrack = Id;
-        busJarat = BusJaratok.BusJaratokByJaratid(Id, this);
+        busJarat = BusLine.BusLinesByLineId(Id, this);
         if (Date != null) {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             java.util.Date date = new Date();
             if (!Date.equals(formatter.format(date))) {
                 busJarat.setDate(Date);
@@ -814,11 +754,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void BottomSheetSetNormalParams() {
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
-            IsBackButtonCollapse = false;
-        } else {
-            IsBackButtonCollapse = true;
-        }
+        IsBackButtonCollapse = bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED;
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -869,7 +805,7 @@ public class MainActivity extends AppCompatActivity {
     private void ShowBottomSheetTrackBus() {
         BottomSheetSetNormalParams();
 
-        BottomSheetTrackBusFragment TrackBusFragment = BottomSheetTrackBusFragment.newInstance(CurrentPlace, CurrentStop, CurrentBusTrack, busPlaces, busStops, busJarat);
+        BottomSheetTrackBusFragment TrackBusFragment = BottomSheetTrackBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces, busStops, busJarat);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragmentContainerView2, TrackBusFragment)
                 .commit();
@@ -883,9 +819,9 @@ public class MainActivity extends AppCompatActivity {
                     MarkerOptions BusMarkerOption = new MarkerOptions().position(new LatLng(BusPosition.latitude, BusPosition.longitude)).icon(BusBitmap);
                     CreateBusMarker(BusMarkerOption);
 
-                    for (int i = 0; i < busStops.length; i++) {
-                        if (busStops[i].getId() == CurrentStop) {
-                            ZoomClose(new LatLng(busStops[i].getGpsY(), busStops[i].getGpsX()), new LatLng(BusPosition.latitude, BusPosition.longitude));
+                    for (BusStops busStop : busStops) {
+                        if (busStop.getId() == CurrentStop) {
+                            ZoomClose(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude()), new LatLng(BusPosition.latitude, BusPosition.longitude));
                         }
                     }
                 } else {
@@ -915,15 +851,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void CreateBusMarker(MarkerOptions option) {
         BusMarker = googleMap.addMarker(option);
+        assert BusMarker != null;
         BusMarker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Bus, -1));
         BusMarker.setZIndex(Float.MAX_VALUE);
     }
 
     public boolean IsBottomSheetCollapsed() {
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
-            return true;
-        }
-        return false;
+        return bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED;
     }
 
     @Override
@@ -944,10 +878,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (backStack.size() == 0) {
-            /*if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                return;
-            }*/
             finish();
         } else {
             RestorePrevState();
@@ -970,7 +900,7 @@ public class MainActivity extends AppCompatActivity {
         CurrentPlace = PrevState.getCurrentPlace();
         CurrentStop = PrevState.getCurrentStop();
         CurrentBusTrack = PrevState.getCurrentBusTrack();
-        busJarat = PrevState.getBusJarat();
+        busJarat = PrevState.getBusLine();
         SelectedPlace = PrevState.getSelectedPlace();
 
         backStack.remove(backStack.size() - 1);
@@ -1035,14 +965,13 @@ public class MainActivity extends AppCompatActivity {
 
     ActivityResultLauncher<Intent> scheduleResultLaunch = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    if (result.getData() != null) {
                         TrackBus(result.getData().getExtras().getInt("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
-
-                        backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getInt("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null));
                     }
+
+                    backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getInt("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null));
                 }
             });
 
@@ -1058,16 +987,16 @@ public class MainActivity extends AppCompatActivity {
                     if (newState == SearchView.TransitionState.SHOWING) {
                         List<SearchResult> AllItemList = new ArrayList<>();
 
-                        for (int i = 0; i < busPlaces.length; i++) {
-                            AllItemList.add(new SearchResult(SearchResult.SearchType.Stop, busPlaces[i].getName(), busPlaces[i]));
+                        for (BusPlaces busPlace : busPlaces) {
+                            AllItemList.add(new SearchResult(SearchResult.SearchType.Stop, busPlace.getName(), busPlace));
                         }
 
                         DatabaseManager Dm = new DatabaseManager(this);
 
-                        BusLine[] BusLines = Dm.GetActiveBusLines();
+                        BusNum[] busNums = Dm.GetActiveBusLines();
 
-                        for (int i = 0; i < BusLines.length; i++) {
-                            AllItemList.add(new SearchResult(SearchResult.SearchType.Line, BusLines[i].getLineName(), BusLines[i]));
+                        for (BusNum busNum : busNums) {
+                            AllItemList.add(new SearchResult(SearchResult.SearchType.Line, busNum.getLineName(), busNum));
                         }
 
                         SearchResult[] AllItem = new SearchResult[AllItemList.size()];
@@ -1104,11 +1033,11 @@ public class MainActivity extends AppCompatActivity {
         searchView.hide();
 
         if (searchResult.getType() == SearchResult.SearchType.Line) {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             Date date = new Date();
-            ShowSchedule(-1, ((BusLine) searchResult.getData()).getLineName(), "O", formatter.format(date), true);
+            ShowSchedule(-1, ((BusNum) searchResult.getData()).getLineName(), "O", formatter.format(date), true);
         } else if (searchResult.getType() == SearchResult.SearchType.FavStop) {
-            SelectStop((int) searchResult.getData());
+            SelectStop((int) searchResult.getData(), true);
         } else if (searchResult.getType() == SearchResult.SearchType.Stop) {
             SelectPlace(((BusPlaces) searchResult.getData()).getId());
         }
@@ -1168,13 +1097,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            OnMapLongClickListener(new LatLng(location.getLatitude(), location.getLongitude()));
-                        }
+                .addOnSuccessListener(this, location -> {
+                    // Got last known location. In some rare situations this can be null.
+                    if (location != null) {
+                        OnMapLongClickListener(new LatLng(location.getLatitude(), location.getLongitude()));
                     }
                 });
     }

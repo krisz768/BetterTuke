@@ -14,6 +14,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.color.MaterialColors;
@@ -24,12 +25,13 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Objects;
 
 import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class HelperProvider {
 
-    private static Bitmap[] BitmapContainer = new Bitmap[28];
+    private static final Bitmap[] BitmapContainer = new Bitmap[28];
     private static JSONObject BusAttributes;
 
     public static void RenderAllBitmap(Context ctx) {
@@ -69,10 +71,9 @@ public class HelperProvider {
         BitmapContainer[27] = HelperProvider.BitmapFromVector(R.drawable.navigation,com.google.android.material.R.attr.colorPrimary,ctx,false);
     }
 
+    @NonNull
     public static Bitmap getBitmap(Bitmaps bitmap) {
         switch (bitmap){
-            case MapStopSelected:
-                return BitmapContainer[0];
             case MapStopNotSelected:
                 return BitmapContainer[1];
             case MapPlace:
@@ -105,9 +106,9 @@ public class HelperProvider {
                 return BitmapContainer[15];
             case Electric:
                 return BitmapContainer[16];
-            case Lowfloor:
+            case LowFloor:
                 return BitmapContainer[17];
-            case Airconditioner:
+            case AirConditioner:
                 return BitmapContainer[18];
             case Wifi:
                 return BitmapContainer[19];
@@ -127,8 +128,10 @@ public class HelperProvider {
                 return BitmapContainer[26];
             case Navigation:
                 return BitmapContainer[27];
+            case MapStopSelected:
+            default:
+                return BitmapContainer[0];
         }
-        return null;
     }
 
     public enum Bitmaps {
@@ -149,8 +152,8 @@ public class HelperProvider {
         TrackEndHalf,
         TrackEndFull,
         Electric,
-        Lowfloor,
-        Airconditioner,
+        LowFloor,
+        AirConditioner,
         Wifi,
         Usb,
         FaviconOff,
@@ -172,18 +175,16 @@ public class HelperProvider {
         return bmOverlay;
     }
 
-    private static Bitmap BitmapFromVector(int vectorResId, int ColorResid, Context ctx, boolean shadow) {
-        Drawable vectorDrawable = ContextCompat.getDrawable(ctx, vectorResId);
-
-        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
+    private static Bitmap BitmapFromVector(int vectorResId, int ColorResId, Context ctx, boolean shadow) {
+        Drawable vectorDrawable = Objects.requireNonNull(ContextCompat.getDrawable(ctx, vectorResId));
 
         TypedValue typedValue = new TypedValue();
-        ctx.getTheme().resolveAttribute(ColorResid, typedValue, true);
+        ctx.getTheme().resolveAttribute(ColorResId, typedValue, true);
 
         int color = ContextCompat.getColor(ctx, typedValue.resourceId);
 
+        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
         vectorDrawable.setTint(color);
-
 
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
 
@@ -241,57 +242,17 @@ public class HelperProvider {
         ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
         String PrimaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
 
-        //ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
-        //String OnPrimaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
-
         ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryContainer, typedValue, true);
         String PrimaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
-
-        //ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimaryContainer, typedValue, true);
-        //String OnPrimaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
-
-
-
-
 
         ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
         String SecondaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
 
-        //ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondary, typedValue, true);
-        //String OnSecondaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
-
         ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondaryContainer, typedValue, true);
         String SecondaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
 
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondaryContainer, typedValue, true);
-        //String OnSecondaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-
-
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorTertiary, typedValue, true);
-        //String TertiaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnTertiary, typedValue, true);
-        //String OnTertiaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        //ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorTertiaryContainer, typedValue, true);
-        //String TertiaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnTertiaryContainer, typedValue, true);
-        //String OnTertiaryContainerColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.backgroundColor, typedValue, true);
-        //String Background = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnBackground, typedValue, true);
-        //String OnBackground = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
-
         ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurface, typedValue, true);
         String Surface = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
-
-        //getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSurface, typedValue, true);
-        //String OnSurface = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(this, typedValue.resourceId)));
 
         ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurfaceInverse, typedValue, true);
         String OnSurfaceVariant = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
@@ -311,28 +272,18 @@ public class HelperProvider {
         int highwayStroke = MaterialColors.getColorRoles(ctx,ContextCompat.getColor(ctx, typedValue.resourceId)).getOnAccent();
         String HighwayStroke = String.format("#%06X", (0xFFFFFF & highwayStroke));
 
-
         int TextStroke = 0;
 
         int nightModeFlags =
                 ctx.getResources().getConfiguration().uiMode &
                         Configuration.UI_MODE_NIGHT_MASK;
-        switch (nightModeFlags) {
-            case Configuration.UI_MODE_NIGHT_YES:
-                TextStroke = -100;
-                break;
 
-            case Configuration.UI_MODE_NIGHT_NO:
-                TextStroke = 0;
-                break;
-
-            case Configuration.UI_MODE_NIGHT_UNDEFINED:
-                TextStroke = 0;
-                break;
+        if (nightModeFlags == Configuration.UI_MODE_NIGHT_YES) {
+            TextStroke = -100;
         }
 
 
-        String JSON = "[\n" +
+        return "[\n" +
                 "  {\n" +
                 "    \"featureType\": \"all\",\n" +
                 "    \"elementType\": \"geometry\",\n" +
@@ -523,31 +474,28 @@ public class HelperProvider {
                 "    ]\n" +
                 "  }\n" +
                 "]";
-
-
-        return JSON;
     }
 
-    public static hu.krisz768.bettertuke.models.BusAttributes getBusAttributes(Context ctx,String platenumber) {
-        hu.krisz768.bettertuke.models.BusAttributes oneBusAttributes = new BusAttributes(platenumber,"",0,-1,0,-1,0,0,0);
+    public static hu.krisz768.bettertuke.models.BusAttributes getBusAttributes(Context ctx,String PlateNumber) {
+        hu.krisz768.bettertuke.models.BusAttributes oneBusAttributes = new BusAttributes(PlateNumber,"",0,-1,0,-1,0,0,0);
         if (BusAttributes == null) {
             InputStream inputStream = ctx.getResources().openRawResource(R.raw.buses);
             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String text = "";
+            StringBuilder text = new StringBuilder();
             while (true) {
                 try {
                     String temp = br.readLine();
                     if (temp == null)
                         break;
                     else
-                        text += temp;
+                        text.append(temp);
 
                 } catch (Exception e) {
                     return oneBusAttributes;
                 }
             }
             try {
-                BusAttributes = new JSONObject(text);
+                BusAttributes = new JSONObject(text.toString());
             } catch (JSONException e) {
                 return oneBusAttributes;
             }
@@ -555,14 +503,14 @@ public class HelperProvider {
         int i = 0;
         try {
             while(i<BusAttributes.getJSONArray("buses").length()) {
-                if(BusAttributes.getJSONArray("buses").getJSONObject(i).getString("platenumber").equals(platenumber))
+                if(BusAttributes.getJSONArray("buses").getJSONObject(i).getString("PlateNumber").equals(PlateNumber))
                     break;
                 i++;
             }
             if(i==BusAttributes.getJSONArray("buses").length()) {
                 return oneBusAttributes;
             } else {
-                oneBusAttributes=new BusAttributes(platenumber,
+                oneBusAttributes=new BusAttributes(PlateNumber,
                         BusAttributes.getJSONArray("buses").getJSONObject(i).getString("type"),
                         BusAttributes.getJSONArray("buses").getJSONObject(i).getInt("propulsion"),
                         BusAttributes.getJSONArray("buses").getJSONObject(i).getInt("articulated"),

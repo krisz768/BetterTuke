@@ -1,5 +1,6 @@
 package hu.krisz768.bettertuke.ScheduleFragment;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -15,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import hu.krisz768.bettertuke.Database.BusScheduleTime;
@@ -65,21 +66,18 @@ public class ScheduleBusTimeFragment extends Fragment {
     private String SelectedDate;
     private String SelectedWay;
     private boolean TwoWay = false;
-    private String WayDescStringForw = "";
-    private String WayDescStringbackw = "";
-    private BusScheduleTime[] CurrentJaratok;
+    private String WayDescStringForward = "";
+    private String WayDescStringBackwards = "";
+    private BusScheduleTime[] CurrentLines;
     private int[] CurrentHours;
     private int[][] CurrentMinutes;
 
-    private int colorPrimary;
     private int colorOnPrimary;
     private int colorPrimaryContainer;
     private int colorOnPrimaryContainer;
     private int colorSec;
-    private int colorOnSec;
     private int colorOnSecContainer;
     private int colorSecContainer;
-    private int colorErr;
     private int colorOnError;
     private Drawable MinuteBackground;
     private Drawable MinuteBackgroundFull;
@@ -133,6 +131,10 @@ public class ScheduleBusTimeFragment extends Fragment {
         TextView NumText = view.findViewById(R.id.ScheduleBusLineNum);
         NumText.setText(mLineNum);
 
+        if (getContext() == null) {
+            return view;
+        }
+
         DatabaseManager Dm = new DatabaseManager(getContext());
 
         TextView StartPosText = view.findViewById(R.id.StartPosText);
@@ -156,27 +158,27 @@ public class ScheduleBusTimeFragment extends Fragment {
             Variations = Dm.GetBusVariationsFromStop(mLineNum, mStopId);
         }
 
-        boolean IsForwWayDescTextSetted = false;
-        boolean IsBackwWayDescTextSetted = false;
-        for (int i = 0; i < Variations.length; i++) {
+        boolean IsForwardWayDescTextSet = false;
+        boolean IsBackWayDescTextSet = false;
+        for (BusVariation variation : Variations) {
 
-            if (!IsForwWayDescTextSetted && SelectedWay.equals(Variations[i].getIrany())) {
-                IsForwWayDescTextSetted = true;
-                WayDescStringForw = Variations[i].getNev();
-                DescText.setText(Variations[i].getNev());
+            if (!IsForwardWayDescTextSet && SelectedWay.equals(variation.getDirection())) {
+                IsForwardWayDescTextSet = true;
+                WayDescStringForward = variation.getName();
+                DescText.setText(variation.getName());
             }
-            if (!IsBackwWayDescTextSetted && !SelectedWay.equals(Variations[i].getIrany())) {
-                IsBackwWayDescTextSetted = true;
-                WayDescStringbackw = Variations[i].getNev();
+            if (!IsBackWayDescTextSet && !SelectedWay.equals(variation.getDirection())) {
+                IsBackWayDescTextSet = true;
+                WayDescStringBackwards = variation.getName();
             }
         }
 
-        if (IsForwWayDescTextSetted && IsBackwWayDescTextSetted) {
+        if (IsForwardWayDescTextSet && IsBackWayDescTextSet) {
             TwoWay = true;
         }
 
-        if (!IsForwWayDescTextSetted && IsBackwWayDescTextSetted) {
-            DescText.setText(WayDescStringbackw);
+        if (!IsForwardWayDescTextSet && IsBackWayDescTextSet) {
+            DescText.setText(WayDescStringBackwards);
             SelectedWay = "V";
         }
 
@@ -196,64 +198,51 @@ public class ScheduleBusTimeFragment extends Fragment {
 
 
 
-        BusLineTimeFavIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Line, mLineNum)) {
-                    userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Line, mLineNum);
-                    BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
-                } else {
-                    userDatabase.AddFavorite(UserDatabase.FavoriteType.Line, mLineNum);
-                    BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
-                }
+        BusLineTimeFavIcon.setOnClickListener(view1 -> {
+            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Line, mLineNum)) {
+                userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Line, mLineNum);
+                BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+            } else {
+                userDatabase.AddFavorite(UserDatabase.FavoriteType.Line, mLineNum);
+                BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
             }
         });
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd.");
-        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd.", Locale.US);
+        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         Date date = new Date();
         try {
             date = formatter2.parse(SelectedDate);
         } catch (ParseException e) {
             e.printStackTrace();
         }
+        assert date != null;
         SelectedDateText.setText(formatter.format(date));
 
-        SelectedDateText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ShowDatePicker();
-            }
-        });
+        SelectedDateText.setOnClickListener(view12 -> ShowDatePicker());
 
 
-        BusLineTimeDirectionIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (TwoWay) {
-                    if (SelectedWay.equals("O")) {
-                        SelectedWay = "V";
-                        DescText.setText(WayDescStringbackw);
-                    } else {
-                        SelectedWay = "O";
-                        DescText.setText(WayDescStringForw);
-                    }
+        BusLineTimeDirectionIcon.setOnClickListener(view13 -> {
+            if (TwoWay) {
+                if (SelectedWay.equals("O")) {
+                    SelectedWay = "V";
+                    DescText.setText(WayDescStringBackwards);
+                } else {
+                    SelectedWay = "O";
+                    DescText.setText(WayDescStringForward);
                 }
-                ReloadSchedules(getView());
             }
+            ReloadSchedules(getView());
         });
 
         SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
         swipeRefreshLayout.setOnRefreshListener(
-                new SwipeRefreshLayout.OnRefreshListener() {
-                    @Override
-                    public void onRefresh() {
-                        ReloadSchedules(view);
+                () -> {
+                    ReloadSchedules(view);
 
-                        ScrollToCurrentHour(view);
+                    ScrollToCurrentHour(view);
 
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
+                    swipeRefreshLayout.setRefreshing(false);
                 }
         );
 
@@ -275,8 +264,11 @@ public class ScheduleBusTimeFragment extends Fragment {
 
     private void LoadColorsAndBackgrounds() {
         TypedValue typedValue = new TypedValue();
+        if (getContext() == null) {
+            return;
+        }
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
-        colorPrimary = ContextCompat.getColor(getContext(), typedValue.resourceId);
+        int colorPrimary = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
         colorOnPrimary = ContextCompat.getColor(getContext(), typedValue.resourceId);
@@ -291,7 +283,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         colorSec = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondary, typedValue, true);
-        colorOnSec = ContextCompat.getColor(getContext(), typedValue.resourceId);
+        int colorOnSec = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondaryContainer, typedValue, true);
         colorSecContainer = ContextCompat.getColor(getContext(), typedValue.resourceId);
@@ -300,7 +292,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         colorOnSecContainer = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorError, typedValue, true);
-        colorErr = ContextCompat.getColor(getContext(), typedValue.resourceId);
+        int colorErr = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnError, typedValue, true);
         colorOnError = ContextCompat.getColor(getContext(), typedValue.resourceId);
@@ -313,28 +305,43 @@ public class ScheduleBusTimeFragment extends Fragment {
         ));
 
         MinuteBackground = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_background);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorOnSec);
+        if (MinuteBackground != null) {
+            ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
+            ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorOnSec);
+        }
+
 
         MinuteBackgroundFull = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_fbackground);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFull).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFull).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorOnSec);
+        if (MinuteBackgroundFull != null) {
+            ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFull).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
+            ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFull).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorOnSec);
+        }
+
 
         MinuteBackgroundStarted = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_background);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundStarted).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundStarted).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorPrimary);
+        if (MinuteBackgroundStarted != null) {
+            ((GradientDrawable)(((LayerDrawable)MinuteBackgroundStarted).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
+            ((GradientDrawable)(((LayerDrawable)MinuteBackgroundStarted).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorPrimary);
+        }
 
         MinuteBackgroundFullStarted = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_fbackground);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFullStarted).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFullStarted).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorPrimary);
+        if (MinuteBackgroundFullStarted != null) {
+            ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFullStarted).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
+            ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFullStarted).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorPrimary);
+        }
 
         MinuteBackgroundErr = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_background);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundErr).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundErr).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorErr);
+        if (MinuteBackgroundErr != null) {
+            ((GradientDrawable) (((LayerDrawable) MinuteBackgroundErr).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
+            ((GradientDrawable) (((LayerDrawable) MinuteBackgroundErr).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorErr);
+        }
+
 
         MinuteBackgroundFullErr = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_fbackground);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFullErr).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
-        ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFullErr).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorErr);
+        if (MinuteBackgroundFullErr != null) {
+            ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFullErr).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
+            ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFullErr).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorErr);
+        }
     }
 
     private void setColors(View view) {
@@ -355,219 +362,208 @@ public class ScheduleBusTimeFragment extends Fragment {
     }
 
     private void ShowDatePicker() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date date = new Date();
         try {
             date = sdf.parse(SelectedDate);
-        }catch (Exception e) {
+        }catch (Exception ignored) {
 
         }
 
 
+        assert date != null;
+        MaterialDatePicker<Long> DatePicker = MaterialDatePicker.Builder.datePicker().setTitleText("Válassz Dátumot:").setSelection(date.getTime()).build();
+        DatePicker.addOnPositiveButtonClickListener((MaterialPickerOnPositiveButtonClickListener<Long>) selection -> {
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            sdf1.setTimeZone(TimeZone.getTimeZone("UTC"));
+            SelectedDate = sdf1.format(new Date((long)selection));
 
-        MaterialDatePicker DatePicker = MaterialDatePicker.Builder.datePicker().setTitleText("Válassz Dátumot:").setSelection(date.getTime()).build();
-        DatePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener() {
-            @Override
-            public void onPositiveButtonClick(Object selection) {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-                SelectedDate = sdf.format(new Date((long)selection));
-
+            if (getView() != null) {
                 TextView SelectedDateText = getView().findViewById(R.id.ScheduleBusLineDate);
 
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd.");
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd.", Locale.US);
                 SelectedDateText.setText(formatter.format(new Date((long)selection)));
-
                 ReloadSchedules(getView());
             }
         });
         DatePicker.show(getChildFragmentManager(), "DatePicker");
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void ReloadSchedules(View view) {
         final ScheduleBusTimeFragment Callback = this;
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                DatabaseManager Dm = new DatabaseManager(getContext());
+        new Thread(() -> {
+            if (getContext() == null) {
+                return;
+            }
+            DatabaseManager Dm = new DatabaseManager(getContext());
 
-                ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
-                if (TwoWay && SelectedWay.equals("O")) {
-                    BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionForward));
-                } else if (TwoWay && SelectedWay.equals("V")){
-                    BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionBackwards));
-                } else {
-                    BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionOneWay));
+            ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
+            if (TwoWay && SelectedWay.equals("O")) {
+                BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionForward));
+            } else if (TwoWay && SelectedWay.equals("V")){
+                BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionBackwards));
+            } else {
+                BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionOneWay));
+            }
+
+
+
+
+            if (mStopId == -1) {
+                CurrentLines = Dm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
+            } else {
+                CurrentLines = Dm.GetBusScheduleTimeFromStop(mLineNum, SelectedDate, SelectedWay, mStopId);
+
+                for (BusScheduleTime busScheduleTime : CurrentLines) {
+                    int StopDelta = Dm.GetBusLineStopTravelTimeById(Integer.toString(busScheduleTime.getLineId()), mStopId);
+                    busScheduleTime.AdjustToStop(StopDelta);
+
                 }
+            }
 
-
-
-
-                if (mStopId == -1) {
-                    CurrentJaratok = Dm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
-                } else {
-                    CurrentJaratok = Dm.GetBusScheduleTimeFromStop(mLineNum, SelectedDate, SelectedWay, mStopId);
-
-                    for (int i = 0; i < CurrentJaratok.length; i++) {
-                        int StopDelta = Dm.GetBusJaratStopMenetidoById(Integer.toString(CurrentJaratok[i].getJaratId()), mStopId);
-                        CurrentJaratok[i].AdjustToStop(StopDelta);
-
-                    }
-                }
-
-                if(CurrentJaratok.length == 0) {
-                    if (getActivity() != null) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                InfoFragment Ifragment = InfoFragment.newInstance(getResources().getString(R.string.EmptySchedule), -1);
-
-                                getChildFragmentManager().beginTransaction()
-                                        .replace(R.id.ScheduleTimeFragmentContainer, Ifragment)
-                                        .commit();
-
-                                SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
-                                swipeRefreshLayout.setVisibility(View.GONE);
-
-                                FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
-                                fragmentContainerView.setVisibility(View.VISIBLE);
-
-                                Sbta = null;
-                            }
-                        });
-                    }
-
-                    return;
-                }
-
-
-                List<Integer> HoursList = new ArrayList<>();
-
-                int CurrentHour = -1;
-                for (int i = 0; i < CurrentJaratok.length; i++) {
-                    if (CurrentJaratok[i].getOra() != CurrentHour) {
-                        HoursList.add(CurrentJaratok[i].getOra());
-                        CurrentHour = CurrentJaratok[i].getOra();
-                    }
-                }
-
-                CurrentHours = new int[HoursList.size()];
-
-                for (int i = 0; i < HoursList.size(); i++) {
-                    CurrentHours[i] = HoursList.get(i);
-                }
-
-                CurrentMinutes = new int[HoursList.size()][];
-                List<Integer> TempMinutes = new ArrayList<>();
-
-                CurrentHour = -1;
-                int HourIndex = -1;
-                for (int i = 0; i < CurrentJaratok.length; i++) {
-                    if (CurrentJaratok[i].getOra() != CurrentHour) {
-                        if(HourIndex != -1) {
-                            CurrentMinutes[HourIndex] = new int[TempMinutes.size()];
-                            for (int j = 0; j < TempMinutes.size(); j++) {
-                                CurrentMinutes[HourIndex][j] = TempMinutes.get(j);
-                            }
-                        }
-
-                        HourIndex++;
-
-                        CurrentHour = CurrentJaratok[i].getOra();
-                        TempMinutes = new ArrayList<>();
-                        TempMinutes.add(CurrentJaratok[i].getPerc());
-                    } else {
-                        TempMinutes.add(CurrentJaratok[i].getPerc());
-                    }
-                }
-
-                if (TempMinutes.size() > 0) {
-                    CurrentMinutes[HourIndex] = new int[TempMinutes.size()];
-                    for (int j = 0; j < TempMinutes.size(); j++) {
-                        CurrentMinutes[HourIndex][j] = TempMinutes.get(j);
-                    }
-                }
-
-                String[][] BusCodes = new String[CurrentHours.length][];
-
-                int Counter = 0;
-                for (int i = 0; i < CurrentHours.length; i++) {
-                    BusCodes[i] = new String[CurrentMinutes[i].length];
-                    for (int j = 0; j < CurrentMinutes[i].length; j++){
-                        BusCodes[i][j] = CurrentJaratok[Counter].getLineCode().replace(mLineNum, "");
-                        Counter++;
-                    }
-                }
-
-
-                DisplayMetrics displayMetrics = new DisplayMetrics();
-                getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-                int width = displayMetrics.widthPixels;
-
-                int ndp = Math.round(TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP,
-                        75,
-                        displayMetrics
-                ));
-
-                int MinuteWidth = Math.round(TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP,
-                        50,
-                        displayMetrics
-                ));
-
-                RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
-
-
+            if(CurrentLines.length == 0) {
                 if (getActivity() != null) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
+                    getActivity().runOnUiThread(() -> {
+                        InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptySchedule), -1);
 
-                            if (Sbta == null) {
-                                swipeRefreshLayout.setVisibility(View.VISIBLE);
+                        getChildFragmentManager().beginTransaction()
+                                .replace(R.id.ScheduleTimeFragmentContainer, Fragment)
+                                .commit();
 
-                                FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
-                                fragmentContainerView.setVisibility(View.GONE);
+                        SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
+                        swipeRefreshLayout.setVisibility(View.GONE);
 
-                                Sbta = new ScheduleBusTimeHourAdapter(CurrentHours, CurrentMinutes,BusCodes, Variations, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorSec, colorSecContainer, colorOnSecContainer, colorOnPrimary, colorOnError, MinuteBackground, MinuteBackgroundFull, MinuteBackgroundStarted, MinuteBackgroundFullStarted, MinuteBackgroundErr, MinuteBackgroundFullErr, getContext(), Callback);
-                                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-                                Recv.setLayoutManager(mLayoutManager);
-                                Recv.setAdapter(Sbta);
+                        FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
+                        fragmentContainerView.setVisibility(View.VISIBLE);
 
-                                //wait a frame
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (getActivity() != null) {
-                                            getActivity().runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    ScrollToCurrentHour(view);
-                                                }
-                                            });
-                                        }
-                                    }
-                                }).start();
-                            } else {
-                                Sbta.UpdateData(CurrentHours, CurrentMinutes, BusCodes);
-                                Sbta.notifyDataSetChanged();
-                            }
-
-
-                            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                            Date date = new Date();
-                            if (SelectedDate.equals(formatter.format(date))) {
-                                GetLiveData(CurrentJaratok);
-                            }else {
-                                swipeRefreshLayout.setRefreshing(false);
-                            }
-                        }
+                        Sbta = null;
                     });
                 }
+
+                return;
+            }
+
+
+            List<Integer> HoursList = new ArrayList<>();
+
+            int CurrentHour = -1;
+            for (BusScheduleTime busScheduleTime : CurrentLines) {
+                if (busScheduleTime.getHour() != CurrentHour) {
+                    HoursList.add(busScheduleTime.getHour());
+                    CurrentHour = busScheduleTime.getHour();
+                }
+            }
+
+            CurrentHours = new int[HoursList.size()];
+
+            for (int i = 0; i < HoursList.size(); i++) {
+                CurrentHours[i] = HoursList.get(i);
+            }
+
+            CurrentMinutes = new int[HoursList.size()][];
+            List<Integer> TempMinutes = new ArrayList<>();
+
+            CurrentHour = -1;
+            int HourIndex = -1;
+            for (BusScheduleTime busScheduleTime : CurrentLines) {
+                if (busScheduleTime.getHour() != CurrentHour) {
+                    if (HourIndex != -1) {
+                        CurrentMinutes[HourIndex] = new int[TempMinutes.size()];
+                        for (int j = 0; j < TempMinutes.size(); j++) {
+                            CurrentMinutes[HourIndex][j] = TempMinutes.get(j);
+                        }
+                    }
+
+                    HourIndex++;
+
+                    CurrentHour = busScheduleTime.getHour();
+                    TempMinutes = new ArrayList<>();
+                    TempMinutes.add(busScheduleTime.getMinute());
+                } else {
+                    TempMinutes.add(busScheduleTime.getMinute());
+                }
+            }
+
+            if (TempMinutes.size() > 0) {
+                CurrentMinutes[HourIndex] = new int[TempMinutes.size()];
+                for (int j = 0; j < TempMinutes.size(); j++) {
+                    CurrentMinutes[HourIndex][j] = TempMinutes.get(j);
+                }
+            }
+
+            String[][] BusCodes = new String[CurrentHours.length][];
+
+            int Counter = 0;
+            for (int i = 0; i < CurrentHours.length; i++) {
+                BusCodes[i] = new String[CurrentMinutes[i].length];
+                for (int j = 0; j < CurrentMinutes[i].length; j++){
+                    BusCodes[i][j] = CurrentLines[Counter].getLineCode().replace(mLineNum, "");
+                    Counter++;
+                }
+            }
+
+
+
+            if (getActivity() == null) {
+                return;
+            }
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int width = displayMetrics.widthPixels;
+
+            int ndp = Math.round(TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    75,
+                    displayMetrics
+            ));
+
+            int MinuteWidth = Math.round(TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    50,
+                    displayMetrics
+            ));
+
+            RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
+
+
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
+
+                    if (Sbta == null) {
+                        swipeRefreshLayout.setVisibility(View.VISIBLE);
+
+                        FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
+                        fragmentContainerView.setVisibility(View.GONE);
+
+                        Sbta = new ScheduleBusTimeHourAdapter(CurrentHours, CurrentMinutes,BusCodes, Variations, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorSec, colorSecContainer, colorOnSecContainer, colorOnPrimary, colorOnError, MinuteBackground, MinuteBackgroundFull, MinuteBackgroundStarted, MinuteBackgroundFullStarted, MinuteBackgroundErr, MinuteBackgroundFullErr, getContext(), Callback);
+                        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+                        Recv.setLayoutManager(mLayoutManager);
+                        Recv.setAdapter(Sbta);
+
+                        //wait a frame
+                        new Thread(() -> {
+                            if (getActivity() != null) {
+                                getActivity().runOnUiThread(() -> ScrollToCurrentHour(view));
+                            }
+                        }).start();
+                    } else {
+                        Sbta.UpdateData(CurrentHours, CurrentMinutes, BusCodes);
+                        Sbta.notifyDataSetChanged();
+                    }
+
+
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                    Date date = new Date();
+                    if (SelectedDate.equals(formatter.format(date))) {
+                        GetLiveData(CurrentLines);
+                    }else {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                });
             }
         }).start();
     }
@@ -575,9 +571,13 @@ public class ScheduleBusTimeFragment extends Fragment {
     private void ScrollToCurrentHour(View view) {
         Calendar Now = Calendar.getInstance();
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         Date date = new Date();
         if (!SelectedDate.equals(formatter.format(date))) {
+            return;
+        }
+
+        if (getContext() == null) {
             return;
         }
 
@@ -606,113 +606,120 @@ public class ScheduleBusTimeFragment extends Fragment {
             }
         }
         RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
-        Recv.getLayoutManager().startSmoothScroll(smoothScroller);
+        if (Recv.getLayoutManager() != null) {
+            Recv.getLayoutManager().startSmoothScroll(smoothScroller);
+        }
     }
 
-    private void GetLiveData(BusScheduleTime[] Jaratok) {
+    @SuppressLint("NotifyDataSetChanged")
+    private void GetLiveData(BusScheduleTime[] Lines) {
+        if (getContext() == null) {
+            return;
+        }
         Context ctx = getContext();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Calendar Now = Calendar.getInstance();
+        new Thread(() -> {
+            Calendar Now = Calendar.getInstance();
 
-                int CurrentHour = Now.get(Calendar.HOUR_OF_DAY);
-                int CurrentMinute = Now.get(Calendar.MINUTE);
+            int CurrentHour = Now.get(Calendar.HOUR_OF_DAY);
+            int CurrentMinute = Now.get(Calendar.MINUTE);
 
-                List<BusScheduleTime> StartedList = new ArrayList<>();
-                List<BusScheduleTime> ErrNotStartedList = new ArrayList<>();
+            List<BusScheduleTime> StartedList = new ArrayList<>();
+            List<BusScheduleTime> ErrNotStartedList = new ArrayList<>();
 
 
-                for (int i = 0; i < Jaratok.length; i++) {
-                    if (mStopId == -1) {
-                        if ((Jaratok[i].getOra() == CurrentHour && CurrentMinute >= Jaratok[i].getPerc()) || Jaratok[i].getOra() + 1 == CurrentHour || Jaratok[i].getOra() + 2 == CurrentHour) {
-                            TukeServerApi tukeServerApi = new TukeServerApi(ctx);
-                            boolean IsStarted = tukeServerApi.getIsBusHasStarted(Jaratok[i].getJaratId());
+            for (BusScheduleTime busScheduleTime : Lines) {
+                if (mStopId == -1) {
+                    if ((busScheduleTime.getHour() == CurrentHour && CurrentMinute >= busScheduleTime.getMinute()) || busScheduleTime.getHour() + 1 == CurrentHour || busScheduleTime.getHour() + 2 == CurrentHour) {
+                        TukeServerApi tukeServerApi = new TukeServerApi(ctx);
+                        boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
 
-                            if (IsStarted) {
-                                StartedList.add(Jaratok[i]);
-                            } else {
-                                DatabaseManager Dm = new DatabaseManager(ctx);
-                                int MenetidoMin = Dm.GetBusJaratSumMenetidoById(Integer.toString(Jaratok[i].getJaratId()));
+                        if (IsStarted) {
+                            StartedList.add(busScheduleTime);
+                        } else {
+                            DatabaseManager Dm = new DatabaseManager(ctx);
+                            int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(Integer.toString(busScheduleTime.getLineId()));
 
-
-
-                                Calendar calendar = Calendar.getInstance();
-                                calendar.setTime(new Date());
-                                calendar.set(Calendar.HOUR_OF_DAY, Jaratok[i].getOra());
-                                calendar.set(Calendar.MINUTE, Jaratok[i].getPerc());
-
-                                calendar.add(Calendar.MINUTE, MenetidoMin-2);
-
-                                if (calendar.after(Now) && ((Jaratok[i].getOra() == CurrentHour && CurrentMinute > Jaratok[i].getPerc()) || Jaratok[i].getOra() + 1 == CurrentHour || Jaratok[i].getOra() + 2 == CurrentHour)) {
-                                    ErrNotStartedList.add(Jaratok[i]);
-                                }
-                            }
-                        }
-                    } else {
-                        if (Jaratok[i].getOra() == CurrentHour || Jaratok[i].getOra() + 1 == CurrentHour || Jaratok[i].getOra() -1 == CurrentHour) {
-                            TukeServerApi tukeServerApi = new TukeServerApi(ctx);
-                            boolean IsStarted = tukeServerApi.getIsBusHasStarted(Jaratok[i].getJaratId());
 
                             Calendar calendar = Calendar.getInstance();
                             calendar.setTime(new Date());
-                            calendar.set(Calendar.HOUR_OF_DAY, Jaratok[i].getOra());
-                            calendar.set(Calendar.MINUTE, Jaratok[i].getPerc());
+                            calendar.set(Calendar.HOUR_OF_DAY, busScheduleTime.getHour());
+                            calendar.set(Calendar.MINUTE, busScheduleTime.getMinute());
 
-                            DatabaseManager Dm = new DatabaseManager(ctx);
-                            int StopDelta = Dm.GetBusJaratStopMenetidoById(Integer.toString(Jaratok[i].getJaratId()), mStopId);
-                            calendar.add(Calendar.MINUTE, StopDelta*-1);
+                            calendar.add(Calendar.MINUTE, TravelTimeMin - 2);
 
-                            if (IsStarted) {
-                                if (((calendar.get(Calendar.HOUR_OF_DAY) == CurrentHour && CurrentMinute >= calendar.get(Calendar.MINUTE) || calendar.get(Calendar.HOUR_OF_DAY) + 1 == CurrentHour || calendar.get(Calendar.HOUR_OF_DAY) + 2 == CurrentHour))) {
-                                    StartedList.add(Jaratok[i]);
-                                }
-                            } else {
+                            if (calendar.after(Now) && ((busScheduleTime.getHour() == CurrentHour && CurrentMinute > busScheduleTime.getMinute()) || busScheduleTime.getHour() + 1 == CurrentHour || busScheduleTime.getHour() + 2 == CurrentHour)) {
+                                ErrNotStartedList.add(busScheduleTime);
+                            }
+                        }
+                    }
+                } else {
+                    if (busScheduleTime.getHour() == CurrentHour || busScheduleTime.getHour() + 1 == CurrentHour || busScheduleTime.getHour() - 1 == CurrentHour) {
+                        TukeServerApi tukeServerApi = new TukeServerApi(ctx);
+                        boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
 
-                                int MenetidoMin = Dm.GetBusJaratSumMenetidoById(Integer.toString(Jaratok[i].getJaratId()));
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(new Date());
+                        calendar.set(Calendar.HOUR_OF_DAY, busScheduleTime.getHour());
+                        calendar.set(Calendar.MINUTE, busScheduleTime.getMinute());
 
-                                Calendar calendar1 = (Calendar) calendar.clone();
+                        DatabaseManager Dm = new DatabaseManager(ctx);
+                        int StopDelta = Dm.GetBusLineStopTravelTimeById(Integer.toString(busScheduleTime.getLineId()), mStopId);
+                        calendar.add(Calendar.MINUTE, StopDelta * -1);
 
-                                calendar1.add(Calendar.MINUTE, MenetidoMin-2);
+                        if (IsStarted) {
+                            if (((calendar.get(Calendar.HOUR_OF_DAY) == CurrentHour && CurrentMinute >= calendar.get(Calendar.MINUTE) || calendar.get(Calendar.HOUR_OF_DAY) + 1 == CurrentHour || calendar.get(Calendar.HOUR_OF_DAY) + 2 == CurrentHour))) {
+                                StartedList.add(busScheduleTime);
+                            }
+                        } else {
 
-                                if (calendar1.after(Now) && ((calendar.get(Calendar.HOUR_OF_DAY) == CurrentHour && CurrentMinute > calendar.get(Calendar.MINUTE) || calendar.get(Calendar.HOUR_OF_DAY) + 1 == CurrentHour || calendar.get(Calendar.HOUR_OF_DAY) + 2 == CurrentHour))) {
-                                    ErrNotStartedList.add(Jaratok[i]);
-                                }
+                            int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(Integer.toString(busScheduleTime.getLineId()));
+
+                            Calendar calendar1 = (Calendar) calendar.clone();
+
+                            calendar1.add(Calendar.MINUTE, TravelTimeMin - 2);
+
+                            if (calendar1.after(Now) && ((calendar.get(Calendar.HOUR_OF_DAY) == CurrentHour && CurrentMinute > calendar.get(Calendar.MINUTE) || calendar.get(Calendar.HOUR_OF_DAY) + 1 == CurrentHour || calendar.get(Calendar.HOUR_OF_DAY) + 2 == CurrentHour))) {
+                                ErrNotStartedList.add(busScheduleTime);
                             }
                         }
                     }
                 }
-                BusScheduleTime[] Started = new BusScheduleTime[StartedList.size()];
-                BusScheduleTime[] ErrNotStarted = new BusScheduleTime[ErrNotStartedList.size()];
+            }
+            BusScheduleTime[] Started = new BusScheduleTime[StartedList.size()];
+            BusScheduleTime[] ErrNotStarted = new BusScheduleTime[ErrNotStartedList.size()];
 
-                StartedList.toArray(Started);
-                ErrNotStartedList.toArray(ErrNotStarted);
+            StartedList.toArray(Started);
+            ErrNotStartedList.toArray(ErrNotStarted);
 
-                if(getActivity() != null && Sbta != null) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Sbta.AttachLiveData(Started, ErrNotStarted);
-                            Sbta.notifyDataSetChanged();
-                            SwipeRefreshLayout swipeRefreshLayout = getView().findViewById(R.id.swiperefresh);
-                            swipeRefreshLayout.setRefreshing(false);
-                        }
-                    });
-                }
+            if(getActivity() != null && Sbta != null && getView() != null) {
+                getActivity().runOnUiThread(() -> {
+                    Sbta.AttachLiveData(Started, ErrNotStarted);
+                    Sbta.notifyDataSetChanged();
+                    SwipeRefreshLayout swipeRefreshLayout = getView().findViewById(R.id.swiperefresh);
+                    swipeRefreshLayout.setRefreshing(false);
+                });
             }
         }).start();
     }
 
     public void OnScheduleClick(int Hour, int Minute) {
-        for (int i = 0; i < CurrentJaratok.length; i++) {
-            if (CurrentJaratok[i].getOra() == Hour && CurrentJaratok[i].getPerc() == Minute) {
-                ((ScheduleActivity)getActivity()).OnSelectedSchedule(CurrentJaratok[i].getJaratId(), SelectedDate, SelectedWay);
+        if (getActivity() == null) {
+            return;
+        }
+        for (BusScheduleTime busScheduleTime : CurrentLines) {
+            if (busScheduleTime.getHour() == Hour && busScheduleTime.getMinute() == Minute) {
+                ((ScheduleActivity) getActivity()).OnSelectedSchedule(busScheduleTime.getLineId(), SelectedDate, SelectedWay);
                 return;
             }
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void UpdateMaxPerLine() {
+        if(getActivity() == null) {
+            return;
+        }
+
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;

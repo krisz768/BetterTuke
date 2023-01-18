@@ -1,23 +1,21 @@
 package hu.krisz768.bettertuke;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.Locale;
 
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
+@SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
 
     private TextView Logs;
@@ -58,7 +56,7 @@ public class SplashActivity extends AppCompatActivity {
 
         if (Dm.IsDatabaseExist()) {
             AddLog("Database exist, checking for update...");
-            String Verison = Dm.GetDatabaseVerison();
+            String Verison = Dm.GetDatabaseVersion();
 
             AddLog("Database version = " + Verison);
 
@@ -68,6 +66,16 @@ public class SplashActivity extends AppCompatActivity {
 
             if (OnlineVerison.equals("Err") && !Verison.equals("Err")) {
                 AddLog("Server error, using existing database...");
+
+                Context ctx = getApplicationContext();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(ctx, "Nem sikerült frissíteni az adatbázist.", Toast.LENGTH_LONG).show();
+                    }
+                });
+
                 StartMain();
             } else {
                 if (Verison.equals(OnlineVerison)) {
@@ -78,15 +86,26 @@ public class SplashActivity extends AppCompatActivity {
                 } else {
                     AddLog("Database version does not match! Updating....");
 
-                    Dm.DeleteDatabase();
+                    if (!Dm.DeleteDatabase()){
+                        AddLog("Database delete error. Continue anyway...");
+                    }
 
                     if (serverApi.downloadDatabaseFile()) {
                         AddLog("Database downloaded successfully");
 
                         Dm.ReloadDatabase();
-                        Verison = Dm.GetDatabaseVerison();
+                        Verison = Dm.GetDatabaseVersion();
 
                         AddLog("Database version = " + Verison);
+
+                        Context ctx = getApplicationContext();
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(ctx, "Új menetrendre frissítve! Előfordulhatnak válzotások.", Toast.LENGTH_LONG).show();
+                            }
+                        });
 
                         //END
                         StartMain();
@@ -102,7 +121,7 @@ public class SplashActivity extends AppCompatActivity {
             if (serverApi.downloadDatabaseFile()) {
                 AddLog("Database downloaded successfully");
                 Dm.ReloadDatabase();
-                String Verison = Dm.GetDatabaseVerison();
+                String Verison = Dm.GetDatabaseVersion();
 
                 AddLog("Database version = " + Verison);
 
