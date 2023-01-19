@@ -6,8 +6,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+
+import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class DatabaseManager {
 
@@ -337,6 +344,47 @@ public class DatabaseManager {
         cursor.close();
 
         return TravelTime;
+    }
+
+    public IncomingBusRespModel[] GetOfflineDepartureTimes(int StopId) {
+        List<IncomingBusRespModel> Lines = new ArrayList<>();
+        Calendar now = Calendar.getInstance();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        String CurrentDate = formatter.format(now.getTime());
+
+        Cursor cursor = Sld.rawQuery("SELECT j.id_jarat, ny.id_nyomvonal, ny.vonal_nev, ny.nyomvonal_nev, nyt.osszegzett_menetido, j.indulas_ora, j.indulas_perc FROM nyomvonalak ny INNER JOIN jaratok as j ON j.id_nyomvonal = ny.id_nyomvonal INNER JOIN nyomvonal_tetelek as nyt ON j.id_menetido = nyt.id_menetido INNER JOIN naptar as n ON j.id_jarat = n.id_jarat WHERE n.datum = \"" + CurrentDate + "\" AND nyt.id_kocsiallas = " + StopId + " ORDER BY j.indulas_ora, j.indulas_perc;", null);
+        while(cursor.moveToNext()) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, cursor.getInt(5));
+            calendar.set(Calendar.MINUTE, cursor.getInt(6));
+
+            calendar.add(Calendar.MINUTE, cursor.getInt(4));
+
+            Calendar MaxLimit = Calendar.getInstance();
+
+            MaxLimit.add(Calendar.MINUTE, 90);
+
+
+
+            if (calendar.after(now) && calendar.before(MaxLimit)) {
+                long diff = calendar.getTime().getTime() - now.getTime().getTime();
+                int RemainingMinute = (int)(diff / 1000)/ 60;
+
+                Lines.add(new IncomingBusRespModel(cursor.getString(2), cursor.getString(3), calendar.getTime(), cursor.getInt(1), cursor.getInt(0), RemainingMinute, false));
+            }
+        }
+        cursor.close();
+
+        Collections.sort(Lines, new Comparator<IncomingBusRespModel>() {
+            @Override
+            public int compare(IncomingBusRespModel incomingBusRespModel, IncomingBusRespModel t1) {
+                return incomingBusRespModel.getRemainingMin() - t1.getRemainingMin();
+            }
+        });
+
+        IncomingBusRespModel[] ret  = new IncomingBusRespModel[Lines.size()];
+        Lines.toArray(ret);
+        return ret;
     }
 
     private void log (String msg) {

@@ -3,6 +3,8 @@ package hu.krisz768.bettertuke.api_interface;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
@@ -28,18 +30,22 @@ public class TukeServerApi {
         return "Err";
     }
 
+    @Nullable
     public IncomingBusRespModel[] getNextIncomingBuses(int StopId) {
         try {
             apiGetNextIncomingBuses data = new apiGetNextIncomingBuses(StopId);
             Thread thread = new Thread(data);
             thread.start();
             thread.join();
+            if(data.ErrorFlag) {
+                return null;
+            }
             return data.getValue();
         } catch (Exception e) {
             log(e.toString());
         }
 
-        return new IncomingBusRespModel[0];
+        return null;
     }
 
     public TrackBusRespModel getBusLocation(int LineId) {
@@ -56,18 +62,22 @@ public class TukeServerApi {
         return null;
     }
 
+    @Nullable
     public Boolean getIsBusHasStarted(int LineId) {
         try {
             apiGetIsBusHasStarted data = new apiGetIsBusHasStarted(LineId);
             Thread thread = new Thread(data);
             thread.start();
             thread.join();
+            if (data.ErrorFlag) {
+                return null;
+            }
             return data.value;
         } catch (Exception e) {
             log(e.toString());
         }
 
-        return false;
+        return null;
     }
 
     public boolean downloadDatabaseFile() {

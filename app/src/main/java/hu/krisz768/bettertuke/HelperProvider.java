@@ -34,6 +34,16 @@ public class HelperProvider {
     private static final Bitmap[] BitmapContainer = new Bitmap[28];
     private static JSONObject BusAttributes;
 
+    private static boolean IsOfflineTextDisplayed = false;
+
+    public static boolean isOfflineTextDisplayed() {
+        return IsOfflineTextDisplayed;
+    }
+
+    public static void setOfflineTextDisplayed() {
+        IsOfflineTextDisplayed = true;
+    }
+
     public static void RenderAllBitmap(Context ctx) {
         //map
         BitmapContainer[0] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus_stop1, com.google.android.material.R.attr.colorOnPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bus_stop, com.google.android.material.R.attr.colorPrimary, ctx, true));
@@ -503,7 +513,7 @@ public class HelperProvider {
         int i = 0;
         try {
             while(i<BusAttributes.getJSONArray("buses").length()) {
-                if(BusAttributes.getJSONArray("buses").getJSONObject(i).getString("PlateNumber").equals(PlateNumber))
+                if(BusAttributes.getJSONArray("buses").getJSONObject(i).getString("platenumber").equals(PlateNumber))
                     break;
                 i++;
             }

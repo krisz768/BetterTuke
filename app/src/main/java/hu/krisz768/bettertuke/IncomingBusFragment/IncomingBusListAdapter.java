@@ -54,7 +54,7 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
             if (Data.isAtStop()) {
                 arrtime.setText(R.string.BusInStop);
             } else {
-                arrtime.setText(Sdf.format(Arrtime) + " (" + Data.getRemainingMin() + " perc) [" + Data.getLineId() + ", " + Data.getRouteId() + "]");
+                arrtime.setText(Sdf.format(Arrtime) + " (" + Data.getRemainingMin() + " perc)");
             }
 
             int WhiteColor = Color.rgb(255,255,255);

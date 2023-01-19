@@ -22,9 +22,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
-import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -374,16 +374,16 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         assert date != null;
         MaterialDatePicker<Long> DatePicker = MaterialDatePicker.Builder.datePicker().setTitleText("Válassz Dátumot:").setSelection(date.getTime()).build();
-        DatePicker.addOnPositiveButtonClickListener((MaterialPickerOnPositiveButtonClickListener<Long>) selection -> {
+        DatePicker.addOnPositiveButtonClickListener(selection -> {
             SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             sdf1.setTimeZone(TimeZone.getTimeZone("UTC"));
-            SelectedDate = sdf1.format(new Date((long)selection));
+            SelectedDate = sdf1.format(new Date(selection));
 
             if (getView() != null) {
                 TextView SelectedDateText = getView().findViewById(R.id.ScheduleBusLineDate);
 
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd.", Locale.US);
-                SelectedDateText.setText(formatter.format(new Date((long)selection)));
+                SelectedDateText.setText(formatter.format(new Date(selection)));
                 ReloadSchedules(getView());
             }
         });
@@ -631,7 +631,16 @@ public class ScheduleBusTimeFragment extends Fragment {
                 if (mStopId == -1) {
                     if ((busScheduleTime.getHour() == CurrentHour && CurrentMinute >= busScheduleTime.getMinute()) || busScheduleTime.getHour() + 1 == CurrentHour || busScheduleTime.getHour() + 2 == CurrentHour) {
                         TukeServerApi tukeServerApi = new TukeServerApi(ctx);
-                        boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
+                        Boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
+                        if (IsStarted == null){
+                            if(!HelperProvider.isOfflineTextDisplayed()){
+                                if(getActivity() != null) {
+                                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),"Offline adatok. Az élő adatokhoz kapcsolódjon az internetre.", Toast.LENGTH_LONG).show());
+                                }
+                                HelperProvider.setOfflineTextDisplayed();
+                            }
+                            continue;
+                        }
 
                         if (IsStarted) {
                             StartedList.add(busScheduleTime);
@@ -655,7 +664,16 @@ public class ScheduleBusTimeFragment extends Fragment {
                 } else {
                     if (busScheduleTime.getHour() == CurrentHour || busScheduleTime.getHour() + 1 == CurrentHour || busScheduleTime.getHour() - 1 == CurrentHour) {
                         TukeServerApi tukeServerApi = new TukeServerApi(ctx);
-                        boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
+                        Boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
+                        if (IsStarted == null){
+                            if(!HelperProvider.isOfflineTextDisplayed()){
+                                if(getActivity() != null) {
+                                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),"Offline adatok. Az élő adatokhoz kapcsolódjon az internetre.", Toast.LENGTH_LONG).show());
+                                }
+                                HelperProvider.setOfflineTextDisplayed();
+                            }
+                            continue;
+                        }
 
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTime(new Date());

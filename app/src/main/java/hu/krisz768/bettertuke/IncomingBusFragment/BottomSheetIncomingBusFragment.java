@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
+import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.InfoFragment;
 import hu.krisz768.bettertuke.LoadingFragment;
@@ -258,6 +260,21 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             Log.i("Update", "Updating List");
             IncomingBusRespModel[] BusList = serverApi.getNextIncomingBuses(mStop);
 
+            if (BusList == null) {
+                if(getActivity() != null && !HelperProvider.isOfflineTextDisplayed()) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),"Offline adatok. Az élő adatokhoz kapcsolódjon az internetre.", Toast.LENGTH_LONG).show());
+                    HelperProvider.setOfflineTextDisplayed();
+                }
+
+                if (getContext() == null) {
+                    return;
+                }
+                DatabaseManager Dm = new DatabaseManager(getContext());
+
+                BusList = Dm.GetOfflineDepartureTimes(SendStopId);
+            }
+
+
             Date currentTime = Calendar.getInstance().getTime();
             SimpleDateFormat Sdf = new SimpleDateFormat("H", Locale.US);
             SimpleDateFormat Sdf2 = new SimpleDateFormat("m", Locale.US);
@@ -265,7 +282,11 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             for (IncomingBusRespModel incomingBusRespModel : BusList) {
                 BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), getContext());
                 if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
-                    incomingBusRespModel.setStarted(serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId()));
+                    Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId());
+                    if (IsBusStarted == null) {
+                        IsBusStarted = false;
+                    }
+                    incomingBusRespModel.setStarted(IsBusStarted);
                 } else {
                     incomingBusRespModel.setStarted(false);
                 }
@@ -285,9 +306,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                             .commit();
                 } else {
                     if (getActivity() != null) {
+                        IncomingBusRespModel[] finalBusList = BusList;
                         getActivity().runOnUiThread(() -> {
                             if (InBusFragment != null) {
-                                InBusFragment.UpdateList(BusList);
+                                InBusFragment.UpdateList(finalBusList);
                             }
 
                         });
@@ -303,7 +325,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
         } catch (Exception e) {
             Log.e("Update bus list error", e.toString());
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 }
