@@ -3,16 +3,19 @@ package hu.krisz768.bettertuke;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.splashscreen.SplashScreen;
 import androidx.fragment.app.FragmentContainerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -88,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
     private Integer CurrentPlace = -1;
     private Integer CurrentStop = -1;
     private Integer CurrentBusTrack = -1;
-    private BusLine busJarat;
+    private BusLine busLine;
     private LatLng SelectedPlace;
 
     private GoogleMap googleMap;
@@ -107,6 +110,30 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Bundle b = getIntent().getExtras();
+
+        boolean Error = false;
+
+        if (b != null) {
+            Error = b.getBoolean("ERROR");
+        }
+
+        if (Error) {
+            AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+            dlgAlert.setMessage("Az alkalmazás első indításához internetkapcsolat szükséges.");
+            dlgAlert.setTitle("Hiba");
+            dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    finish();
+                }
+            });
+            dlgAlert.setCancelable(false);
+            dlgAlert.create().show();
+
+            return;
+        }
 
         setTheme();
 
@@ -257,12 +284,12 @@ public class MainActivity extends AppCompatActivity {
             SelectStop(Md.getId(), true);
         } else if (Md.getType() == MarkerDescriptor.Types.Place) {
             SelectPlace(Md.getId());
-        } else {
+        } else if (Md.getType() == MarkerDescriptor.Types.Bus){
             ZoomTo(BusMarker.getPosition());
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        } else {
+            ZoomTo(SelectedPlace);
         }
-
-
     }
 
     public void SelectStop(int StopId, boolean SaveBack) {
@@ -272,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (CurrentBusTrack != -1) {
             CurrentBusTrack = -1;
-            busJarat = null;
+            busLine = null;
         }
 
         if (SelectedPlace != null) {
@@ -303,7 +330,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (CurrentBusTrack != -1) {
             CurrentBusTrack = -1;
-            busJarat = null;
+            busLine = null;
         }
 
         if (SelectedPlace != null) {
@@ -359,7 +386,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void MarkerRenderer() {
         googleMap.clear();
-        if (busJarat == null) {
+        if (busLine == null) {
             BusMarker = null;
         }
         if (BusMarker != null) {
@@ -412,9 +439,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         } else {
-            for (int i = 0; i < busJarat.getStops().length; i++) {
+            for (int i = 0; i < busLine.getStops().length; i++) {
                 for (BusStops busStop : busStops) {
-                    if (busJarat.getStops()[i].getStopId() == busStop.getId()) {
+                    if (busLine.getStops()[i].getStopId() == busStop.getId()) {
                         BitmapDescriptor icon;
                         if (CurrentStop == busStop.getId()) {
                             icon = StopSelected;
@@ -433,8 +460,8 @@ public class MainActivity extends AppCompatActivity {
             PolylineOptions lineOptions = new PolylineOptions();
             ArrayList<LatLng> points = new ArrayList<>();
 
-            for (int i = 0; i < busJarat.getRoute().length; i++) {
-                LatLng position = new LatLng(busJarat.getRoute()[i].getGpsLatitude(), busJarat.getRoute()[i].getGpsLongitude());
+            for (int i = 0; i < busLine.getRoute().length; i++) {
+                LatLng position = new LatLng(busLine.getRoute()[i].getGpsLatitude(), busLine.getRoute()[i].getGpsLongitude());
                 points.add(position);
             }
 
@@ -735,12 +762,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         CurrentBusTrack = Id;
-        busJarat = BusLine.BusLinesByLineId(Id, this);
+        busLine = BusLine.BusLinesByLineId(Id, this);
         if (Date != null) {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             java.util.Date date = new Date();
             if (!Date.equals(formatter.format(date))) {
-                busJarat.setDate(Date);
+                busLine.setDate(Date);
             }
         }
 
@@ -805,14 +832,14 @@ public class MainActivity extends AppCompatActivity {
     private void ShowBottomSheetTrackBus() {
         BottomSheetSetNormalParams();
 
-        BottomSheetTrackBusFragment TrackBusFragment = BottomSheetTrackBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces, busStops, busJarat);
+        BottomSheetTrackBusFragment TrackBusFragment = BottomSheetTrackBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces, busStops, busLine);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragmentContainerView2, TrackBusFragment)
                 .commit();
     }
 
     public void BuspositionMarker(LatLng BusPosition) {
-        if (busJarat != null) {
+        if (busLine != null) {
             if (BusPosition != null) {
                 BitmapDescriptor BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapBus));
                 if (BusMarker == null) {
@@ -900,7 +927,7 @@ public class MainActivity extends AppCompatActivity {
         CurrentPlace = PrevState.getCurrentPlace();
         CurrentStop = PrevState.getCurrentStop();
         CurrentBusTrack = PrevState.getCurrentBusTrack();
-        busJarat = PrevState.getBusLine();
+        busLine = PrevState.getBusLine();
         SelectedPlace = PrevState.getSelectedPlace();
 
         backStack.remove(backStack.size() - 1);
@@ -950,7 +977,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void AddBackStack() {
-        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busJarat, null, IsBackButtonCollapse, SelectedPlace));
+        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonCollapse, SelectedPlace));
     }
 
     public void ShowSchedule(int StopId, String LineNum, String Direction, String Date, boolean PreSelected) {
@@ -1048,7 +1075,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (CurrentBusTrack != -1) {
             CurrentBusTrack = -1;
-            busJarat = null;
+            busLine = null;
         }
 
         SelectedPlace = latLng;

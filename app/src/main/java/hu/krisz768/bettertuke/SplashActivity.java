@@ -1,27 +1,32 @@
 package hu.krisz768.bettertuke;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.Date;
 
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
+@SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
-
-    private TextView Logs;
-    private String LogText = "";
+    Date StartTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        StartTime = new Date();
 
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
 
@@ -29,9 +34,7 @@ public class SplashActivity extends AppCompatActivity {
 
         splashScreen.setKeepOnScreenCondition(() -> true );
 
-        setContentView(R.layout.activity_splash);
-
-        Logs = findViewById(R.id.LogView);
+        //setContentView(R.layout.activity_splash);
 
         AddLog("init...");
 
@@ -41,13 +44,13 @@ public class SplashActivity extends AppCompatActivity {
     private void InitTasks() {
         AddLog("Check is database exist...\n(" + (new File(getFilesDir() + "/Database", "track.db")).getAbsolutePath() + ")");
 
-        DatabaseManager Dm = new DatabaseManager(this);
+
         TukeServerApi serverApi = new TukeServerApi(this);
+        Context ctx = getApplicationContext();
 
-
-        if (Dm.IsDatabaseExist()) {
+        if (DatabaseManager.IsDatabaseExist(this)) {
             AddLog("Database exist, checking for update...");
-            String Version = Dm.GetDatabaseVersion();
+            String Version = DatabaseManager.GetDatabaseVersion(ctx);
 
             AddLog("Database version = " + Version);
 
@@ -58,41 +61,37 @@ public class SplashActivity extends AppCompatActivity {
             if (OnlineVersion.equals("Err") && !Version.equals("Err")) {
                 AddLog("Server error, using existing database...");
 
-                Context ctx = getApplicationContext();
-
                 runOnUiThread(() -> Toast.makeText(ctx, "Nem sikerült frissíteni az adatbázist.", Toast.LENGTH_LONG).show());
 
-                StartMain();
+                StartMain(false);
             } else {
-                if (Version.equals(OnlineVersion)) {
+                if (Version.equals(OnlineVersion) && !OnlineVersion.equals("Err") && !Version.equals("Err")) {
                     AddLog("Database is up to date!");
 
                     //END
-                    StartMain();
+                    StartMain(false);
                 } else {
                     AddLog("Database version does not match! Updating....");
 
-                    if (!Dm.DeleteDatabase()){
+                    if (!DatabaseManager.DeleteDatabase(ctx)){
                         AddLog("Database delete error. Continue anyway...");
                     }
 
                     if (serverApi.downloadDatabaseFile()) {
                         AddLog("Database downloaded successfully");
 
-                        Dm.ReloadDatabase();
-                        Version = Dm.GetDatabaseVersion();
+                        Version = DatabaseManager.GetDatabaseVersion(ctx);
 
                         AddLog("Database version = " + Version);
-
-                        Context ctx = getApplicationContext();
 
                         runOnUiThread(() -> Toast.makeText(ctx, "Új menetrendre frissítve! Előfordulhatnak válzotások.", Toast.LENGTH_LONG).show());
 
                         //END
-                        StartMain();
+                        StartMain(false);
                     }else  {
                         AddLog("Database download fail!");
-
+                        runOnUiThread(() -> Toast.makeText(ctx, "SIKERTELEN frissítés az új menetrendre", Toast.LENGTH_LONG).show());
+                        StartMain(false);
                         //FAIL
                     }
                 }
@@ -101,30 +100,54 @@ public class SplashActivity extends AppCompatActivity {
             AddLog("Database not found, attempt to download...");
             if (serverApi.downloadDatabaseFile()) {
                 AddLog("Database downloaded successfully");
-                Dm.ReloadDatabase();
-                String Version = Dm.GetDatabaseVersion();
+                String Version = DatabaseManager.GetDatabaseVersion(ctx);
 
                 AddLog("Database version = " + Version);
 
                 //END
-                StartMain();
+                StartMain(false);
             }else  {
                 AddLog("Database download fail!");
 
+                /*setContentView(R.layout.activity_splash);
+                AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+                dlgAlert.setMessage("Az alkalmazás eső indításához internetkapcsolat szükséges.");
+                dlgAlert.setTitle("Hiba");
+                dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                    }
+                });
+                dlgAlert.setCancelable(false);
+                runOnUiThread(() -> dlgAlert.create().show());*/
+                StartMain(true);
                 //FAIL
             }
         }
     }
 
-    private void StartMain() {
+    private void StartMain(boolean Error) {
+        Date FinishDate = new Date();
+        if (FinishDate.getTime() - StartTime.getTime() < 500 && !(Build.VERSION.SDK_INT < 31)) {
+            try {
+                Thread.sleep(500 - (FinishDate.getTime() - StartTime.getTime()));
+            }catch (Exception ignored) {
+
+            }
+        }
+
+
+
         Intent mainIntent = new Intent(this, MainActivity.class);
+        mainIntent.putExtra("ERROR", Error);
         startActivity(mainIntent);
     }
 
 
     private void AddLog(String LogText) {
-        this.LogText += "> " + LogText + "\n"+"\n";
-        Logs.setText(this.LogText);
+
+        Log.i("Init", LogText);
     }
 
 }

@@ -34,8 +34,9 @@
     </style>
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenAnimationDuration">500</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
 
+        <item name="windowSplashScreenAnimatedIcon">@drawable/startup_animation_pre12</item>
         <item name="postSplashScreenTheme">@style/DefaultPre12</item>
     </style>
 </resources>

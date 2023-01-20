@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -40,25 +39,28 @@ public class DatabaseManager {
         Sld = Dbh.getReadableDatabase();
     }
 
-    public boolean IsDatabaseExist () {
-        File Database = new File(DATABASEFILE);
+    public static boolean IsDatabaseExist (Context Ctx) {
+        File Database = new File(Ctx.getFilesDir() + "/Database", "track.db");
         return Database.exists();
     }
 
-    public boolean DeleteDatabase() {
-        File Database = new File(DATABASEFILE);
+    public static boolean DeleteDatabase(Context Ctx) {
+        File Database = new File(Ctx.getFilesDir() + "/Database", "track.db");
         try {
             return Database.delete();
         } catch (Exception e) {
-            log(e.toString());
+            Log.e("DatabaseManager", e.toString());
             return false;
         }
 
     }
 
-    public String GetDatabaseVersion() {
+    public static String GetDatabaseVersion(Context Ctx) {
         try
         {
+            TukeDatabaseHelper Dbh = new TukeDatabaseHelper(Ctx, new File(Ctx.getFilesDir() + "/Database", "track.db").getAbsolutePath());
+            SQLiteDatabase Sld = Dbh.getReadableDatabase();
+
             Cursor cursor = Sld.rawQuery("SELECT lastupdate FROM syncron WHERE 1", null);
             String version = "Err";
             while(cursor.moveToNext()) {
@@ -66,10 +68,13 @@ public class DatabaseManager {
             }
             cursor.close();
 
+            Sld.close();
+            Dbh.close();
+
             return version;
 
         } catch (Exception e) {
-            log(e.toString());
+            Log.e("DatabaseManager", e.toString());
             return "Err";
 
         }
@@ -119,7 +124,11 @@ public class DatabaseManager {
             Cursor cursor = Sld.rawQuery("SELECT * FROM kocsiallasok WHERE 1", null);
             List<BusStops> AllStops = new ArrayList<>();
             while(cursor.moveToNext()) {
-                AllStops.add(new BusStops(cursor.getInt(0), cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3), cursor.getString(5)));
+                int id = cursor.getInt(0);
+                if (id != 24901) {
+                    AllStops.add(new BusStops(id, cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3), cursor.getString(5)));
+                }
+
             }
             cursor.close();
 
@@ -375,12 +384,7 @@ public class DatabaseManager {
         }
         cursor.close();
 
-        Collections.sort(Lines, new Comparator<IncomingBusRespModel>() {
-            @Override
-            public int compare(IncomingBusRespModel incomingBusRespModel, IncomingBusRespModel t1) {
-                return incomingBusRespModel.getRemainingMin() - t1.getRemainingMin();
-            }
-        });
+        Collections.sort(Lines, (incomingBusRespModel, t1) -> incomingBusRespModel.getRemainingMin() - t1.getRemainingMin());
 
         IncomingBusRespModel[] ret  = new IncomingBusRespModel[Lines.size()];
         Lines.toArray(ret);

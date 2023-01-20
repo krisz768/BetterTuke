@@ -1,5 +1,4 @@
 package hu.krisz768.bettertuke.api_interface;
-
 import android.content.Context;
 import android.util.Log;
 
@@ -29,9 +28,9 @@ public class apiGetDatabaseDownload implements Runnable {
             BufferedInputStream in = new BufferedInputStream(new URL(API_URL + "android/db/track.zip").openStream());
 
             //download
-            File TempFile = File.createTempFile("download", "database", ctx.getCacheDir());
-            TempFile.deleteOnExit();
-            FileOutputStream fileOutputStream = new FileOutputStream(TempFile);
+            File tempfile = File.createTempFile("download", "database", ctx.getCacheDir());
+            tempfile.deleteOnExit();
+            FileOutputStream fileOutputStream = new FileOutputStream(tempfile);
             try {
                 byte[] dataBuffer = new byte[1024];
                 int bytesRead;
@@ -47,28 +46,12 @@ public class apiGetDatabaseDownload implements Runnable {
             //copy and unzip temp->data
 
             File DatabaseFile = new File(DATABASEFILE);
-            File ParentDir = DatabaseFile.getParentFile();
+            DatabaseFile.getParentFile().mkdirs();
+            DatabaseFile.createNewFile();
 
-            boolean SuccessfullyCreate = false;
-
-            if (ParentDir != null) {
-                SuccessfullyCreate = ParentDir.mkdirs();
-            }
-
-            if (!SuccessfullyCreate) {
-                RetCode = false;
-                return;
-            }
-
-            SuccessfullyCreate = DatabaseFile.createNewFile();
-
-            if (!SuccessfullyCreate) {
-                RetCode = false;
-                return;
-            }
-
-            try (ZipInputStream zis = new ZipInputStream(new FileInputStream(TempFile))) {
+            try (ZipInputStream zis = new ZipInputStream(new FileInputStream(tempfile))) {
                 try (OutputStream out = new FileOutputStream(DatabaseFile)) {
+                    zis.getNextEntry();
                     int count;
                     byte[] buf = new byte[1024];
                     while ((count = zis.read(buf)) != -1) {
@@ -76,6 +59,9 @@ public class apiGetDatabaseDownload implements Runnable {
                     }
                 }
             }
+
+
+            tempfile.delete();
 
             RetCode = true;
         } catch (Exception e) {
