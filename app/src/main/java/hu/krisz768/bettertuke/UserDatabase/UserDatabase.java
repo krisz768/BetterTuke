@@ -1,18 +1,30 @@
 package hu.krisz768.bettertuke.UserDatabase;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+
+import androidx.core.content.pm.ShortcutInfoCompat;
+import androidx.core.content.pm.ShortcutManagerCompat;
+import androidx.core.graphics.drawable.IconCompat;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import hu.krisz768.bettertuke.HelperProvider;
+import hu.krisz768.bettertuke.R;
+import hu.krisz768.bettertuke.SplashActivity;
+
 public class UserDatabase {
     private static SQLiteDatabase Sld;
 
-    public  UserDatabase (Context Ctx) {
+    Context Ctx;
+
+    public UserDatabase (Context Ctx) {
+        this.Ctx = Ctx;
         String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "user.db")).getAbsolutePath();
 
         if (Sld == null) {
@@ -47,7 +59,36 @@ public class UserDatabase {
         }
     }
 
-    public void AddFavorite(FavoriteType favoriteType, String Data) {
+    public void AddFavorite(FavoriteType favoriteType, String Data, String HumanReadable) {
+
+        Intent intent = new Intent(Ctx, SplashActivity.class);
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.putExtra("ShortcutId", Data);
+
+        if (favoriteType == FavoriteType.Line) {
+            intent.putExtra("ShortcutType", 0);
+
+            ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(Ctx, favoriteType + Data)
+                    .setShortLabel(HumanReadable)
+                    .setLongLabel(Ctx.getString(R.string.BusText, HumanReadable))
+                    .setIcon(IconCompat.createWithBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapBus)))
+                    .setIntent(intent)
+                    .build();
+
+            ShortcutManagerCompat.pushDynamicShortcut(Ctx, shortcut);
+        } else if (favoriteType == FavoriteType.Stop) {
+            intent.putExtra("ShortcutType", 1);
+
+            ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(Ctx, favoriteType + Data)
+                    .setShortLabel(HumanReadable)
+                    .setLongLabel(HumanReadable)
+                    .setIcon(IconCompat.createWithBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected)))
+                    .setIntent(intent)
+                    .build();
+
+            ShortcutManagerCompat.pushDynamicShortcut(Ctx, shortcut);
+        }
+
         try {
             Sld.execSQL("INSERT INTO Favorites (Type, Data) VALUES (" + TypeToInt(favoriteType) + ",\"" + Data + "\");");
         } catch (Exception e) {

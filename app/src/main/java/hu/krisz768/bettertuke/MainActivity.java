@@ -111,6 +111,9 @@ public class MainActivity extends AppCompatActivity {
 
     private ObjectAnimator MarkerAnimator;
 
+    private Integer ShortcutType;
+    private String ShortcutData;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,6 +124,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (b != null) {
             Error = b.getBoolean("ERROR");
+
+            ShortcutType = b.getInt("ShortcutType");
+            ShortcutData = b.getString("ShortcutId");
         }
 
         if (Error) {
@@ -234,6 +240,20 @@ public class MainActivity extends AppCompatActivity {
 
             googleMap.setOnMapLongClickListener(this::OnMapLongClickListener);
 
+            boolean GetClosestStop = true;
+
+            if (ShortcutType != null && ShortcutData != null) {
+                if (ShortcutType == 0) {
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                    Date date = new Date();
+
+                    ShowSchedule(-1, ShortcutData, "O", formatter.format(date),true);
+                } else {
+                    SelectStop(Integer.parseInt(ShortcutData), false);
+                    GetClosestStop = false;
+                }
+            }
+
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -243,7 +263,10 @@ public class MainActivity extends AppCompatActivity {
                 MarkerRenderer();
 
                 googleMap.setMyLocationEnabled(true);
-                GetClosestStop();
+                findViewById(R.id.PosButton).setVisibility(View.VISIBLE);
+                if (GetClosestStop) {
+                    GetClosestStop();
+                }
             }
         });
     }
@@ -256,6 +279,7 @@ public class MainActivity extends AppCompatActivity {
             if (permissions[i].equals("android.permission.ACCESS_FINE_LOCATION")) {
                 if (grantResults[i] != -1) {
                     googleMap.setMyLocationEnabled(true);
+                    findViewById(R.id.PosButton).setVisibility(View.VISIBLE);
                     GetClosestStop();
                 } else {
                     GPSErr();
@@ -508,7 +532,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }).addOnSuccessListener(location -> {
                 if (location != null) {
-                    findViewById(R.id.PosButton).setVisibility(View.VISIBLE);
                     GetStartupStop(location);
                 } else {
                     GPSErr();

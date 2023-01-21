@@ -53,4 +53,5 @@
     <string name="ScheduleMinuteButton">Menetrend perc gomb</string>
     <string name="SearchStopResultIcon">Keresés megálló találat</string>
     <string name="BusPositionIcon">Busz pozició ikon</string>
+    <string name="BusText">%1$s jelzésű járat</string>
 </resources>

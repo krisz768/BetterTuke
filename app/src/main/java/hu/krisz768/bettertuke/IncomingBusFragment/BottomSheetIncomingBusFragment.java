@@ -95,27 +95,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             ScheduleButton.setOnClickListener(view1 -> ((MainActivity)getActivity()).ShowSchedule(mStop, null, null, null, false));
         }
 
-        ImageView FavButton = view.findViewById(R.id.StopFavoriteButton);
-        if (getContext() != null){
-            UserDatabase userDatabase = new UserDatabase(getContext());
-
-            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
-                FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
-            } else {
-                FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
-            }
-
-            FavButton.setOnClickListener(view12 -> {
-                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
-                    userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop));
-                    FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
-                } else {
-                    userDatabase.AddFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop));
-                    FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
-                }
-            });
-        }
-
         List<BusStops> SelectedPlaceStops = new ArrayList<>();
 
         for (BusPlaces busPlaces : mPlaceList) {
@@ -132,6 +111,35 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
         BusStops[] SelectedPlaceStopsArray = new BusStops[SelectedPlaceStops.size()];
         SelectedPlaceStops.toArray(SelectedPlaceStopsArray);
+
+        ImageView FavButton = view.findViewById(R.id.StopFavoriteButton);
+        if (getContext() != null){
+            UserDatabase userDatabase = new UserDatabase(getContext());
+
+            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
+                FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
+            } else {
+                FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+            }
+
+            FavButton.setOnClickListener(view12 -> {
+                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
+                    userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop));
+                    FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+                } else {
+                    String StopNum = "1";
+                    for (BusStops busStops : SelectedPlaceStopsArray) {
+                        if (busStops.getId() == mStop) {
+                            StopNum = busStops.getStopNum();
+                            break;
+                        }
+                    }
+
+                    userDatabase.AddFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop),  getString(R.string.BusStopNameWithNum, BusStopName.getText().toString().trim(), StopNum.trim()));
+                    FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
+                }
+            });
+        }
 
         Ibssa = new IncomingBusStopSelectorAdapter(SelectedPlaceStopsArray,mStop, this,getContext());
 

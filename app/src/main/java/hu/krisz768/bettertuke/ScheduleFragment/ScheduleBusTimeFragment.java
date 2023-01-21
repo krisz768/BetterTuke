@@ -192,7 +192,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                 userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Line, mLineNum);
                 BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
             } else {
-                userDatabase.AddFavorite(UserDatabase.FavoriteType.Line, mLineNum);
+                userDatabase.AddFavorite(UserDatabase.FavoriteType.Line, mLineNum, mLineNum);
                 BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
             }
         });

@@ -115,6 +115,14 @@ public class SplashActivity extends AppCompatActivity {
 
         Intent mainIntent = new Intent(this, MainActivity.class);
         mainIntent.putExtra("ERROR", Error);
+
+        Bundle b = getIntent().getExtras();
+
+        if (b != null) {
+            mainIntent.putExtra("ShortcutType", b.getInt("ShortcutType"));
+            mainIntent.putExtra("ShortcutId", b.getString("ShortcutId"));
+        }
+
         startActivity(mainIntent);
     }
 
