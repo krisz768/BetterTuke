@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,19 +25,23 @@ import hu.krisz768.bettertuke.UserDatabase.Favorite;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 
 public class ScheduleBusListFragment extends Fragment {
-
     private static final String STOPID= "StopId";
+    private static final String SCROLLPOSITION= "ScrollPosition";
 
     private int mStopId;
+    private Parcelable mScrollPosition;
+
+    private RecyclerView.LayoutManager mLayoutManager;
 
     public ScheduleBusListFragment() {
-        // Required empty public constructor
+
     }
 
-    public static ScheduleBusListFragment newInstance(int StopId) {
+    public static ScheduleBusListFragment newInstance(int StopId, Parcelable ScrollPosition) {
         ScheduleBusListFragment fragment = new ScheduleBusListFragment();
         Bundle args = new Bundle();
         args.putInt(STOPID, StopId);
+        args.putParcelable(SCROLLPOSITION, ScrollPosition);
         fragment.setArguments(args);
         return fragment;
     }
@@ -46,6 +51,7 @@ public class ScheduleBusListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mStopId = getArguments().getInt(STOPID);
+            mScrollPosition = getArguments().getParcelable(SCROLLPOSITION);
         }
     }
 
@@ -67,7 +73,7 @@ public class ScheduleBusListFragment extends Fragment {
             String StopName = Dm.GetStopName(mStopId);
             String StopNum = Dm.GetStopNum(mStopId);
 
-            ((TextView)view.findViewById(R.id.ScheduleTargetText)).setText(StopName.trim() + " (" + StopNum + ")");
+            ((TextView)view.findViewById(R.id.ScheduleTargetText)).setText(getString(R.string.BusStopNameWithNum, StopName.trim(), StopNum));
         }
 
         UserDatabase userDatabase = new UserDatabase(getContext());
@@ -91,9 +97,10 @@ public class ScheduleBusListFragment extends Fragment {
         ScheduleBusListAdapter Sbla = new ScheduleBusListAdapter(busNums, favoriteBusNum, getContext(), this);
 
         RecyclerView BusLineRecv = view.findViewById(R.id.ScheduleBusLineRec);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        mLayoutManager = new LinearLayoutManager(getActivity());
         BusLineRecv.setLayoutManager(mLayoutManager);
         BusLineRecv.setAdapter(Sbla);
+        mLayoutManager.onRestoreInstanceState(mScrollPosition);
 
         ItemTouchHelper.Callback callback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
             @Override
@@ -108,9 +115,7 @@ public class ScheduleBusListFragment extends Fragment {
                     return true;
                 } else {
                     return false;
-
                 }
-
             }
 
             @Override
@@ -137,8 +142,9 @@ public class ScheduleBusListFragment extends Fragment {
     }
 
     public void OnLineClick(String Line) {
+        mLayoutManager.onSaveInstanceState();
         if (getActivity() != null) {
-            getActivity().runOnUiThread(() -> ((ScheduleActivity)getActivity()).selectLine(Line));
+            getActivity().runOnUiThread(() -> ((ScheduleActivity)getActivity()).selectLine(Line, mLayoutManager.onSaveInstanceState()));
         }
     }
 }

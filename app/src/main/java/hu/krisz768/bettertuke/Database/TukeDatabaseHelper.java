@@ -10,9 +10,11 @@ public class TukeDatabaseHelper extends SQLiteOpenHelper {
     public TukeDatabaseHelper(Context context, String DATABASEFILE) {
         super(context, DATABASEFILE, null, DATABASE_VERSION);
     }
+
     public void onCreate(SQLiteDatabase db) {
 
     }
+
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }

@@ -5,7 +5,6 @@ import android.content.Context;
 import java.io.Serializable;
 
 public class BusLine implements Serializable {
-
     private final int LineId;
     private final int DepartureHour;
     private final int DepartureMinute;

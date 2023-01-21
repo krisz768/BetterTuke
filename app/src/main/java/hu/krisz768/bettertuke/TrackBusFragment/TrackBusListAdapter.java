@@ -47,11 +47,10 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
 
         public ViewHolder(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
 
-            Name = (TextView) view.findViewById(R.id.TrackBusStopName);
-            Time = (TextView) view.findViewById(R.id.TrackBusStopTime);
-            Delay = (TextView) view.findViewById(R.id.TrackBusDelayTime);
+            Name = view.findViewById(R.id.TrackBusStopName);
+            Time = view.findViewById(R.id.TrackBusStopTime);
+            Delay = view.findViewById(R.id.TrackBusDelayTime);
             trackGraphic = view.findViewById(R.id.trackGraphic);
 
             this.view = view;
@@ -78,12 +77,10 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
             }
 
             if (BusPlace != null) {
-                Name.setText((Pos+1) + " - " + BusPlace.getName());
+                Name.setText(ctx.getString(R.string.TrackBusStopNameWithListNum, (Pos+1), BusPlace.getName()));
             } else {
-                Name.setText((Pos+1) + " megálló");
+                Name.setText(ctx.getString(R.string.TrackBusStopSelect, Integer.toString(Pos+1)));
             }
-
-
 
             TypedValue typedValue = new TypedValue();
             if (Data.getStopId() == CurrentStop) {
@@ -145,10 +142,10 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
                 }
 
                 if (BusPosition.getDelayMin() < 0) {
-                    Delay.setText(BusPosition.getDelayMin() + " perc");
+                    Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "", BusPosition.getDelayMin()));
                     Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#d60202")));
                 }else {
-                    Delay.setText("+" + BusPosition.getDelayMin() + " perc");
+                    Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "+", BusPosition.getDelayMin()));
                     if (BusPosition.getDelayMin() == 0) {
                         Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#02de32")));
                     } else {
@@ -164,10 +161,10 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
                     try {
                         java.util.Date ParsedDate = formatter.parse(Date);
                         if (ParsedDate != null) {
-                            Delay.setText("(" + formatter2.format(ParsedDate) + ")");
+                            Delay.setText(ctx.getString(R.string.Brackets, formatter2.format(ParsedDate)));
                         }
                     } catch (ParseException e) {
-                        Delay.setText("(" + Date + ")");
+                        Delay.setText(ctx.getString(R.string.Brackets, Date));
                     }
                 }
 
@@ -179,10 +176,6 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
                     trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackNormalEmpty));
                 }
             }
-
-
-
-
         }
     }
 
@@ -202,23 +195,17 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
         this.Date = Date;
     }
 
-    // Create new views (invoked by the layout manager)
     @NonNull
     @Override
     public TrackBusListAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.track_bus_list_recview, viewGroup, false);
 
         return new TrackBusListAdapter.ViewHolder(view);
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(TrackBusListAdapter.ViewHolder viewHolder, final int position) {
-
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
         int max = BusStopList.length;
 
         int PrevStopId = position > 0 ? BusStopList[position-1].getOrder() : -1;
@@ -226,7 +213,6 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
         viewHolder.setData(BusStopList[position],position, max, PrevStopId, ctx, StartTime, BusPlaceList, AllBusStopList, BusPosition, Callback, CurrentStop, Date);
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return BusStopList.length;

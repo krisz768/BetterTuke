@@ -9,24 +9,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link InfoFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class InfoFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String TEXT = "Text";
     private static final String COLOR = "Color";
 
-    // TODO: Rename and change types of parameters
     private String mText;
     private int mColor;
 
     public InfoFragment() {
-        // Required empty public constructor
+
     }
 
     public static InfoFragment newInstance(String Text, int Color) {
@@ -57,7 +48,6 @@ public class InfoFragment extends Fragment {
         if (mColor != -1) {
             InfoText.setTextColor(mColor);
         }
-
 
         return view;
     }

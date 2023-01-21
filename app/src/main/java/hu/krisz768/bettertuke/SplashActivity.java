@@ -1,12 +1,10 @@
 package hu.krisz768.bettertuke;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,7 +23,6 @@ public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         StartTime = new Date();
 
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
@@ -34,8 +31,6 @@ public class SplashActivity extends AppCompatActivity {
 
         splashScreen.setKeepOnScreenCondition(() -> true );
 
-        //setContentView(R.layout.activity_splash);
-
         AddLog("init...");
 
         new Thread(this::InitTasks).start();
@@ -43,7 +38,6 @@ public class SplashActivity extends AppCompatActivity {
 
     private void InitTasks() {
         AddLog("Check is database exist...\n(" + (new File(getFilesDir() + "/Database", "track.db")).getAbsolutePath() + ")");
-
 
         TukeServerApi serverApi = new TukeServerApi(this);
         Context ctx = getApplicationContext();
@@ -61,14 +55,13 @@ public class SplashActivity extends AppCompatActivity {
             if (OnlineVersion.equals("Err") && !Version.equals("Err")) {
                 AddLog("Server error, using existing database...");
 
-                runOnUiThread(() -> Toast.makeText(ctx, "Nem sikerült frissíteni az adatbázist.", Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> Toast.makeText(ctx, R.string.DatabaseVersionCheckFail, Toast.LENGTH_LONG).show());
 
                 StartMain(false);
             } else {
-                if (Version.equals(OnlineVersion) && !OnlineVersion.equals("Err") && !Version.equals("Err")) {
+                if (Version.equals(OnlineVersion) && !OnlineVersion.equals("Err")) {
                     AddLog("Database is up to date!");
 
-                    //END
                     StartMain(false);
                 } else {
                     AddLog("Database version does not match! Updating....");
@@ -84,15 +77,13 @@ public class SplashActivity extends AppCompatActivity {
 
                         AddLog("Database version = " + Version);
 
-                        runOnUiThread(() -> Toast.makeText(ctx, "Új menetrendre frissítve! Előfordulhatnak válzotások.", Toast.LENGTH_LONG).show());
+                        runOnUiThread(() -> Toast.makeText(ctx, R.string.NewDatabaseWarning, Toast.LENGTH_LONG).show());
 
-                        //END
                         StartMain(false);
                     }else  {
                         AddLog("Database download fail!");
-                        runOnUiThread(() -> Toast.makeText(ctx, "SIKERTELEN frissítés az új menetrendre", Toast.LENGTH_LONG).show());
+                        runOnUiThread(() -> Toast.makeText(ctx, R.string.DatabaseUpdateError, Toast.LENGTH_LONG).show());
                         StartMain(false);
-                        //FAIL
                     }
                 }
             }
@@ -104,25 +95,10 @@ public class SplashActivity extends AppCompatActivity {
 
                 AddLog("Database version = " + Version);
 
-                //END
                 StartMain(false);
             }else  {
                 AddLog("Database download fail!");
-
-                /*setContentView(R.layout.activity_splash);
-                AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
-                dlgAlert.setMessage("Az alkalmazás eső indításához internetkapcsolat szükséges.");
-                dlgAlert.setTitle("Hiba");
-                dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        finish();
-                    }
-                });
-                dlgAlert.setCancelable(false);
-                runOnUiThread(() -> dlgAlert.create().show());*/
                 StartMain(true);
-                //FAIL
             }
         }
     }
@@ -137,17 +113,15 @@ public class SplashActivity extends AppCompatActivity {
             }
         }
 
-
-
         Intent mainIntent = new Intent(this, MainActivity.class);
         mainIntent.putExtra("ERROR", Error);
         startActivity(mainIntent);
     }
 
-
     private void AddLog(String LogText) {
-
-        Log.i("Init", LogText);
+        if (BuildConfig.DEBUG) {
+            Log.i("Init", LogText);
+        }
     }
 
 }

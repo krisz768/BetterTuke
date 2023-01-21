@@ -1,19 +1,56 @@
 <resources>
-    <string name="app_name">BetterTuke</string>
-    <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
+    <string name="app_name">PécsLines</string>
 
-    <string name="title_activity_main">MainActivity</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_main">Főképernyő</string>
     <string name="BottomSheetTitle_Incoming">Érkező járatok:</string>
-    <string name="LoadingText">Betöltés...</string>
+    <string name="LoadingText">Betöltés…</string>
     <string name="GPSHint">Nem sikerült meghatározni a poziciódat GPS-el</string>
     <string name="BusInStop">Megállóban</string>
     <string name="EmptyList">Ebből a megállóból a közeljövőben nem indul járat.</string>
-    <string name="GPSLoad">GPS pozició lekérése...</string>
+    <string name="GPSLoad">GPS pozició lekérése…</string>
     <string name="Schedule">Menetrend</string>
     <string name="EmptySchedule">Ma ez a járat, ebbe az irányba vagy megállóba nem közlekedik.</string>
+    <string name="OfflineDataWarning">Offline adatok. Az élő adatokhoz kapcsolódjon az internetre.</string>
+    <string name="TrackTimeString">%1$s (%2$d perc)</string>
+    <string name="TrackBusStopSelect">%1$s. megálló</string>
+    <string name="NearStopLocationText">%1$f, %2$f</string>
+    <string name="FavoriteText">Kedvencek:</string>
+    <string name="SumText">Összes:</string>
+    <string name="BusStopNameWithNum">%1$s (%2$s)</string>
+    <string name="StartingDataFromStartingPosition">Indulási adatok a kiinduló állásról</string>
+    <string name="StartingDataFromStop">Indulási adatok innen: %1$s (%2$s)</string>
+    <string name="SelectDate">Válassz Dátumot:</string>
+    <string name="Legend">Jelmagyarázat:</string>
+    <string name="SoloBus">szóló</string>
+    <string name="ArticulatedBus">csuklós</string>
+    <string name="MidiBus">midi</string>
+    <string name="BusDoorNumberText">%1$d ajtós</string>
+    <string name="TrackBusStopNameWithListNum">%1$d - %2$s</string>
+    <string name="DelayStringWithPosSign">%1$s%2$d perc</string>
+    <string name="Brackets">(%1$s)</string>
+    <string name="FirstLaunchInternetError">Az alkalmazás első indításához internetkapcsolat szükséges.</string>
+    <string name="Error">Hiba</string>
+    <string name="Ok">OK</string>
+    <string name="DatabaseUpdateError">NEM SIKERÜLT frissíteni az adatbázist.</string>
+    <string name="NewDatabaseWarning">Új menetrendre frissítve! Előfordulhatnak válzotások.</string>
+    <string name="DatabaseVersionCheckFail">Nem sikerült ellenőrizni hogy elérhető e frissítés az adatbázisra</string>
+    <string name="Search">Keresés</string>
+    <string name="Gps">Gps</string>
+    <string name="FavoriteButton">Kedvencek gomb</string>
+    <string name="ScheduleButton">Menetrend az adott kocsiálláshoz</string>
+    <string name="NearStops">Közeli megállók:</string>
+    <string name="LowFloorIndicator">Alacsony padlós</string>
+    <string name="ElectricBusIndicator">Elektromos busz</string>
+    <string name="AirConditionIndicator">Légkonis busz</string>
+    <string name="WifiOnBusIndicator">Wifi a buszon</string>
+    <string name="UsbOnBusIndicator">Usb töltési lehetőség a buszon</string>
+    <string name="HourText">Óra:</string>
+    <string name="MinuteText">Perc:</string>
+    <string name="SwitchDirectionButton">Irányváltás</string>
+    <string name="StopSelectorButton">Megálló választó gomb</string>
+    <string name="NearStopIcon">Közeli megálló tábla ikon</string>
+    <string name="NearStopFavIcon">Ez a megálló kedvencnek van jelölve</string>
+    <string name="ScheduleMinuteButton">Menetrend perc gomb</string>
+    <string name="SearchStopResultIcon">Keresés megálló találat</string>
+    <string name="BusPositionIcon">Busz pozició ikon</string>
 </resources>

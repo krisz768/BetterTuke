@@ -30,14 +30,13 @@ import java.util.Objects;
 import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class HelperProvider {
-
     private static final Bitmap[] BitmapContainer = new Bitmap[28];
     private static JSONObject BusAttributes;
 
     private static boolean IsOfflineTextDisplayed = false;
 
-    public static boolean isOfflineTextDisplayed() {
-        return IsOfflineTextDisplayed;
+    public static boolean displayOfflineText() {
+        return !IsOfflineTextDisplayed;
     }
 
     public static void setOfflineTextDisplayed() {
@@ -45,13 +44,12 @@ public class HelperProvider {
     }
 
     public static void RenderAllBitmap(Context ctx) {
-        //map
         BitmapContainer[0] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus_stop1, com.google.android.material.R.attr.colorOnPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bus_stop, com.google.android.material.R.attr.colorPrimary, ctx, true));
         BitmapContainer[1] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus_stop1, com.google.android.material.R.attr.colorOnPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bus_stop, com.google.android.material.R.attr.colorOutline, ctx, true));
         BitmapContainer[2] = HelperProvider.BitmapFromVector(R.drawable.bus_marker_small, com.google.android.material.R.attr.colorOutline, ctx, true);
         BitmapContainer[3] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus_place_pointer1, com.google.android.material.R.attr.colorOnPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bus_place_pointer, com.google.android.material.R.attr.colorOutline, ctx, true));
         BitmapContainer[4] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus1, com.google.android.material.R.attr.colorPrimary, ctx, true),HelperProvider.BitmapFromVector(R.drawable.bus, com.google.android.material.R.attr.colorOnPrimary, ctx, false));
-        //Track
+
         BitmapContainer[5] = HelperProvider.BitmapFromVector(R.drawable.bustrack_start_end, com.google.android.material.R.attr.colorOutline, ctx, false);
         BitmapContainer[6] = overlay(HelperProvider.BitmapFromVector(R.drawable.bustrack_starthalf_1, com.google.android.material.R.attr.colorPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bustrack_half_1, com.google.android.material.R.attr.colorOutline, ctx, false));
         BitmapContainer[7] = HelperProvider.BitmapFromVector(R.drawable.bustrack_startfull, com.google.android.material.R.attr.colorPrimary, ctx, false);
@@ -274,9 +272,6 @@ public class HelperProvider {
         int railColor = MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#8d8e8f"));
         String RailColor = String.format("#%06X", (0xFFFFFF & railColor));
 
-        int parkColor = MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#247802"));
-        String ParkColor = String.format("#%06X", (0xFFFFFF & parkColor));
-
         ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
 
         int highwayStroke = MaterialColors.getColorRoles(ctx,ContextCompat.getColor(ctx, typedValue.resourceId)).getOnAccent();
@@ -291,7 +286,6 @@ public class HelperProvider {
         if (nightModeFlags == Configuration.UI_MODE_NIGHT_YES) {
             TextStroke = -100;
         }
-
 
         return "[\n" +
                 "  {\n" +
@@ -344,7 +338,7 @@ public class HelperProvider {
                 "    \"elementType\": \"geometry\",\n" +
                 "    \"stylers\": [\n" +
                 "      {\n" +
-                "        \"color\": \"" + ParkColor + "\"\n" +
+                "        \"color\": \"" + Surface + "\"\n" +
                 "      }\n" +
                 "    ]\n" +
                 "  },\n" +

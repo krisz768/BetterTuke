@@ -15,7 +15,6 @@ import hu.krisz768.bettertuke.Database.BusScheduleTime;
 import hu.krisz768.bettertuke.R;
 
 public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleBusTimeMinuteAdapter.ViewHolder>{
-
     private final int Hour;
     private final int[] Minutes;
     private final String[] BusCodes;
@@ -43,7 +42,6 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
 
         public ViewHolder(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
             MinuteText = view.findViewById(R.id.ScheduleMinuteText);
             BusCodeText = view.findViewById(R.id.ScheduleMinuteCode);
         }
@@ -97,7 +95,6 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
             }
 
             MinuteText.setOnClickListener(view -> Callback.OnScheduleClick(Hour, Minute));
-
         }
     }
 
@@ -122,27 +119,20 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
         this.Callback = Callback;
     }
 
-    // Create new views (invoked by the layout manager)
     @NonNull
     @Override
     public ScheduleBusTimeMinuteAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.schedule_bus_time_minute_recview, viewGroup, false);
 
         return new ScheduleBusTimeMinuteAdapter.ViewHolder(view);
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(ScheduleBusTimeMinuteAdapter.ViewHolder viewHolder, final int position) {
-
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
         viewHolder.setData(Hour, Minutes[position], BusCodes[position], MaxPerLine > position, SecColor, OnPrimColor, OnErrColor, Background,FullBackground, MinBackgroundStarted, MinFullBackgroundStarted, MinBackgroundErr, MinFullBackgroundErr,Started, ErrNotStarted, Callback);
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return Minutes.length;

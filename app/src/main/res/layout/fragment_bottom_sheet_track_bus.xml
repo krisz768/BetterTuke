@@ -8,8 +8,6 @@
     android:orientation="vertical"
     tools:context=".TrackBusFragment.BottomSheetTrackBusFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="75dp"
@@ -26,7 +24,7 @@
                 android:layout_gravity="center"
                 android:background="@drawable/bus_number_background_inactive"
                 android:gravity="center"
-                android:textSize="20dp" />
+                android:textSize="20sp" />
         </FrameLayout>
 
         <LinearLayout
@@ -46,7 +44,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:paddingTop="2dp"
-                    android:paddingRight="3dp"
+                    android:paddingEnd="3dp"
                     android:textSize="20sp"
                     app:autoSizeTextType="uniform" />
             </LinearLayout>
@@ -62,21 +60,23 @@
                 <TextView
                     android:id="@+id/PlateNumber"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"/>
 
                 <TextView
                     android:id="@+id/BusType"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="14dp"
-                    android:paddingRight="2dp"
+                    android:layout_marginStart="14dp"
+                    android:paddingEnd="2dp"
+                    android:paddingStart="2dp"
                     app:autoSizeTextType="uniform" />
 
                 <ImageView
                     android:id="@+id/Electric"
                     android:layout_width="30dp"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:contentDescription="@string/ElectricBusIndicator"
                     android:paddingTop="2dp"
                     android:paddingBottom="2dp"
                     android:src="@drawable/electric"
@@ -99,13 +99,14 @@
                     android:id="@+id/Doors"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="14dp" />
+                    android:layout_marginStart="14dp" />
 
                 <ImageView
                     android:id="@+id/LowFloor"
                     android:layout_width="30dp"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:contentDescription="@string/LowFloorIndicator"
                     android:paddingTop="2dp"
                     android:paddingBottom="2dp"
                     android:src="@drawable/lowfloor"
@@ -115,6 +116,7 @@
                     android:id="@+id/AirConditioner"
                     android:layout_width="30dp"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/AirConditionIndicator"
                     android:paddingTop="2dp"
                     android:paddingBottom="2dp"
                     android:src="@drawable/airconditioner"
@@ -124,6 +126,7 @@
                     android:id="@+id/Wifi"
                     android:layout_width="30dp"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/WifiOnBusIndicator"
                     android:paddingTop="2dp"
                     android:paddingBottom="2dp"
                     android:src="@drawable/wifi"
@@ -133,6 +136,7 @@
                     android:id="@+id/Usb"
                     android:layout_width="30dp"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/UsbOnBusIndicator"
                     android:src="@drawable/usb"
                     android:visibility="gone" />
 

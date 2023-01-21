@@ -11,8 +11,7 @@
         android:layout_height="match_parent"
         android:layout_weight="0"
         android:background="@drawable/bus_schedule_hour_background"
-        android:gravity="center"
-        android:text="16" />
+        android:gravity="center" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/ScheduleMinuteRecview"

@@ -14,15 +14,7 @@ import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link NearBusStopListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class NearBusStopListFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String BUSPLACES = "BusPlaces";
     private static final String FAVCOUNT = "FavCount";
 
@@ -30,7 +22,7 @@ public class NearBusStopListFragment extends Fragment {
     private int mFavCount;
 
     public NearBusStopListFragment() {
-        // Required empty public constructor
+
     }
 
     public static NearBusStopListFragment newInstance(BusPlaces[] BusPlaces, int FavCount) {
@@ -60,11 +52,8 @@ public class NearBusStopListFragment extends Fragment {
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(mLayoutManager);
 
-
-
         NearBusStopListAdapter NearBusStopList = new NearBusStopListAdapter(mBusPlaces, this, mFavCount);
         recyclerView.setAdapter(NearBusStopList);
-
 
         return view;
     }

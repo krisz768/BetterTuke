@@ -23,11 +23,6 @@ import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link BottomSheetNearStops#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class BottomSheetNearStops extends Fragment {
 
     private static final String LATITUDE = "Latitude";
@@ -41,7 +36,7 @@ public class BottomSheetNearStops extends Fragment {
     private BusPlaces[] mPlaces;
 
     public BottomSheetNearStops() {
-        // Required empty public constructor
+
     }
 
     public static BottomSheetNearStops newInstance(double Latitude, double Longitude, BusStops[] Stops, BusPlaces[] Places) {
@@ -74,7 +69,7 @@ public class BottomSheetNearStops extends Fragment {
 
         TextView NearStopLocationText = view.findViewById(R.id.NearStopLocationText);
 
-        NearStopLocationText.setText(mLatitude + ", " + mLongitude);
+        NearStopLocationText.setText(getString(R.string.NearStopLocationText, mLatitude, mLongitude));
 
         GetStreetName(view);
 
@@ -120,7 +115,6 @@ public class BottomSheetNearStops extends Fragment {
                 UserDatabase userDatabase = new UserDatabase(getContext());
 
                 for (int i = 0; i < NearBusPlacesList.size(); i++) {
-                    Log.e("b", NearBusPlacesList.get(i).getName());
                     for (BusStops mStop : mStops) {
                         if (NearBusPlacesList.get(i).getId() == mStop.getPlace()) {
                             if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop.getId()))) {
@@ -133,7 +127,6 @@ public class BottomSheetNearStops extends Fragment {
                     }
                 }
             }
-
 
             Collections.sort(NearBusPlacesList, (busPlaces, t1) -> {
                 Location StopLocation1 = new Location("");

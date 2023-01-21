@@ -3,7 +3,6 @@ package hu.krisz768.bettertuke.models;
 import java.io.Serializable;
 
 public class SearchResult implements Serializable {
-
     private final SearchType Type;
     private final String SearchText;
     private final Object Data;

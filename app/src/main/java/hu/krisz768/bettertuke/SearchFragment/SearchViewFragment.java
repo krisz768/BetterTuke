@@ -22,27 +22,17 @@ import hu.krisz768.bettertuke.UserDatabase.Favorite;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.models.SearchResult;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SearchViewFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class SearchViewFragment extends Fragment {
 
     private static final String ALLITEM = "AllItem";
-
     private SearchResult[] mAllItem;
-
     private SearchAdapter searchAdapter;
-
     private boolean Fav;
 
-
     public SearchViewFragment() {
-        // Required empty public constructor
+
     }
 
-    // TODO: Rename and change types and number of parameters
     public static SearchViewFragment newInstance(SearchResult[] AllItem) {
         SearchViewFragment fragment = new SearchViewFragment();
         Bundle args = new Bundle();
@@ -64,14 +54,11 @@ public class SearchViewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_search_view, container, false);
 
         RecyclerView recyclerView = view.findViewById(R.id.SearchResultRecView);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(mLayoutManager);
-
-
 
         searchAdapter = new SearchAdapter(GetFavoriteStops(), getContext(), this);
         recyclerView.setAdapter(searchAdapter);
@@ -95,9 +82,7 @@ public class SearchViewFragment extends Fragment {
                     return true;
                 } else {
                     return false;
-
                 }
-
             }
 
             @Override
@@ -112,7 +97,6 @@ public class SearchViewFragment extends Fragment {
 
             @Override
             public boolean isLongPressDragEnabled() {
-
                 return Fav;
             }
         };

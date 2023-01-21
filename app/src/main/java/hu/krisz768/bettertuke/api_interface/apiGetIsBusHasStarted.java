@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> implements Runnable{
-
     private final int LineId;
 
     public apiGetIsBusHasStarted(int LineId) {
@@ -39,7 +38,7 @@ public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> imple
                 while (true)
                 {
                     line = in.readLine();
-                    if (line != null ) {//|| line.length() != 0) {
+                    if (line != null ) {
                         String[] parts = line.split("\\|");
 
                         value = parts[0].equals("0") || parts[0].equals("8");

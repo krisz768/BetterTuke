@@ -11,7 +11,6 @@ import java.net.URL;
 import java.util.zip.ZipInputStream;
 
 public class apiGetDatabaseDownload implements Runnable {
-
     private final Context ctx;
     private final String DATABASEFILE;
     protected final String API_URL = "http://menobusz.tukebusz.hu/";
@@ -27,10 +26,9 @@ public class apiGetDatabaseDownload implements Runnable {
         try {
             BufferedInputStream in = new BufferedInputStream(new URL(API_URL + "android/db/track.zip").openStream());
 
-            //download
-            File tempfile = File.createTempFile("download", "database", ctx.getCacheDir());
-            tempfile.deleteOnExit();
-            FileOutputStream fileOutputStream = new FileOutputStream(tempfile);
+            File tempFile = File.createTempFile("download", "database", ctx.getCacheDir());
+            tempFile.deleteOnExit();
+            FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
             try {
                 byte[] dataBuffer = new byte[1024];
                 int bytesRead;
@@ -43,13 +41,18 @@ public class apiGetDatabaseDownload implements Runnable {
                 in.close();
             }
 
-            //copy and unzip temp->data
-
             File DatabaseFile = new File(DATABASEFILE);
+
+            if(DatabaseFile.getParentFile() == null){
+                RetCode = false;
+                return;
+            }
+
             DatabaseFile.getParentFile().mkdirs();
+
             DatabaseFile.createNewFile();
 
-            try (ZipInputStream zis = new ZipInputStream(new FileInputStream(tempfile))) {
+            try (ZipInputStream zis = new ZipInputStream(new FileInputStream(tempFile))) {
                 try (OutputStream out = new FileOutputStream(DatabaseFile)) {
                     zis.getNextEntry();
                     int count;
@@ -61,7 +64,7 @@ public class apiGetDatabaseDownload implements Runnable {
             }
 
 
-            tempfile.delete();
+            tempFile.delete();
 
             RetCode = true;
         } catch (Exception e) {

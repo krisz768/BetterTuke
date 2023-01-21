@@ -15,12 +15,6 @@ import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link IncomingBusListFragment#newInstance} factory method to
- * create an instance of this fragment.
- *
- */
 public class IncomingBusListFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "List";
@@ -39,7 +33,7 @@ public class IncomingBusListFragment extends Fragment {
     }
 
     public IncomingBusListFragment() {
-        // Required empty public constructor
+
     }
 
     @Override
@@ -53,7 +47,6 @@ public class IncomingBusListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_incoming_bus_list, container, false);
 
         RecyclerView Recv = view.findViewById(R.id.InBusListRecView);

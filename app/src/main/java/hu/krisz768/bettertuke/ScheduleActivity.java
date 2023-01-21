@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -17,16 +18,15 @@ import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusListFragment;
 import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusTimeFragment;
 
 public class ScheduleActivity extends AppCompatActivity {
-
     private String SelectedLine;
-
     private String Date;
-
     private int StopId = -1;
 
     private ScheduleBusTimeFragment Sbtf;
 
     private boolean PreSelected = false;
+
+    Parcelable ScrollState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +56,7 @@ public class ScheduleActivity extends AppCompatActivity {
                     .replace(R.id.ScheduleFragmentContainer, Sbtf)
                     .commit();
         } else {
-            ScheduleBusListFragment Sblf = ScheduleBusListFragment.newInstance(StopId);
+            ScheduleBusListFragment Sblf = ScheduleBusListFragment.newInstance(StopId, ScrollState);
 
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.ScheduleFragmentContainer, Sblf)
@@ -70,14 +70,18 @@ public class ScheduleActivity extends AppCompatActivity {
         }
     }
 
-    public void selectLine(String LineNum) {
+    public void selectLine(String LineNum, Parcelable ScrollState) {
         this.SelectedLine = LineNum;
+        this.ScrollState = ScrollState;
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         Date date = new Date();
         Sbtf = ScheduleBusTimeFragment.newInstance(LineNum, StopId, "O", formatter.format(date));
 
-        getSupportFragmentManager().beginTransaction()
+        getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in,
+                R.anim.fade_out,
+                R.anim.fade_in,
+                R.anim.slide_out)
                 .replace(R.id.ScheduleFragmentContainer, Sbtf)
                 .commit();
     }
@@ -92,7 +96,6 @@ public class ScheduleActivity extends AppCompatActivity {
         returnIntent.putExtra("Direction",Direction);
         returnIntent.putExtra("PreSelected",PreSelected);
 
-
         setResult(Activity.RESULT_OK,returnIntent);
         finish();
     }
@@ -104,9 +107,12 @@ public class ScheduleActivity extends AppCompatActivity {
         } else {
             SelectedLine = null;
 
-            ScheduleBusListFragment Sblf = ScheduleBusListFragment.newInstance(StopId);
+            ScheduleBusListFragment Sblf = ScheduleBusListFragment.newInstance(StopId,ScrollState);
 
-            getSupportFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in,
+                    R.anim.slide_out,
+                    R.anim.slide_in,
+                    R.anim.fade_out)
                     .replace(R.id.ScheduleFragmentContainer, Sblf)
                     .commit();
 

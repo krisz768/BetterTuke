@@ -24,13 +24,7 @@ import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link TrackBusListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class TrackBusListFragment extends Fragment {
-
     private static final String STOP = "Stop";
     private static final String PLACELIST = "PlaceList";
     private static final String STOPLIST = "StopList";
@@ -48,10 +42,8 @@ public class TrackBusListFragment extends Fragment {
 
     private RecyclerView Recv;
 
-
-
     public TrackBusListFragment() {
-        // Required empty public constructor
+
     }
 
     public static TrackBusListFragment newInstance(BusLine LineInfo, int Stop, BusPlaces[] PlaceList, BusStops[] StopList, TrackBusRespModel BusPosition) {
@@ -139,8 +131,6 @@ public class TrackBusListFragment extends Fragment {
                 }
             }
         }
-
-
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -156,7 +146,19 @@ public class TrackBusListFragment extends Fragment {
         for (BusStops busStops : mStopList) {
             if (busStops.getId() == Id) {
                 if(getActivity() != null){
+                    ((MainActivity) getActivity()).SetUserTouchedMap(true);
                     ((MainActivity) getActivity()).ZoomTo(new LatLng(busStops.getGpsLatitude(), busStops.getGpsLongitude()));
+                }
+
+                for (int i = 0; i < mLine.getStops().length; i++) {
+                    if (mLine.getStops()[i].getOrder() == mBusPosition.getStopNumber()) {
+                        if (mLine.getStops()[i].getStopId() == Id){
+                            if(getActivity() != null){
+                                ((MainActivity) getActivity()).SetUserTouchedMap(false);
+                            }
+                        }
+                        break;
+                    }
                 }
                 break;
             }

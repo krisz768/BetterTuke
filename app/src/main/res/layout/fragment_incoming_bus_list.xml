@@ -5,8 +5,6 @@
     android:layout_height="match_parent"
     tools:context=".IncomingBusFragment.IncomingBusListFragment">
 
-
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/InBusListRecView"
         android:layout_width="match_parent"

@@ -17,26 +17,15 @@ import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class DatabaseManager {
 
-    private final String DATABASEFILE;
-    private final Context Ctx;
-
     private static SQLiteDatabase Sld;
 
     public  DatabaseManager (Context Ctx) {
-        this.Ctx = Ctx;
-        DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "track.db")).getAbsolutePath();
+        String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "track.db")).getAbsolutePath();
 
         if (Sld == null) {
             TukeDatabaseHelper Dbh = new TukeDatabaseHelper(Ctx, DATABASEFILE);
             Sld = Dbh.getReadableDatabase();
         }
-
-
-    }
-
-    public void ReloadDatabase () {
-        TukeDatabaseHelper Dbh = new TukeDatabaseHelper(Ctx, DATABASEFILE);
-        Sld = Dbh.getReadableDatabase();
     }
 
     public static boolean IsDatabaseExist (Context Ctx) {
@@ -52,7 +41,6 @@ public class DatabaseManager {
             Log.e("DatabaseManager", e.toString());
             return false;
         }
-
     }
 
     public static String GetDatabaseVersion(Context Ctx) {
@@ -70,13 +58,10 @@ public class DatabaseManager {
 
             Sld.close();
             Dbh.close();
-
             return version;
-
         } catch (Exception e) {
             Log.e("DatabaseManager", e.toString());
             return "Err";
-
         }
     }
 
@@ -89,13 +74,10 @@ public class DatabaseManager {
                 Name = cursor.getString(0);
             }
             cursor.close();
-
             return Name;
-
         } catch (Exception e) {
             log(e.toString());
             return "Err";
-
         }
     }
 
@@ -108,9 +90,7 @@ public class DatabaseManager {
                 Num = Integer.toString(cursor.getInt(0));
             }
             cursor.close();
-
             return Num;
-
         } catch (Exception e) {
             log(e.toString());
             return "Err";
@@ -139,7 +119,6 @@ public class DatabaseManager {
         } catch (Exception e) {
             log(e.toString());
             return new BusStops[0];
-
         }
     }
 
@@ -373,13 +352,11 @@ public class DatabaseManager {
 
             MaxLimit.add(Calendar.MINUTE, 90);
 
-
-
             if (calendar.after(now) && calendar.before(MaxLimit)) {
                 long diff = calendar.getTime().getTime() - now.getTime().getTime();
                 int RemainingMinute = (int)(diff / 1000)/ 60;
 
-                Lines.add(new IncomingBusRespModel(cursor.getString(2), cursor.getString(3), calendar.getTime(), cursor.getInt(1), cursor.getInt(0), RemainingMinute, false));
+                Lines.add(new IncomingBusRespModel(cursor.getString(2), cursor.getString(3), calendar.getTime(), cursor.getInt(0), RemainingMinute, false));
             }
         }
         cursor.close();

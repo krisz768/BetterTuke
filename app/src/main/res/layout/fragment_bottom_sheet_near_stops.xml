@@ -1,69 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".IncomingBusFragment.BottomSheetIncomingBusFragment">
+    tools:context=".IncomingBusFragment.BottomSheetIncomingBusFragment"
+    android:layout_marginTop="15dp"
+    android:orientation="vertical">
 
-    <!-- TODO: Update blank fragment layout -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="15dp"
+        android:layout_height="50dp"
+        android:layout_weight="0"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginRight="5dp"
-            android:orientation="horizontal">
+        <TextView
+            android:id="@+id/NearStopTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_weight="0"
+            android:gravity="start|center"
+            android:text="@string/NearStops"
+            android:textSize="20sp"
+            app:autoSizeMaxTextSize="20sp"
+            app:autoSizeTextType="uniform" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/NearStopTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:layout_weight="0"
-                    android:gravity="left|center"
-                    android:text="Közeli megállók:"
-                    android:textSize="20sp"
-                    app:autoSizeMaxTextSize="20sp"
-                    app:autoSizeTextType="uniform" />
-
-                <TextView
-                    android:id="@+id/NearStopLocationText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:layout_weight="0"
-                    android:gravity="left|center"
-                    android:text="TextView"
-                    app:autoSizeMaxTextSize="15sp"
-                    app:autoSizeTextType="uniform" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <View
-            android:id="@+id/divider5"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="?android:attr/listDivider" />
-
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/NearStopListFragment"
-            android:name="hu.krisz768.bettertuke.LoadingFragment"
-            android:layout_width="match_parent"
-            android:layout_height="fill_parent"
-            tools:layout="@layout/fragment_loading" />
-
+        <TextView
+            android:id="@+id/NearStopLocationText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_weight="0"
+            android:gravity="start|center"
+            app:autoSizeMaxTextSize="15sp"
+            app:autoSizeTextType="uniform" />
     </LinearLayout>
 
-</FrameLayout>
+    <View
+        android:id="@+id/divider5"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/NearStopListFragment"
+        android:name="hu.krisz768.bettertuke.LoadingFragment"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        tools:layout="@layout/fragment_loading" />
+
+</LinearLayout>

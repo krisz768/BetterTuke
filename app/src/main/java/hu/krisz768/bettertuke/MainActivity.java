@@ -8,14 +8,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.splashscreen.SplashScreen;
 import androidx.fragment.app.FragmentContainerView;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
+import android.animation.TypeEvaluator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -28,6 +28,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Property;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,12 +74,12 @@ import hu.krisz768.bettertuke.TrackBusFragment.BottomSheetTrackBusFragment;
 import hu.krisz768.bettertuke.UserDatabase.Favorite;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.models.BackStack;
+import hu.krisz768.bettertuke.models.LatLngInterpolator;
 import hu.krisz768.bettertuke.models.MarkerDescriptor;
 import hu.krisz768.bettertuke.models.ScheduleBackStack;
 import hu.krisz768.bettertuke.models.SearchResult;
 
 public class MainActivity extends AppCompatActivity {
-
     FusedLocationProviderClient fusedLocationClient;
 
     View BottomSheet;
@@ -106,6 +107,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean IsBackButtonCollapse = true;
 
     private Marker BusMarker;
+    private boolean UserTouchedMap = false;
+
+    private ObjectAnimator MarkerAnimator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,14 +125,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (Error) {
             AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
-            dlgAlert.setMessage("Az alkalmazás első indításához internetkapcsolat szükséges.");
-            dlgAlert.setTitle("Hiba");
-            dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    finish();
-                }
-            });
+            dlgAlert.setMessage(R.string.FirstLaunchInternetError);
+            dlgAlert.setTitle(R.string.Error);
+            dlgAlert.setPositiveButton(R.string.Ok, (dialogInterface, i) -> finish());
             dlgAlert.setCancelable(false);
             dlgAlert.create().show();
 
@@ -140,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
         HelperProvider.RenderAllBitmap(this);
 
         setContentView(R.layout.activity_main);
-
 
         BottomSheet = findViewById(R.id.standard_bottom_sheet);
         bottomSheetBehavior = BottomSheetBehavior.from(BottomSheet);
@@ -208,14 +206,18 @@ public class MainActivity extends AppCompatActivity {
             MapStyleOptions style = new MapStyleOptions(HelperProvider.GetMapTheme(ctx));
             googleMap.setMapStyle(style);
 
-
             googleMap.setOnMarkerClickListener(marker -> {
                 MarkerClickListener(marker);
                 return true;
             });
 
+            googleMap.setOnCameraMoveStartedListener(i -> {
+                if (i == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
+                    UserTouchedMap = true;
+                }
+            });
+
             googleMap.setOnCameraMoveListener(() -> {
-                //Log.e("ZOOM", googleMap.getCameraPosition().zoom + "");
                 final float ZoomLevel = googleMap.getCameraPosition().zoom;
                 if (ZoomLevel > 13.7) {
                     if (!smallMarkerMode) {
@@ -229,6 +231,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
+
+            googleMap.setOnMapLongClickListener(this::OnMapLongClickListener);
 
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(MainActivity.this,
@@ -249,7 +253,6 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         for (int i = 0; i < permissions.length; i++) {
-            //Log.e("TESZT", permissions[i] + " " + grantResults[i]);
             if (permissions[i].equals("android.permission.ACCESS_FINE_LOCATION")) {
                 if (grantResults[i] != -1) {
                     googleMap.setMyLocationEnabled(true);
@@ -309,10 +312,10 @@ public class MainActivity extends AppCompatActivity {
         CurrentStop = StopId;
         for (BusStops busStop : busStops) {
             if (busStop.getId() == CurrentStop) {
-                int FoldhelyId = busStop.getPlace();
+                int PlaceId = busStop.getPlace();
                 for (BusPlaces busPlace : busPlaces) {
-                    if (busPlace.getId() == FoldhelyId) {
-                        CurrentPlace = FoldhelyId;
+                    if (busPlace.getId() == PlaceId) {
+                        CurrentPlace = PlaceId;
                         break;
                     }
                 }
@@ -321,7 +324,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         ZoomToMarker();
-        ShowBottomSheetIncommingBuses();
+        ShowBottomSheetIncomingBuses();
         MarkerRenderer();
     }
 
@@ -349,24 +352,24 @@ public class MainActivity extends AppCompatActivity {
 
         UserDatabase userDatabase = new UserDatabase(this);
 
-        int Favid = Integer.MAX_VALUE;
+        int FavId = Integer.MAX_VALUE;
 
         for (int i = 0; i < StopIds.size(); i++) {
             if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, StopIds.get(i).toString())) {
                 int tFavId = userDatabase.GetId(StopIds.get(i).toString(), UserDatabase.FavoriteType.Stop);
-                if (Favid > tFavId) {
+                if (FavId > tFavId) {
                     CurrentStop = StopIds.get(i);
-                    Favid = tFavId;
+                    FavId = tFavId;
                 }
             }
         }
 
-        if (Favid == Integer.MAX_VALUE) {
+        if (FavId == Integer.MAX_VALUE) {
             CurrentStop = StopIds.get(0);
         }
 
         ZoomToMarker();
-        ShowBottomSheetIncommingBuses();
+        ShowBottomSheetIncomingBuses();
         MarkerRenderer();
     }
 
@@ -403,7 +406,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Place = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapPlace));
         }
-
 
         if (CurrentBusTrack == -1) {
             if (SelectedPlace != null) {
@@ -486,15 +488,11 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            //CurrentLocationRequest asd = new CurrentLocationRequest.Builder().
-
-
             final LatLng Pecs = new LatLng(46.0707, 18.2331);
 
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(Pecs).zoom(12).build();
 
-            //googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
             fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, new CancellationToken() {
@@ -512,11 +510,9 @@ public class MainActivity extends AppCompatActivity {
                 if (location != null) {
                     findViewById(R.id.PosButton).setVisibility(View.VISIBLE);
                     GetStartupStop(location);
-                    //GetClosestStopFromList(location);
                 } else {
                     GPSErr();
                 }
-
             });
         } catch (Exception e) {
             Log.e("Main", e.toString());
@@ -564,7 +560,6 @@ public class MainActivity extends AppCompatActivity {
                         ClosestId = busStop.getId();
                         ClosestStop = busStop;
                     }
-
                     break;
                 }
             }
@@ -617,9 +612,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 ZoomToMarker();
             }
-
         }
-        //googleMap.animateCamera(CameraUpdateFactory.zoomTo(googleMap.getCameraPosition().zoom - 2.0f));
     }
 
     private void SetupBottomSheet() {
@@ -642,7 +635,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (BottomSheetCallback == null) {
             BottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
-
                 @Override
                 public void onStateChanged(@NonNull View bottomSheet, int newState) {
                     ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
@@ -694,7 +686,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
             bottomSheetBehavior.addBottomSheetCallback(BottomSheetCallback);
-
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
             int height = displayMetrics.heightPixels / 10;
@@ -712,7 +703,6 @@ public class MainActivity extends AppCompatActivity {
                 params2.bottomMargin = height + dp20;
                 ScheduleButton.setLayoutParams(params2);
             }
-
 
             GPSLoadFragment InBusFragment = GPSLoadFragment.newInstance();
             getSupportFragmentManager().beginTransaction()
@@ -739,13 +729,12 @@ public class MainActivity extends AppCompatActivity {
                     params2.bottomMargin = height + dp20;
                 }
 
-
                 ScheduleButton.setLayoutParams(params2);
             }
         }
     }
 
-    private void ShowBottomSheetIncommingBuses() {
+    private void ShowBottomSheetIncomingBuses() {
         BottomSheetSetNormalParams();
 
         BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces, busStops);
@@ -772,6 +761,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (BusMarker != null) {
+            if(MarkerAnimator != null) {
+                MarkerAnimator.cancel();
+            }
             BusMarker.remove();
             BusMarker = null;
         }
@@ -832,17 +824,19 @@ public class MainActivity extends AppCompatActivity {
     private void ShowBottomSheetTrackBus() {
         BottomSheetSetNormalParams();
 
-        BottomSheetTrackBusFragment TrackBusFragment = BottomSheetTrackBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces, busStops, busLine);
+        BottomSheetTrackBusFragment TrackBusFragment = BottomSheetTrackBusFragment.newInstance( CurrentStop, busPlaces, busStops, busLine);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragmentContainerView2, TrackBusFragment)
                 .commit();
     }
 
-    public void BuspositionMarker(LatLng BusPosition) {
+    public void BusPositionMarker(LatLng BusPosition) {
         if (busLine != null) {
             if (BusPosition != null) {
                 BitmapDescriptor BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapBus));
                 if (BusMarker == null) {
+                    UserTouchedMap = false;
+
                     MarkerOptions BusMarkerOption = new MarkerOptions().position(new LatLng(BusPosition.latitude, BusPosition.longitude)).icon(BusBitmap);
                     CreateBusMarker(BusMarkerOption);
 
@@ -852,21 +846,45 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 } else {
-                    BusMarker.setPosition(BusPosition);
+                    animateMarker(BusMarker, BusPosition, new LatLngInterpolator.Linear());
+                    if (!UserTouchedMap) {
+                        LatLngBounds currentScreen = googleMap.getProjection().getVisibleRegion().latLngBounds;
+
+                        if(!currentScreen.contains(BusPosition)) {
+                            ZoomTo(BusMarker.getPosition());
+                        }
+                    }
                 }
             } else {
                 if (BusMarker != null) {
+                    if(MarkerAnimator != null) {
+                        MarkerAnimator.cancel();
+                    }
                     BusMarker.remove();
                     BusMarker = null;
                 }
             }
         } else {
             if (BusMarker != null) {
+                if(MarkerAnimator != null) {
+                    MarkerAnimator.cancel();
+                }
                 BusMarker.remove();
                 BusMarker = null;
             }
         }
+    }
 
+    private void animateMarker(Marker marker, LatLng finalPosition, final LatLngInterpolator latLngInterpolator) {
+        if(MarkerAnimator != null) {
+            MarkerAnimator.cancel();
+        }
+
+        TypeEvaluator<LatLng> typeEvaluator = latLngInterpolator::interpolate;
+        Property<Marker, LatLng> property = Property.of(Marker.class, LatLng.class, "position");
+        MarkerAnimator = ObjectAnimator.ofObject(marker, property, typeEvaluator, finalPosition);
+        MarkerAnimator.setDuration(500);
+        MarkerAnimator.start();
     }
 
     public void ZoomTo(LatLng Position) {
@@ -894,7 +912,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN && CurrentStop != -1) {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             return;
         }
@@ -933,13 +951,16 @@ public class MainActivity extends AppCompatActivity {
         backStack.remove(backStack.size() - 1);
 
         if (BusMarker != null) {
+            if(MarkerAnimator != null) {
+                MarkerAnimator.cancel();
+            }
             BusMarker.remove();
             BusMarker = null;
         }
 
         switch (DetermineMode()) {
             case IncBus:
-                ShowBottomSheetIncommingBuses();
+                ShowBottomSheetIncomingBuses();
                 ZoomToMarker();
                 break;
             case TrackBus:
@@ -1008,7 +1029,6 @@ public class MainActivity extends AppCompatActivity {
 
         searchView.setupWithSearchBar(searchBar);
 
-
         searchView.addTransitionListener(
                 (searchView, previousState, newState) -> {
                     if (newState == SearchView.TransitionState.SHOWING) {
@@ -1033,7 +1053,7 @@ public class MainActivity extends AppCompatActivity {
                         Svf = SearchViewFragment.newInstance(AllItem);
 
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.SerchViewFragmentContainer, Svf)
+                                .replace(R.id.SearchViewFragmentContainer, Svf)
                                 .commit();
                     }
                 });
@@ -1104,7 +1124,6 @@ public class MainActivity extends AppCompatActivity {
             addresses = gcd.getFromLocation(latLng.latitude, latLng.longitude, 1);
 
             if (addresses.size() > 0) {
-                //return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getSubThoroughfare();
                 return addresses.get(0).getAddressLine(0).split(",")[1];
             } else {
                 return latLng.latitude + ", " + latLng.longitude;
@@ -1115,8 +1134,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void SelectPosUserPos() {
-
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -1125,10 +1142,13 @@ public class MainActivity extends AppCompatActivity {
 
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, location -> {
-                    // Got last known location. In some rare situations this can be null.
                     if (location != null) {
                         OnMapLongClickListener(new LatLng(location.getLatitude(), location.getLongitude()));
                     }
                 });
+    }
+
+    public void SetUserTouchedMap(boolean value){
+        UserTouchedMap = value;
     }
 }

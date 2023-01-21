@@ -7,17 +7,15 @@ public class IncomingBusRespModel implements Serializable {
     private final String LineNum;
     private final String LineName;
     private final Date ArriveTime;
-    private final int RouteId;
     private final int LineId;
     private final int RemainingMin;
     private final boolean AtStop;
     private boolean Started;
 
-    public IncomingBusRespModel(String lineNum, String lineName, Date arriveTime, int RouteId, int LineId, int remainingMin, boolean AtStop) {
+    public IncomingBusRespModel(String lineNum, String lineName, Date arriveTime, int LineId, int remainingMin, boolean AtStop) {
         LineNum = lineNum;
         LineName = lineName;
         ArriveTime = arriveTime;
-        this.RouteId = RouteId;
         this.LineId = LineId;
         RemainingMin = remainingMin;
         this.AtStop = AtStop;
@@ -37,10 +35,6 @@ public class IncomingBusRespModel implements Serializable {
 
     public Date getArriveTime() {
         return ArriveTime;
-    }
-
-    public int getRouteId() {
-        return RouteId;
     }
 
     public boolean isStarted() { return Started;}

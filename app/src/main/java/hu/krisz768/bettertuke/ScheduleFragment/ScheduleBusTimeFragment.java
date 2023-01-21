@@ -45,18 +45,11 @@ import hu.krisz768.bettertuke.ScheduleActivity;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ScheduleBusTimeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class ScheduleBusTimeFragment extends Fragment {
-
     private static final String LINENUM= "lineNum";
     private static final String STOPID= "StopId";
     private static final String DIRECTION= "Direction";
     private static final String DATE= "Date";
-
 
     private String mLineNum;
     private int mStopId;
@@ -91,7 +84,7 @@ public class ScheduleBusTimeFragment extends Fragment {
     private BusVariation[] Variations;
 
     public ScheduleBusTimeFragment() {
-        // Required empty public constructor
+
     }
 
     public static ScheduleBusTimeFragment newInstance(String lineNum, int StopId, String Direction, String Date) {
@@ -139,13 +132,12 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         TextView StartPosText = view.findViewById(R.id.StartPosText);
         if (mStopId == -1) {
-            StartPosText.setText("Indulási adatok a kiinduló állásról");
+            StartPosText.setText(getString(R.string.StartingDataFromStartingPosition));
         } else {
             String StopName = Dm.GetStopName(mStopId);
             String StopNum = Dm.GetStopNum(mStopId);
-            StartPosText.setText("Indulási adatok innen: " + StopName.trim() + " (" + StopNum + ")");
+            StartPosText.setText(getString(R.string.StartingDataFromStop, StopName.trim(), StopNum));
         }
-
 
         TextView SelectedDateText = view.findViewById(R.id.ScheduleBusLineDate);
         TextView DescText = view.findViewById(R.id.ScheduleBusLineDesc);
@@ -161,7 +153,6 @@ public class ScheduleBusTimeFragment extends Fragment {
         boolean IsForwardWayDescTextSet = false;
         boolean IsBackWayDescTextSet = false;
         for (BusVariation variation : Variations) {
-
             if (!IsForwardWayDescTextSet && SelectedWay.equals(variation.getDirection())) {
                 IsForwardWayDescTextSet = true;
                 WayDescStringForward = variation.getName();
@@ -196,8 +187,6 @@ public class ScheduleBusTimeFragment extends Fragment {
             BusLineTimeFavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
         }
 
-
-
         BusLineTimeFavIcon.setOnClickListener(view1 -> {
             if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Line, mLineNum)) {
                 userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Line, mLineNum);
@@ -220,7 +209,6 @@ public class ScheduleBusTimeFragment extends Fragment {
         SelectedDateText.setText(formatter.format(date));
 
         SelectedDateText.setOnClickListener(view12 -> ShowDatePicker());
-
 
         BusLineTimeDirectionIcon.setOnClickListener(view13 -> {
             if (TwoWay) {
@@ -267,6 +255,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         if (getContext() == null) {
             return;
         }
+
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
         int colorPrimary = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
@@ -371,9 +360,8 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         }
 
-
         assert date != null;
-        MaterialDatePicker<Long> DatePicker = MaterialDatePicker.Builder.datePicker().setTitleText("Válassz Dátumot:").setSelection(date.getTime()).build();
+        MaterialDatePicker<Long> DatePicker = MaterialDatePicker.Builder.datePicker().setTitleText(getString(R.string.SelectDate)).setSelection(date.getTime()).build();
         DatePicker.addOnPositiveButtonClickListener(selection -> {
             SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             sdf1.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -390,7 +378,6 @@ public class ScheduleBusTimeFragment extends Fragment {
         DatePicker.show(getChildFragmentManager(), "DatePicker");
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     private void ReloadSchedules(View view) {
         final ScheduleBusTimeFragment Callback = this;
 
@@ -409,9 +396,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                 BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionOneWay));
             }
 
-
-
-
             if (mStopId == -1) {
                 CurrentLines = Dm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
             } else {
@@ -420,7 +404,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                 for (BusScheduleTime busScheduleTime : CurrentLines) {
                     int StopDelta = Dm.GetBusLineStopTravelTimeById(Integer.toString(busScheduleTime.getLineId()), mStopId);
                     busScheduleTime.AdjustToStop(StopDelta);
-
                 }
             }
 
@@ -442,10 +425,8 @@ public class ScheduleBusTimeFragment extends Fragment {
                         Sbta = null;
                     });
                 }
-
                 return;
             }
-
 
             List<Integer> HoursList = new ArrayList<>();
 
@@ -476,7 +457,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                             CurrentMinutes[HourIndex][j] = TempMinutes.get(j);
                         }
                     }
-
                     HourIndex++;
 
                     CurrentHour = busScheduleTime.getHour();
@@ -505,11 +485,10 @@ public class ScheduleBusTimeFragment extends Fragment {
                 }
             }
 
-
-
             if (getActivity() == null) {
                 return;
             }
+
             DisplayMetrics displayMetrics = new DisplayMetrics();
             getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             int width = displayMetrics.widthPixels;
@@ -528,7 +507,6 @@ public class ScheduleBusTimeFragment extends Fragment {
 
             RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
 
-
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
                     SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
@@ -544,7 +522,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                         Recv.setLayoutManager(mLayoutManager);
                         Recv.setAdapter(Sbta);
 
-                        //wait a frame
                         new Thread(() -> {
                             if (getActivity() != null) {
                                 getActivity().runOnUiThread(() -> ScrollToCurrentHour(view));
@@ -554,7 +531,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                         Sbta.UpdateData(CurrentHours, CurrentMinutes, BusCodes);
                         Sbta.notifyDataSetChanged();
                     }
-
 
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
                     Date date = new Date();
@@ -593,7 +569,6 @@ public class ScheduleBusTimeFragment extends Fragment {
             }
         };
 
-
         int NowHour = Now.get(Calendar.HOUR_OF_DAY);
         smoothScroller.setTargetPosition(0);
         for (int i = 0; i < CurrentHours.length; i++) {
@@ -601,7 +576,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                 if (i > 0) {
                     smoothScroller.setTargetPosition(i-1);
                 }
-
                 break;
             }
         }
@@ -616,6 +590,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         if (getContext() == null) {
             return;
         }
+
         Context ctx = getContext();
         new Thread(() -> {
             Calendar Now = Calendar.getInstance();
@@ -626,16 +601,15 @@ public class ScheduleBusTimeFragment extends Fragment {
             List<BusScheduleTime> StartedList = new ArrayList<>();
             List<BusScheduleTime> ErrNotStartedList = new ArrayList<>();
 
-
             for (BusScheduleTime busScheduleTime : Lines) {
                 if (mStopId == -1) {
                     if ((busScheduleTime.getHour() == CurrentHour && CurrentMinute >= busScheduleTime.getMinute()) || busScheduleTime.getHour() + 1 == CurrentHour || busScheduleTime.getHour() + 2 == CurrentHour) {
                         TukeServerApi tukeServerApi = new TukeServerApi(ctx);
                         Boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
                         if (IsStarted == null){
-                            if(!HelperProvider.isOfflineTextDisplayed()){
+                            if(HelperProvider.displayOfflineText()){
                                 if(getActivity() != null) {
-                                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),"Offline adatok. Az élő adatokhoz kapcsolódjon az internetre.", Toast.LENGTH_LONG).show());
+                                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
                                 }
                                 HelperProvider.setOfflineTextDisplayed();
                             }
@@ -647,7 +621,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                         } else {
                             DatabaseManager Dm = new DatabaseManager(ctx);
                             int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(Integer.toString(busScheduleTime.getLineId()));
-
 
                             Calendar calendar = Calendar.getInstance();
                             calendar.setTime(new Date());
@@ -666,9 +639,9 @@ public class ScheduleBusTimeFragment extends Fragment {
                         TukeServerApi tukeServerApi = new TukeServerApi(ctx);
                         Boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
                         if (IsStarted == null){
-                            if(!HelperProvider.isOfflineTextDisplayed()){
+                            if(HelperProvider.displayOfflineText()){
                                 if(getActivity() != null) {
-                                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),"Offline adatok. Az élő adatokhoz kapcsolódjon az internetre.", Toast.LENGTH_LONG).show());
+                                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
                                 }
                                 HelperProvider.setOfflineTextDisplayed();
                             }
@@ -691,9 +664,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                         } else {
 
                             int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(Integer.toString(busScheduleTime.getLineId()));
-
                             Calendar calendar1 = (Calendar) calendar.clone();
-
                             calendar1.add(Calendar.MINUTE, TravelTimeMin - 2);
 
                             if (calendar1.after(Now) && ((calendar.get(Calendar.HOUR_OF_DAY) == CurrentHour && CurrentMinute > calendar.get(Calendar.MINUTE) || calendar.get(Calendar.HOUR_OF_DAY) + 1 == CurrentHour || calendar.get(Calendar.HOUR_OF_DAY) + 2 == CurrentHour))) {
@@ -703,20 +674,51 @@ public class ScheduleBusTimeFragment extends Fragment {
                     }
                 }
             }
+
             BusScheduleTime[] Started = new BusScheduleTime[StartedList.size()];
             BusScheduleTime[] ErrNotStarted = new BusScheduleTime[ErrNotStartedList.size()];
 
             StartedList.toArray(Started);
             ErrNotStartedList.toArray(ErrNotStarted);
 
+            List<Integer> HoursList = new ArrayList<>();
+
+            int LoopHour = -1;
+            for (BusScheduleTime busScheduleTime : CurrentLines) {
+                if (busScheduleTime.getHour() != LoopHour) {
+                    HoursList.add(busScheduleTime.getHour());
+                    LoopHour = busScheduleTime.getHour();
+                }
+            }
+
             if(getActivity() != null && Sbta != null && getView() != null) {
                 getActivity().runOnUiThread(() -> {
                     Sbta.AttachLiveData(Started, ErrNotStarted);
-                    Sbta.notifyDataSetChanged();
+
+                    for (BusScheduleTime busScheduleTime : Started) {
+                        int PrevHour = -1;
+                        for (int j = 0; j < HoursList.size(); j++) {
+                            if (busScheduleTime.getHour() == HoursList.get(j) && PrevHour != j) {
+                                Sbta.notifyItemChanged(j);
+                                PrevHour = j;
+                            }
+                        }
+                    }
+
+                    for (BusScheduleTime busScheduleTime : ErrNotStarted) {
+                        int PrevHour = -1;
+                        for (int j = 0; j < HoursList.size(); j++) {
+                            if (busScheduleTime.getHour() == HoursList.get(j) && PrevHour != j) {
+                                Sbta.notifyItemChanged(j);
+                                PrevHour = j;
+                            }
+                        }
+                    }
                     SwipeRefreshLayout swipeRefreshLayout = getView().findViewById(R.id.swiperefresh);
                     swipeRefreshLayout.setRefreshing(false);
                 });
             }
+
         }).start();
     }
 
@@ -753,7 +755,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                 50,
                 displayMetrics
         ));
-
 
         int MaxPerLine = (int) Math.floor((float)(width-ndp)/(float) MinuteWidth);
 

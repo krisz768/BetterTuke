@@ -31,7 +31,5 @@ public class apiGetDatabaseVersion extends TukeServerApiFunctions<String> implem
             ErrorFlag = true;
         }
     }
-
-
 }
 

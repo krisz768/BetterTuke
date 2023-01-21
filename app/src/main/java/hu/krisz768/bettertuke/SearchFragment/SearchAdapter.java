@@ -20,7 +20,6 @@ import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.models.SearchResult;
 
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
-
     private SearchResult[] Results;
     private final Context ctx;
     private final SearchViewFragment Callback;
@@ -36,7 +35,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         public ViewHolderStop(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
             icon = view.findViewById(R.id.SearchStopIcon);
             StopName = view.findViewById(R.id.SearchBusStopName);
             this.view = view;
@@ -44,9 +42,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         public void setData(BusPlaces stop, SearchViewFragment Callback) {
             icon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected));
-
             StopName.setText(stop.getName());
-
             view.setOnClickListener(view -> Callback.OnResultClick(new SearchResult(SearchResult.SearchType.Stop, "", stop)));
         }
 
@@ -59,7 +55,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             String StopName = Dm.GetStopName(Integer.parseInt(StopId));
             String StopNum = Dm.GetStopNum(Integer.parseInt(StopId));
 
-            this.StopName.setText(StopName.trim() + " (" + StopNum + ")");
+            this.StopName.setText(ctx.getString(R.string.BusStopNameWithNum, StopName.trim(), StopNum));
 
             view.setOnClickListener(view -> Callback.OnResultClick(new SearchResult(SearchResult.SearchType.FavStop, "", Integer.parseInt(StopId))));
         }
@@ -70,16 +66,12 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     public static class ViewHolderLine extends RecyclerView.ViewHolder {
-
-
         private final TextView Number;
         private final TextView Description;
         private final View view;
 
         public ViewHolderLine(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
-
             Number = view.findViewById(R.id.ScheduleLineNum);
             Description = view.findViewById(R.id.SearchBusStopName);
             this.view = view;
@@ -103,8 +95,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         public ViewHolderLabel(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
-
             Label = view.findViewById(R.id.labelText);
         }
 
@@ -147,7 +137,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return 0;
     }
 
-    // Create new views (invoked by the layout manager)
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
@@ -173,18 +162,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
-
-
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
-
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element,
-
         switch (viewHolder.getItemViewType()) {
             case -1:
-                ((ViewHolderLabel)viewHolder).setData("Kedvencek:");
+                ((ViewHolderLabel)viewHolder).setData(ctx.getString(R.string.FavoriteText));
                 break;
             case 0:
                 ((ViewHolderStop)viewHolder).setData((BusPlaces) Results[position].getData(), Callback);
@@ -195,11 +177,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             case 2:
                 ((ViewHolderLine)viewHolder).setData((BusNum) Results[position].getData(), ctx, Callback);
                 break;
-
         }
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         if (Fav) {
@@ -207,6 +187,5 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         } else {
             return Results.length;
         }
-
     }
 }

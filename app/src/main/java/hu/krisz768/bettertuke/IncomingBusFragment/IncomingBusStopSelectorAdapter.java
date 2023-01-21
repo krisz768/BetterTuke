@@ -20,23 +20,17 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Incomin
     private int SelectedStop;
     BottomSheetIncomingBusFragment callback;
 
-    /**
-     * Provide a reference to the type of views that you are using
-     * (custom ViewHolder)
-     */
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         Button button;
 
         public ViewHolder(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
-
             button = view.findViewById(R.id.StopButton);
         }
 
         public void setData(BusStops Data, int SelectedStop, BottomSheetIncomingBusFragment callback, Context ctx) {
-           button.setText(Data.getStopNum().trim() + ". megálló");
+           button.setText(ctx.getString(R.string.TrackBusStopSelect, Data.getStopNum().trim()));
 
            button.setOnClickListener(view -> callback.OnStopClick(Data.getId()));
 
@@ -64,27 +58,20 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Incomin
         this.SelectedStop = SelectedStop;
     }
 
-    // Create new views (invoked by the layout manager)
     @NonNull
     @Override
     public IncomingBusStopSelectorAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.incoming_bus_stop_list_recview, viewGroup, false);
 
         return new IncomingBusStopSelectorAdapter.ViewHolder(view);
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(IncomingBusStopSelectorAdapter.ViewHolder viewHolder, final int position) {
-
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
         viewHolder.setData(BusStopList[position],SelectedStop, callback, ctx);
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return BusStopList.length;

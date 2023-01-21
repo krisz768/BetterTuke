@@ -25,7 +25,6 @@ import hu.krisz768.bettertuke.Database.BusVariation;
 import hu.krisz768.bettertuke.R;
 
 public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
-
     private int[] Hours;
     private int[][] Minutes;
     private String[][] BusCodes;
@@ -58,7 +57,6 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
 
         public ViewHolderHour(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
             HourText = view.findViewById(R.id.ScheduleHourText);
             Recv = view.findViewById(R.id.ScheduleMinuteRecview);
         }
@@ -85,8 +83,6 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
 
         public ViewHolderLabel(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
-
             Label = view.findViewById(R.id.labelText);
         }
 
@@ -103,7 +99,6 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
 
         public ViewHolderLegend(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
 
             Legend = view.findViewById(R.id.LegendCode);
             Desc = view.findViewById(R.id.LegendDesc);
@@ -125,8 +120,6 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
                 SpannableString stringWithImage = new SpannableString(variation.getName() + " (*)");
                 stringWithImage.setSpan(new ImageSpan(arrow, DynamicDrawableSpan.ALIGN_BASELINE), variation.getName().length()+2, variation.getName().length()+3, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 Desc.setText(stringWithImage);
-
-                //Desc.setText(variation.getNev() + " (\uD83E\uDC60");
             } else {
                 Drawable arrow = ContextCompat.getDrawable(ctx, R.drawable.left_arrow);
                 if (arrow != null) {
@@ -189,11 +182,9 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
         this.ErrNotStarted = ErrNotStarted;
     }
 
-    // Create new views (invoked by the layout manager)
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
-        // Create a new view, which defines the UI of the list item
         if (viewType == 0) {
             View HourView = LayoutInflater.from(viewGroup.getContext())
                     .inflate(R.layout.schedule_bus_time_hour_recview, viewGroup, false);
@@ -210,24 +201,21 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
 
             return new ScheduleBusTimeHourAdapter.ViewHolderLegend(LegendView);
         }
-
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
 
         if (viewHolder.getItemViewType() == 0) {
             ((ViewHolderHour)viewHolder).setData(Hours[position], Minutes[position], BusCodes[position], MaxPerLine, SecColor, SecContainerColor, OnSecContainerColor, OnPrimColor, OnErrColor, MinBackground,MinFullBackground, MinBackgroundStarted, MinFullBackgroundStarted, MinBackgroundErr, MinFullBackgroundErr, Started, ErrNotStarted, ctx, Callback);
         } else if (viewHolder.getItemViewType() == 1){
-            ((ViewHolderLabel)viewHolder).setData("Jelmagyarázat:");
+            ((ViewHolderLabel)viewHolder).setData(ctx.getString(R.string.Legend));
         } else {
             ((ViewHolderLegend)viewHolder).setData(Variations[position-Hours.length-1], ctx);
         }
 
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return Hours.length + Variations.length + 1;

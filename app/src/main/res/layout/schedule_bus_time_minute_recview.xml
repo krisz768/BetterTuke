@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="50dp"
-    android:layout_gravity="left">
+    android:layout_gravity="start">
 
     <TextView
         android:id="@+id/ScheduleMinuteText"
@@ -10,17 +10,17 @@
         android:layout_height="match_parent"
         android:background="@drawable/bus_schedule_minute_background"
         android:clickable="true"
+        android:contentDescription="@string/ScheduleMinuteButton"
         android:focusable="true"
         android:foreground="?android:attr/selectableItemBackground"
-        android:gravity="center"
-        android:text="24" />
+        android:gravity="center" />
 
     <TextView
         android:id="@+id/ScheduleMinuteCode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
+        android:layout_gravity="end"
         android:layout_marginTop="3dp"
-        android:layout_marginRight="5dp"
-        android:textSize="10sp" />
+        android:layout_marginEnd="5dp"
+        android:textSize="11sp" />
 </FrameLayout>

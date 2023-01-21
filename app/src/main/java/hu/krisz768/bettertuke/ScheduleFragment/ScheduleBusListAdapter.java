@@ -15,14 +15,12 @@ import hu.krisz768.bettertuke.Database.BusNum;
 import hu.krisz768.bettertuke.R;
 
 public class ScheduleBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
-
     private final BusNum[] busNums;
     private final BusNum[] Favorites;
     private final Context ctx;
     private final ScheduleBusListFragment Callback;
 
     public static class ViewHolderLine extends RecyclerView.ViewHolder {
-
         private final TextView Number;
         private final TextView Description;
         private final View view;
@@ -30,7 +28,6 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
         public ViewHolderLine(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
 
             Number = view.findViewById(R.id.ScheduleLineNum);
             Description = view.findViewById(R.id.SearchBusStopName);
@@ -61,7 +58,6 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
         public ViewHolderLabel(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
 
             Label = view.findViewById(R.id.labelText);
         }
@@ -91,7 +87,6 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         }
     }
 
-    // Create new views (invoked by the layout manager)
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
@@ -108,7 +103,6 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         }
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, final int position) {
 
@@ -117,9 +111,9 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         } else {
             if (position == 0 || position == Favorites.length+1) {
                 if (position == 0) {
-                    ((ViewHolderLabel)viewHolder).setData("Kedvencek:");
+                    ((ViewHolderLabel)viewHolder).setData(ctx.getString(R.string.FavoriteText));
                 } else {
-                    ((ViewHolderLabel)viewHolder).setData("Összes:");
+                    ((ViewHolderLabel)viewHolder).setData(Callback.getString(R.string.SumText));
                 }
             } else {
                 if (position < Favorites.length+1) {
@@ -131,7 +125,6 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         }
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         if (Favorites.length == 0) {
@@ -139,6 +132,5 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         } else {
             return busNums.length + Favorites.length + 2;
         }
-
     }
 }

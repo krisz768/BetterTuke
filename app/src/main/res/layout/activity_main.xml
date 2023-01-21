@@ -6,8 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:map="http://schemas.android.com/apk/res-auto"
+    <androidx.fragment.app.FragmentContainerView
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:id="@+id/map"
         android:layout_width="match_parent"
@@ -15,15 +14,15 @@
         tools:layout="@layout/fragment_loading"
     />
 
-
     <com.google.android.material.search.SearchBar
         android:id="@+id/search_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Keresés"
-        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/Search"
+        android:hint="@string/Search"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
     </com.google.android.material.search.SearchBar>
 
@@ -31,11 +30,11 @@
         android:id="@+id/search_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:hint="Keresés"
+        android:hint="@string/Search"
         android:elevation="8dp">
         <!-- Search suggestions/results go here (ScrollView, RecyclerView, etc.). -->
         <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/SerchViewFragmentContainer"
+            android:id="@+id/SearchViewFragmentContainer"
             android:name="hu.krisz768.bettertuke.LoadingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -52,7 +51,8 @@
         android:contentDescription="@string/Schedule"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/bus" />
+        app:srcCompat="@drawable/bus"
+        android:focusable="true" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/PosButton"
@@ -61,11 +61,12 @@
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="80dp"
         android:clickable="true"
-        android:contentDescription="Gps"
+        android:contentDescription="@string/Gps"
         app:layout_constraintBottom_toBottomOf="@id/ShowScheduleButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/gps"
-        style="?attr/floatingActionButtonSurfaceStyle"/>
+        style="?attr/floatingActionButtonSurfaceStyle"
+        android:focusable="true" />
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"

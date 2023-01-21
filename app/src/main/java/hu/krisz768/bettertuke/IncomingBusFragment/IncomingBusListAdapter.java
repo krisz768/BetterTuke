@@ -23,10 +23,6 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
     private final Context ctx;
     private final IncomingBusListFragment ClickCallBack;
 
-    /**
-     * Provide a reference to the type of views that you are using
-     * (custom ViewHolder)
-     */
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView number;
         private final TextView desc;
@@ -35,11 +31,10 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
 
         public ViewHolder(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
 
-            number = (TextView) view.findViewById(R.id.BusArrNumText);
-            desc = (TextView) view.findViewById(R.id.BusArrDesText);
-            arrtime = (TextView) view.findViewById(R.id.BusArrTime);
+            number = view.findViewById(R.id.BusArrNumText);
+            desc = view.findViewById(R.id.BusArrDesText);
+            arrtime = view.findViewById(R.id.BusArrTime);
             this.view = view;
         }
 
@@ -54,7 +49,7 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
             if (Data.isAtStop()) {
                 arrtime.setText(R.string.BusInStop);
             } else {
-                arrtime.setText(Sdf.format(Arrtime) + " (" + Data.getRemainingMin() + " perc)");
+                arrtime.setText(ctx.getString(R.string.TrackTimeString, Sdf.format(Arrtime), Data.getRemainingMin()));
             }
 
             int WhiteColor = Color.rgb(255,255,255);
@@ -65,7 +60,6 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
             } else  {
                 number.setBackground(ContextCompat.getDrawable(ctx, R.drawable.bus_number_background_inactive));
             }
-
         }
     }
 
@@ -79,27 +73,20 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
         this.ClickCallBack = ClickCallBack;
     }
 
-    // Create new views (invoked by the layout manager)
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.incoming_bus_list_recview, viewGroup, false);
 
         return new ViewHolder(view);
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
         viewHolder.setData(BusList[position], ctx, ClickCallBack);
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return BusList.length;

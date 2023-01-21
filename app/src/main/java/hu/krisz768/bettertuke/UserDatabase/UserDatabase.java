@@ -19,8 +19,6 @@ public class UserDatabase {
             UserDatabaseHelper Dbh = new UserDatabaseHelper(Ctx, DATABASEFILE);
             Sld = Dbh.getWritableDatabase();
         }
-
-
     }
 
     public boolean IsFavorite(FavoriteType favoriteType, String Data) {
@@ -38,11 +36,8 @@ public class UserDatabase {
         } catch (Exception e) {
             log(e.toString());
             return false;
-
         }
     }
-
-
 
     public void DeleteFavorite(FavoriteType favoriteType, String Data) {
         try {
@@ -72,7 +67,6 @@ public class UserDatabase {
             case Stop:
                 return 1;
         }
-
         return -1;
     }
 
@@ -95,7 +89,6 @@ public class UserDatabase {
         } catch (Exception e) {
             log(e.toString());
             return new Favorite[0];
-
         }
     }
 
@@ -123,7 +116,6 @@ public class UserDatabase {
         } catch (Exception e) {
             log(e.toString());
             return -1;
-
         }
     }
 

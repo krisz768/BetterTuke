@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import hu.krisz768.bettertuke.BuildConfig;
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
@@ -40,15 +41,7 @@ import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link BottomSheetIncomingBusFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class BottomSheetIncomingBusFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String PLACE = "Place";
     private static final String STOP = "Stop";
     private static final String PLACELIST = "PlaceList";
@@ -65,7 +58,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     ScheduledExecutorService UpdateLoop;
 
     public BottomSheetIncomingBusFragment() {
-        // Required empty public constructor
+
     }
     public static BottomSheetIncomingBusFragment newInstance(int Place, int Stop, BusPlaces[] PlaceList, BusStops[] StopList) {
         BottomSheetIncomingBusFragment fragment = new BottomSheetIncomingBusFragment();
@@ -92,7 +85,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_bottom_sheet_incoming_bus_view, container, false);
 
         TextView BusStopName = view.findViewById(R.id.BusStopName);
@@ -175,7 +167,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             StopSelectorRec.getLayoutManager().startSmoothScroll(smoothScroller);
         }
 
-
         StopSelectorRec.setNestedScrollingEnabled(false);
 
         StartNewUpdateThread();
@@ -244,7 +235,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             TukeServerApi serverApi = new TukeServerApi(getActivity());
             GetIncomingBuses(serverApi);
         }).start();
-
     }
 
     private void ResetList() {
@@ -256,13 +246,17 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
     private void GetIncomingBuses(TukeServerApi serverApi) {
         try {
+            if (BuildConfig.DEBUG) {
+                Log.i("Update", "Updating List");
+            }
+
             final int SendStopId = mStop;
-            Log.i("Update", "Updating List");
+
             IncomingBusRespModel[] BusList = serverApi.getNextIncomingBuses(mStop);
 
             if (BusList == null) {
-                if(getActivity() != null && !HelperProvider.isOfflineTextDisplayed()) {
-                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),"Offline adatok. Az élő adatokhoz kapcsolódjon az internetre.", Toast.LENGTH_LONG).show());
+                if(getActivity() != null && HelperProvider.displayOfflineText()) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
                     HelperProvider.setOfflineTextDisplayed();
                 }
 
@@ -273,7 +267,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
                 BusList = Dm.GetOfflineDepartureTimes(SendStopId);
             }
-
 
             Date currentTime = Calendar.getInstance().getTime();
             SimpleDateFormat Sdf = new SimpleDateFormat("H", Locale.US);

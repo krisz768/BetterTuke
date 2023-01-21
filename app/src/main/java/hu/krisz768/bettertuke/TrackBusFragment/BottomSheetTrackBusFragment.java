@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import hu.krisz768.bettertuke.BuildConfig;
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
@@ -31,13 +32,11 @@ import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class BottomSheetTrackBusFragment extends Fragment {
 
-    private static final String PLACE = "Place";
     private static final String STOP = "Stop";
     private static final String PLACELIST = "PlaceList";
     private static final String STOPLIST = "StopList";
     private static final String LINEOBJ = "LineObj";
 
-    private int mPlace;
     private int mStop;
 
     private BusPlaces[] mPlaceList;
@@ -63,10 +62,9 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
     }
 
-    public static BottomSheetTrackBusFragment newInstance(int Place, int Stop, BusPlaces[] PlaceList, BusStops[] StopList, BusLine LineObj) {
+    public static BottomSheetTrackBusFragment newInstance(int Stop, BusPlaces[] PlaceList, BusStops[] StopList, BusLine LineObj) {
         BottomSheetTrackBusFragment fragment = new BottomSheetTrackBusFragment();
         Bundle args = new Bundle();
-        args.putInt(PLACE, Place);
         args.putInt(STOP, Stop);
         args.putSerializable(PLACELIST, PlaceList);
         args.putSerializable(STOPLIST, StopList);
@@ -79,7 +77,6 @@ public class BottomSheetTrackBusFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mPlace = getArguments().getInt(PLACE);
             mStop = getArguments().getInt(STOP);
             mPlaceList = (BusPlaces[]) getArguments().getSerializable(PLACELIST);
             mStopList = (BusStops[]) getArguments().getSerializable(STOPLIST);
@@ -91,7 +88,6 @@ public class BottomSheetTrackBusFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_bottom_sheet_track_bus, container, false);
-        // Inflate the layout for this fragment
         TextView BusNum = view.findViewById(R.id.TrackBusNumber);
         TextView BusText = view.findViewById(R.id.TrackBusName);
 
@@ -112,21 +108,18 @@ public class BottomSheetTrackBusFragment extends Fragment {
                     .commit();
         }
 
-
         return view;
     }
 
     @Override
     public void onPause() {
         super.onPause();
-
         UpdateLoop.shutdown();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
         StartUpdateThread();
     }
 
@@ -151,6 +144,10 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
     private void GetBusPosition(TukeServerApi serverApi) {
         try {
+            if (BuildConfig.DEBUG) {
+                Log.i("BusPositionUpdate", "Bus Pos Update");
+            }
+
             TrackBusRespModel BusPosition = serverApi.getBusLocation(mBusLine.getLineId());
             if (getView() == null) {
                 return;
@@ -177,16 +174,14 @@ public class BottomSheetTrackBusFragment extends Fragment {
                 }
             }
 
-
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
                     MainActivity mainActivity = (MainActivity)getActivity();
                     if (TrackBusFragment != null && mainActivity != null) {
-                        mainActivity.BuspositionMarker(BusPosition != null ? new LatLng(BusPosition.getGpsLongitude(), BusPosition.getGpsLatitude()) : null);
+                        mainActivity.BusPositionMarker(BusPosition != null ? new LatLng(BusPosition.getGpsLongitude(), BusPosition.getGpsLatitude()) : null);
                     }
                 });
             }
-
 
             if (TrackBusFragment == null) {
                 TrackBusFragment = TrackBusListFragment.newInstance(mBusLine, mStop, mPlaceList, mStopList, BusPosition);
@@ -241,12 +236,12 @@ public class BottomSheetTrackBusFragment extends Fragment {
         BusType.setText(busAttributes.getType());
 
         if(busAttributes.getArticulated()==0)
-            Articulated.setText("szóló");
+            Articulated.setText(getString(R.string.SoloBus));
         else if(busAttributes.getArticulated()==1)
-            Articulated.setText("csuklós");
+            Articulated.setText(getString(R.string.ArticulatedBus));
         else if(busAttributes.getArticulated()==2)
-            Articulated.setText("midi");
-        Doors.setText(busAttributes.getDoors()+" ajtós");
+            Articulated.setText(getString(R.string.MidiBus));
+        Doors.setText(getString(R.string.BusDoorNumberText, busAttributes.getDoors()));
 
         if(busAttributes.getPropulsion()==1)
             Electric.setVisibility(View.VISIBLE);

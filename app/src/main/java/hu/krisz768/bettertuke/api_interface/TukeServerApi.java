@@ -9,7 +9,6 @@ import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
 public class TukeServerApi {
-
     private final Context ctx;
 
     public TukeServerApi(Context ctx) {
@@ -37,7 +36,7 @@ public class TukeServerApi {
             Thread thread = new Thread(data);
             thread.start();
             thread.join();
-            if(data.ErrorFlag) {
+            if(data.getError()) {
                 return null;
             }
             return data.getValue();
@@ -69,7 +68,7 @@ public class TukeServerApi {
             Thread thread = new Thread(data);
             thread.start();
             thread.join();
-            if (data.ErrorFlag) {
+            if (data.getError()) {
                 return null;
             }
             return data.value;
@@ -92,7 +91,6 @@ public class TukeServerApi {
             return false;
         }
     }
-
 
     private void log (String msg) {
         Log.e("ApiInterface", msg);
