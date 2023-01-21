@@ -33,7 +33,7 @@
     <string name="Ok">OK</string>
     <string name="DatabaseUpdateError">NEM SIKERÜLT frissíteni az adatbázist.</string>
     <string name="NewDatabaseWarning">Új menetrendre frissítve! Előfordulhatnak válzotások.</string>
-    <string name="DatabaseVersionCheckFail">Nem sikerült ellenőrizni hogy elérhető e frissítés az adatbázisra</string>
+    <string name="DatabaseVersionCheckFail">Nem sikerült ellenőrizni hogy elérhető e frissítés.</string>
     <string name="Search">Keresés</string>
     <string name="Gps">Gps</string>
     <string name="FavoriteButton">Kedvencek gomb</string>
