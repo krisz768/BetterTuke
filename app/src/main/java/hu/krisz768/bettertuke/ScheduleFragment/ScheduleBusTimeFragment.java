@@ -372,6 +372,7 @@ public class ScheduleBusTimeFragment extends Fragment {
 
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd.", Locale.US);
                 SelectedDateText.setText(formatter.format(new Date(selection)));
+
                 ReloadSchedules(getView());
             }
         });
@@ -530,6 +531,11 @@ public class ScheduleBusTimeFragment extends Fragment {
                     } else {
                         Sbta.UpdateData(CurrentHours, CurrentMinutes, BusCodes);
                         Sbta.notifyDataSetChanged();
+                        new Thread(() -> {
+                            if (getActivity() != null) {
+                                getActivity().runOnUiThread(() -> ScrollToCurrentHour(view));
+                            }
+                        }).start();
                     }
 
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
@@ -549,9 +555,6 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         Date date = new Date();
-        if (!SelectedDate.equals(formatter.format(date))) {
-            return;
-        }
 
         if (getContext() == null) {
             return;
@@ -571,14 +574,18 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         int NowHour = Now.get(Calendar.HOUR_OF_DAY);
         smoothScroller.setTargetPosition(0);
-        for (int i = 0; i < CurrentHours.length; i++) {
-            if ( CurrentHours[i] >= NowHour) {
-                if (i > 0) {
-                    smoothScroller.setTargetPosition(i-1);
+
+        if (SelectedDate.equals(formatter.format(date))) {
+            for (int i = 0; i < CurrentHours.length; i++) {
+                if ( CurrentHours[i] >= NowHour) {
+                    if (i > 0) {
+                        smoothScroller.setTargetPosition(i-1);
+                    }
+                    break;
                 }
-                break;
             }
         }
+
         RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
         if (Recv.getLayoutManager() != null) {
             Recv.getLayoutManager().startSmoothScroll(smoothScroller);

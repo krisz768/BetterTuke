@@ -48,7 +48,7 @@ public class HelperProvider {
         BitmapContainer[1] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus_stop1, com.google.android.material.R.attr.colorOnPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bus_stop, com.google.android.material.R.attr.colorOutline, ctx, true));
         BitmapContainer[2] = HelperProvider.BitmapFromVector(R.drawable.bus_marker_small, com.google.android.material.R.attr.colorOutline, ctx, true);
         BitmapContainer[3] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus_place_pointer1, com.google.android.material.R.attr.colorOnPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bus_place_pointer, com.google.android.material.R.attr.colorOutline, ctx, true));
-        BitmapContainer[4] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus1, com.google.android.material.R.attr.colorPrimary, ctx, true),HelperProvider.BitmapFromVector(R.drawable.bus, com.google.android.material.R.attr.colorOnPrimary, ctx, false));
+        BitmapContainer[4] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus1, com.google.android.material.R.attr.colorPrimary, ctx, true),HelperProvider.BitmapFromVector(R.drawable.bus_small, com.google.android.material.R.attr.colorOnPrimary, ctx, false));
 
         BitmapContainer[5] = HelperProvider.BitmapFromVector(R.drawable.bustrack_start_end, com.google.android.material.R.attr.colorOutline, ctx, false);
         BitmapContainer[6] = overlay(HelperProvider.BitmapFromVector(R.drawable.bustrack_starthalf_1, com.google.android.material.R.attr.colorPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bustrack_half_1, com.google.android.material.R.attr.colorOutline, ctx, false));

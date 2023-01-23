@@ -56,7 +56,9 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
     private boolean BusAttributesVisible = false;
 
-    ScheduledExecutorService UpdateLoop;
+    private ScheduledExecutorService UpdateLoop;
+
+    private TrackBusRespModel RecentBusPosition;
 
     public BottomSheetTrackBusFragment() {
 
@@ -178,7 +180,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
                 getActivity().runOnUiThread(() -> {
                     MainActivity mainActivity = (MainActivity)getActivity();
                     if (TrackBusFragment != null && mainActivity != null) {
-                        mainActivity.BusPositionMarker(BusPosition != null ? new LatLng(BusPosition.getGpsLongitude(), BusPosition.getGpsLatitude()) : null);
+                        mainActivity.BusPositionMarker(BusPosition != null ? new LatLng(BusPosition.getGpsLatitude(), BusPosition.getGpsLongitude()) : null);
                     }
                 });
             }
@@ -194,9 +196,18 @@ public class BottomSheetTrackBusFragment extends Fragment {
                         TrackBusFragment.UpdateData(BusPosition);
                         MainActivity mainActivity = (MainActivity)getActivity();
                         if (mainActivity != null) {
-                            if (((MainActivity)getActivity()).IsBottomSheetCollapsed()) {
+                            if (((MainActivity)getActivity()).IsBottomSheetHalfExpanded()) {
                                 TrackBusFragment.scrollSmoothTo();
                             }
+
+                            if (RecentBusPosition != null && BusPosition != null) {
+                                if (RecentBusPosition.getStopNumber() != BusPosition.getStopNumber()) {
+                                    if (!((MainActivity)getActivity()).isUserTouchedMap()) {
+                                        ((MainActivity)getActivity()).ZoomTo(new LatLng(BusPosition.getGpsLatitude(), BusPosition.getGpsLongitude()));
+                                    }
+                                }
+                            }
+                            RecentBusPosition = BusPosition;
                         }
                     }
                 });

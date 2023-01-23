@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean smallMarkerMode = false;
 
-    private boolean IsBackButtonCollapse = true;
+    private boolean IsBackButtonHalfExpanded = true;
 
     private Marker BusMarker;
     private boolean UserTouchedMap = false;
@@ -180,12 +180,33 @@ public class MainActivity extends AppCompatActivity {
 
         ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
         if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
-            params.height = bottomSheetBehavior.getPeekHeight();
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+            int displayHeight = Math.round(TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    newConfig.screenHeightDp,
+                    displayMetrics
+            ));
+            params.height = Math.round(displayHeight * bottomSheetBehavior.getHalfExpandedRatio());
         } else if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
             params.height = bottomSheetBehavior.getMaxHeight();
+
+        } else if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED) {
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+            int displayHeight = Math.round(TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    newConfig.screenHeightDp,
+                    displayMetrics
+            ));
+            params.height = Math.round(displayHeight * bottomSheetBehavior.getHalfExpandedRatio());
         }
 
         fragmentView.setLayoutParams(params);
+
+        bottomSheetBehavior.setHideable(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
     }
 
     public void ChangeStop(int Id) {
@@ -314,6 +335,7 @@ public class MainActivity extends AppCompatActivity {
         } else if (Md.getType() == MarkerDescriptor.Types.Bus){
             ZoomTo(BusMarker.getPosition());
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            UserTouchedMap = false;
         } else {
             ZoomTo(SelectedPlace);
         }
@@ -643,10 +665,6 @@ public class MainActivity extends AppCompatActivity {
         final FragmentContainerView fragmentView = findViewById(R.id.fragmentContainerView2);
         final FloatingActionButton ScheduleButton = findViewById(R.id.ShowScheduleButton);
 
-        ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
-        params.height = bottomSheetBehavior.getPeekHeight();
-        fragmentView.setLayoutParams(params);
-
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
@@ -658,15 +676,16 @@ public class MainActivity extends AppCompatActivity {
 
         if (BottomSheetCallback == null) {
             BottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
+
                 @Override
                 public void onStateChanged(@NonNull View bottomSheet, int newState) {
                     ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
                     ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
 
-                    if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                        IsBackButtonCollapse = true;
+                    if (newState == BottomSheetBehavior.STATE_HALF_EXPANDED) {
+                        IsBackButtonHalfExpanded = true;
 
-                        params.height = bottomSheetBehavior.getPeekHeight();
+                        params.height = Math.round(bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio());
 
                         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                             googleMap.setPadding(0, dp20 * 4, 0, 0);
@@ -677,9 +696,14 @@ public class MainActivity extends AppCompatActivity {
                         }
                     } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                         params.height = bottomSheet.getHeight();
-                    } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                        googleMap.setPadding(0, dp20 * 4, 0, 0);
-                        params2.bottomMargin = dp20;
+                    } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                            googleMap.setPadding(0, dp20 * 4, 0, 0);
+                            params2.bottomMargin = dp20;
+                        } else {
+                            googleMap.setPadding(0, dp20 * 4, 0, bottomSheetBehavior.getPeekHeight());
+                            params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20;
+                        }
                     }
 
                     fragmentView.setLayoutParams(params);
@@ -691,18 +715,19 @@ public class MainActivity extends AppCompatActivity {
                     ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
                     ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
 
-                    if (slideOffset > 0) {
-                        params.height = Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheet.getHeight() - bottomSheetBehavior.getPeekHeight()) * slideOffset));
-                    } else if (slideOffset < 0) {
-                        params.height = bottomSheetBehavior.getPeekHeight();
+                    if (((bottomSheet.getMeasuredHeight()-bottomSheetBehavior.getPeekHeight())*slideOffset)+bottomSheetBehavior.getPeekHeight() < bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio()) {
                         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                             googleMap.setPadding(0, dp20 * 4, 0, 0);
                             params2.bottomMargin = dp20;
                         } else {
-                            googleMap.setPadding(0, dp20 * 4, 0, Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheetBehavior.getPeekHeight()) * slideOffset)));
-                            params2.bottomMargin = Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheetBehavior.getPeekHeight()) * slideOffset)) + dp20;
+                            int CalculatedHeight = Math.round(((bottomSheet.getMeasuredHeight()-bottomSheetBehavior.getPeekHeight())*slideOffset)+bottomSheetBehavior.getPeekHeight());
+                            googleMap.setPadding(0, dp20 * 4, 0, CalculatedHeight);
+                            params2.bottomMargin = CalculatedHeight + dp20;
                         }
+                    } else {
+                        params.height = Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheet.getMeasuredHeight() - bottomSheetBehavior.getPeekHeight()) * slideOffset));
                     }
+
 
                     fragmentView.setLayoutParams(params);
                     ScheduleButton.setLayoutParams(params2);
@@ -734,16 +759,25 @@ public class MainActivity extends AppCompatActivity {
         } else {
             int height = displayMetrics.heightPixels / 3;
 
-            int MinHeight = (int) Math.ceil(180 * displayMetrics.density);
+            float Ratio = 0.33F;
+
+            int MinHeight = Math.round(TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    180,
+                    displayMetrics
+            ));
+
+
             if (MinHeight > height) {
-                height = MinHeight;
+                Ratio = ((float)MinHeight)/((float)displayMetrics.heightPixels);
             }
 
-            bottomSheetBehavior.setPeekHeight(height);
+            bottomSheetBehavior.setFitToContents(false);
+            bottomSheetBehavior.setHalfExpandedRatio(Ratio);
 
             ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
 
-            if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_HIDDEN) {
+            if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     googleMap.setPadding(0, dp20 * 4, 0, 0);
                     params2.bottomMargin = dp20;
@@ -753,12 +787,32 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 ScheduleButton.setLayoutParams(params2);
+            } else if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED){
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    googleMap.setPadding(0, dp20 * 4, 0, 0);
+                    params2.bottomMargin = dp20;
+                } else {
+                    googleMap.setPadding(0, dp20 * 4, 0, height);
+                    params2.bottomMargin = height + dp20;
+                }
+
+                ScheduleButton.setLayoutParams(params2);
+            } else if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED){
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    googleMap.setPadding(0, dp20 * 4, 0, 0);
+                    params2.bottomMargin = dp20;
+                } else {
+                    googleMap.setPadding(0, dp20 * 4, 0, bottomSheetBehavior.getPeekHeight());
+                    params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20;
+                }
+
+                ScheduleButton.setLayoutParams(params2);
             }
         }
     }
 
     private void ShowBottomSheetIncomingBuses() {
-        BottomSheetSetNormalParams();
+        BottomSheetSetNormalParams(65);
 
         BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces, busStops);
         getSupportFragmentManager().beginTransaction()
@@ -791,12 +845,28 @@ public class MainActivity extends AppCompatActivity {
             BusMarker = null;
         }
 
+        boolean ZoomToFirst = true;
+
+        for (int i = 0; i < busLine.getStops().length; i++) {
+            if (busLine.getStops()[i].getStopId() == CurrentStop) {
+                ZoomToFirst = false;
+            }
+        }
+
+        if (ZoomToFirst) {
+            for (BusStops busStop : busStops) {
+                if (busLine.getStops()[0].getStopId() == busStop.getId()) {
+                    ZoomTo(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude()));
+                }
+            }
+        }
+
         MarkerRenderer();
         ShowBottomSheetTrackBus();
     }
 
-    private void BottomSheetSetNormalParams() {
-        IsBackButtonCollapse = bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED;
+    private void BottomSheetSetNormalParams(int HeaderInDp) {
+        IsBackButtonHalfExpanded = bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED;
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -805,20 +875,38 @@ public class MainActivity extends AppCompatActivity {
                 20,
                 displayMetrics
         ));
+
+        int HeaderInPx = Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                HeaderInDp,
+                displayMetrics
+        ));
+
+        int MinHeight = Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                180,
+                displayMetrics
+        ));
+
         int height = displayMetrics.heightPixels / 3;
 
-        int MinHeight = (int) Math.ceil(180 * displayMetrics.density);
+        float Ratio = 0.33F;
+
         if (MinHeight > height) {
             height = MinHeight;
+            Ratio = ((float)MinHeight)/((float)displayMetrics.heightPixels);
         }
 
-        bottomSheetBehavior.setPeekHeight(height);
+        bottomSheetBehavior.setFitToContents(false);
+        bottomSheetBehavior.setHalfExpandedRatio(Ratio);
 
         bottomSheetBehavior.setMaxHeight(-1);
-        bottomSheetBehavior.setHideable(true);
+        bottomSheetBehavior.setHideable(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
 
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        bottomSheetBehavior.setPeekHeight(HeaderInPx);
+
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
         }
 
         final View Fc = findViewById(R.id.fragmentContainerView2);
@@ -827,7 +915,7 @@ public class MainActivity extends AppCompatActivity {
         ViewGroup.LayoutParams params = Fc.getLayoutParams();
         ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
 
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED) {
             params.height = height;
         } else {
             params.height = getWindow().getDecorView().getHeight();
@@ -845,7 +933,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void ShowBottomSheetTrackBus() {
-        BottomSheetSetNormalParams();
+        BottomSheetSetNormalParams(90);
 
         BottomSheetTrackBusFragment TrackBusFragment = BottomSheetTrackBusFragment.newInstance( CurrentStop, busPlaces, busStops, busLine);
         getSupportFragmentManager().beginTransaction()
@@ -863,18 +951,36 @@ public class MainActivity extends AppCompatActivity {
                     MarkerOptions BusMarkerOption = new MarkerOptions().position(new LatLng(BusPosition.latitude, BusPosition.longitude)).icon(BusBitmap);
                     CreateBusMarker(BusMarkerOption);
 
-                    for (BusStops busStop : busStops) {
-                        if (busStop.getId() == CurrentStop) {
-                            ZoomClose(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude()), new LatLng(BusPosition.latitude, BusPosition.longitude));
+                    boolean ZoomToLast = true;
+
+                    for (int i = 0; i < busLine.getStops().length; i++) {
+                        if (busLine.getStops()[i].getStopId() == CurrentStop) {
+                            ZoomToLast = false;
                         }
                     }
+
+                    if (ZoomToLast) {
+                        for (BusStops busStop : busStops) {
+                            if (busLine.getStops()[busLine.getStops().length - 1].getStopId() == busStop.getId()) {
+                                ZoomClose(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude()), new LatLng(BusPosition.latitude, BusPosition.longitude));
+                            }
+                        }
+                    } else {
+                        for (BusStops busStop : busStops) {
+                            if (busStop.getId() == CurrentStop) {
+                                ZoomClose(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude()), new LatLng(BusPosition.latitude, BusPosition.longitude));
+                            }
+                        }
+                    }
+
+
                 } else {
                     animateMarker(BusMarker, BusPosition, new LatLngInterpolator.Linear());
                     if (!UserTouchedMap) {
                         LatLngBounds currentScreen = googleMap.getProjection().getVisibleRegion().latLngBounds;
 
                         if(!currentScreen.contains(BusPosition)) {
-                            ZoomTo(BusMarker.getPosition());
+                            ZoomTo(BusPosition);
                         }
                     }
                 }
@@ -924,8 +1030,8 @@ public class MainActivity extends AppCompatActivity {
         BusMarker.setZIndex(Float.MAX_VALUE);
     }
 
-    public boolean IsBottomSheetCollapsed() {
-        return bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED;
+    public boolean IsBottomSheetHalfExpanded() {
+        return bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED;
     }
 
     @Override
@@ -935,13 +1041,13 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN && CurrentStop != -1) {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        if ((bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) && CurrentStop != -1) {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
             return;
         }
 
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED && IsBackButtonCollapse) {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED && IsBackButtonHalfExpanded) {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
             return;
         }
 
@@ -996,7 +1102,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-        IsBackButtonCollapse = PrevState.isBackButtonCollapse();
+        IsBackButtonHalfExpanded = PrevState.isBackButtonCollapse();
 
         MarkerRenderer();
     }
@@ -1021,7 +1127,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void AddBackStack() {
-        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonCollapse, SelectedPlace));
+        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace));
     }
 
     public void ShowSchedule(int StopId, String LineNum, String Direction, String Date, boolean PreSelected) {
@@ -1089,7 +1195,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Svf.OnSearchTextChanged(charSequence.toString());
+                if (Svf != null) {
+                    Svf.OnSearchTextChanged(charSequence.toString());
+                }
             }
 
             @Override
@@ -1131,7 +1239,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void ShowBottomSheetNearStops() {
-        BottomSheetSetNormalParams();
+        BottomSheetSetNormalParams(65);
 
         BottomSheetNearStops NearStopFragment = BottomSheetNearStops.newInstance(SelectedPlace.latitude, SelectedPlace.longitude, busStops, busPlaces);
         getSupportFragmentManager().beginTransaction()
@@ -1173,5 +1281,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void SetUserTouchedMap(boolean value){
         UserTouchedMap = value;
+    }
+
+    public boolean isUserTouchedMap() {
+        return UserTouchedMap;
     }
 }

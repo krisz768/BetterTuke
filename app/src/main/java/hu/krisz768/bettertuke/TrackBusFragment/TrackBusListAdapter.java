@@ -149,7 +149,7 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
                     if (BusPosition.getDelayMin() == 0) {
                         Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#02de32")));
                     } else {
-                        Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#a39b00")));
+                        Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#ff7f1b")));
                     }
                 }
             } else {

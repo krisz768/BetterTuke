@@ -19,7 +19,7 @@
     <TextView
         android:id="@+id/LegendCode"
         android:layout_width="34dp"
-        android:layout_height="wrap_content"
+        android:layout_height="18dp"
         android:layout_marginStart="10dp"
         app:autoSizeTextType="uniform"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -29,14 +29,16 @@
     <TextView
         android:id="@+id/LegendDesc"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="18dp"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
+        app:autoSizeMinTextSize="1sp"
         app:autoSizeTextType="uniform"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/LegendCode"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_wrapBehaviorInParent="skipped" />
 
     <View
         android:id="@+id/divider123"

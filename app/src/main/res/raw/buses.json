@@ -2157,7 +2157,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 1
 		},
 		{
@@ -2168,7 +2168,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 1
 		},
 		{
@@ -2179,7 +2179,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 1
 		},
 		{
@@ -2190,7 +2190,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 1
 		},
 		{
@@ -2201,7 +2201,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 1
 		},
 		{
@@ -2212,7 +2212,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 1
 		},
 		{
@@ -2223,7 +2223,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 1
 		},
 		{
@@ -2234,7 +2234,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 1
 		},
 		{
@@ -2245,7 +2245,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 1
 		},
 		{
@@ -2256,8 +2256,96 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 1
+		},
+		{
+			"platenumber": "AAHB314",
+			"type": "Mercedes-Benz eCitaro",
+			"propulsion": 1,
+			"articulated": 0,
+			"lowfloor": 1,
+			"doors": 3,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
+		},
+		{
+			"platenumber": "AAHB315",
+			"type": "Mercedes-Benz eCitaro",
+			"propulsion": 1,
+			"articulated": 0,
+			"lowfloor": 1,
+			"doors": 3,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
+		},
+		{
+			"platenumber": "AAHB316",
+			"type": "Mercedes-Benz eCitaro",
+			"propulsion": 1,
+			"articulated": 0,
+			"lowfloor": 1,
+			"doors": 3,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
+		},
+		{
+			"platenumber": "AAHB317",
+			"type": "Mercedes-Benz eCitaro",
+			"propulsion": 1,
+			"articulated": 0,
+			"lowfloor": 1,
+			"doors": 3,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
+		},
+		{
+			"platenumber": "AAHB318",
+			"type": "Mercedes-Benz eCitaro",
+			"propulsion": 1,
+			"articulated": 0,
+			"lowfloor": 1,
+			"doors": 3,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
+		},
+		{
+			"platenumber": "AAHB319",
+			"type": "Mercedes-Benz eCitaro",
+			"propulsion": 1,
+			"articulated": 0,
+			"lowfloor": 1,
+			"doors": 3,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
+		},
+		{
+			"platenumber": "AAHB320",
+			"type": "Mercedes-Benz eCitaro",
+			"propulsion": 1,
+			"articulated": 0,
+			"lowfloor": 1,
+			"doors": 3,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
+		},
+		{
+			"platenumber": "AAHB321",
+			"type": "Mercedes-Benz eCitaro",
+			"propulsion": 1,
+			"articulated": 0,
+			"lowfloor": 1,
+			"doors": 3,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
 		}
 	]
 }

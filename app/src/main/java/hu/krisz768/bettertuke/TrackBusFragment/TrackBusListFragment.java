@@ -150,16 +150,21 @@ public class TrackBusListFragment extends Fragment {
                     ((MainActivity) getActivity()).ZoomTo(new LatLng(busStops.getGpsLatitude(), busStops.getGpsLongitude()));
                 }
 
-                for (int i = 0; i < mLine.getStops().length; i++) {
-                    if (mLine.getStops()[i].getOrder() == mBusPosition.getStopNumber()) {
-                        if (mLine.getStops()[i].getStopId() == Id){
-                            if(getActivity() != null){
-                                ((MainActivity) getActivity()).SetUserTouchedMap(false);
+                if (mBusPosition != null) {
+                    for (int i = 0; i < mLine.getStops().length; i++) {
+                        if (mLine.getStops()[i].getOrder() == mBusPosition.getStopNumber()) {
+                            if (mLine.getStops()[i].getStopId() == Id){
+                                if(getActivity() != null){
+                                    ((MainActivity) getActivity()).SetUserTouchedMap(false);
+                                }
                             }
+                            break;
                         }
-                        break;
                     }
+                } else {
+                    ((MainActivity) getActivity()).SetUserTouchedMap(false);
                 }
+
                 break;
             }
         }

@@ -4,7 +4,6 @@
         <item name="windowSplashScreenAnimationDuration">1000</item>
 
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/startup_animation</item>
-        <item name="android:windowSplashScreenBrandingImage">@drawable/brand</item>
         <item name="postSplashScreenTheme">@style/DefaultPre12</item>
     </style>
 </resources>
