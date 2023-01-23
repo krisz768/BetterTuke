@@ -334,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
             SelectPlace(Md.getId());
         } else if (Md.getType() == MarkerDescriptor.Types.Bus){
             ZoomTo(BusMarker.getPosition());
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
             UserTouchedMap = false;
         } else {
             ZoomTo(SelectedPlace);
@@ -728,7 +728,6 @@ public class MainActivity extends AppCompatActivity {
                         params.height = Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheet.getMeasuredHeight() - bottomSheetBehavior.getPeekHeight()) * slideOffset));
                     }
 
-
                     fragmentView.setLayoutParams(params);
                     ScheduleButton.setLayoutParams(params2);
                 }
@@ -814,10 +813,14 @@ public class MainActivity extends AppCompatActivity {
     private void ShowBottomSheetIncomingBuses() {
         BottomSheetSetNormalParams(65);
 
-        BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces, busStops);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragmentContainerView2, InBusFragment)
-                .commit();
+        try{
+            BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces, busStops);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainerView2, InBusFragment)
+                    .commit();
+        }catch (Exception ignored) {
+
+        }
     }
 
     public void TrackBus(int Id, String Date) {
