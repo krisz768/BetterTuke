@@ -59,6 +59,7 @@ import com.google.android.material.search.SearchView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -80,14 +81,14 @@ import hu.krisz768.bettertuke.models.ScheduleBackStack;
 import hu.krisz768.bettertuke.models.SearchResult;
 
 public class MainActivity extends AppCompatActivity {
-    FusedLocationProviderClient fusedLocationClient;
+    private FusedLocationProviderClient fusedLocationClient;
 
-    View BottomSheet;
-    BottomSheetBehavior<View> bottomSheetBehavior;
+    private View BottomSheet;
+    private BottomSheetBehavior<View> bottomSheetBehavior;
     private BottomSheetBehavior.BottomSheetCallback BottomSheetCallback;
 
     private SearchView searchView;
-    SearchViewFragment Svf;
+    private SearchViewFragment Svf;
 
     private Integer CurrentPlace = -1;
     private Integer CurrentStop = -1;
@@ -97,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
 
     private GoogleMap googleMap;
 
-    private BusStops[] busStops;
-    private BusPlaces[] busPlaces;
+    private HashMap<Integer, BusPlaces> busPlaces;
+    private HashMap<Integer, BusStops> busStops;
 
     private final List<BackStack> backStack = new ArrayList<>();
 
@@ -364,18 +365,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         CurrentStop = StopId;
-        for (BusStops busStop : busStops) {
-            if (busStop.getId() == CurrentStop) {
-                int PlaceId = busStop.getPlace();
-                for (BusPlaces busPlace : busPlaces) {
-                    if (busPlace.getId() == PlaceId) {
-                        CurrentPlace = PlaceId;
-                        break;
-                    }
-                }
-                break;
-            }
+
+        BusStops Stop = busStops.get(StopId);
+        if (Stop != null) {
+            CurrentPlace = Stop.getPlace();
         }
+
 
         ZoomToMarker();
         ShowBottomSheetIncomingBuses();
@@ -398,9 +393,9 @@ public class MainActivity extends AppCompatActivity {
 
         List<Integer> StopIds = new ArrayList<>();
 
-        for (BusStops busStop : busStops) {
-            if (busStop.getPlace() == CurrentPlace) {
-                StopIds.add(busStop.getId());
+        for (BusStops value : busStops.values()) {
+            if (value.getPlace() == CurrentPlace) {
+                StopIds.add(value.getId());
             }
         }
 
@@ -431,14 +426,14 @@ public class MainActivity extends AppCompatActivity {
         if (CurrentStop == -1)
             return;
 
-        for (BusStops busStop : busStops) {
-            if (busStop.getId() == CurrentStop) {
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude())).zoom(17.5F).build();
+        BusStops CurrentStopObject = busStops.get(CurrentStop);
 
-                if (IsMapInitialized) {
-                    googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                }
+        if (CurrentStopObject != null) {
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(CurrentStopObject.getGpsLatitude(), CurrentStopObject.getGpsLongitude())).zoom(17.5F).build();
+
+            if (IsMapInitialized) {
+                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }
         }
     }
@@ -477,9 +472,9 @@ public class MainActivity extends AppCompatActivity {
                 marker.setZIndex(Float.MAX_VALUE);
             }
 
-            for (BusPlaces busPlace : busPlaces) {
+            for (BusPlaces busPlace : busPlaces.values()) {
                 if (busPlace.getId() == CurrentPlace) {
-                    for (BusStops busStop : busStops) {
+                    for (BusStops busStop : busStops.values()) {
                         if (busStop.getPlace() == CurrentPlace) {
 
                             BitmapDescriptor icon;
@@ -502,21 +497,20 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             for (int i = 0; i < busLine.getStops().length; i++) {
-                for (BusStops busStop : busStops) {
-                    if (busLine.getStops()[i].getStopId() == busStop.getId()) {
-                        BitmapDescriptor icon;
-                        if (CurrentStop == busStop.getId()) {
-                            icon = StopSelected;
-                        } else {
-                            icon = StopNotSelected;
-                        }
-
-                        Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude())).icon(icon));
-                        assert marker != null;
-                        marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStop.getId()));
-                        break;
-                    }
+                BusStops busStop = busStops.get(busLine.getStops()[i].getStopId());
+                if (busStop == null) {
+                    continue;
                 }
+                BitmapDescriptor icon;
+                if (CurrentStop == busStop.getId()) {
+                    icon = StopSelected;
+                } else {
+                    icon = StopNotSelected;
+                }
+
+                Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude())).icon(icon));
+                assert marker != null;
+                marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Stop, busStop.getId()));
             }
 
             PolylineOptions lineOptions = new PolylineOptions();
@@ -590,7 +584,7 @@ public class MainActivity extends AppCompatActivity {
         int ClosestId = -1;
         BusStops ClosestStop = null;
 
-        for (BusStops busStop : busStops) {
+        for (BusStops busStop : busStops.values()) {
             Location stopLocation = new Location("");
             stopLocation.setLongitude(busStop.getGpsLongitude());
             stopLocation.setLatitude(busStop.getGpsLatitude());
@@ -610,28 +604,30 @@ public class MainActivity extends AppCompatActivity {
         }
 
         for (Favorite favoriteStop : favoriteStops) {
-            for (BusStops busStop : busStops) {
-                if (Integer.parseInt(favoriteStop.getData()) == busStop.getId()) {
-                    Location stopLocation = new Location("");
-                    stopLocation.setLongitude(busStop.getGpsLongitude());
-                    stopLocation.setLatitude(busStop.getGpsLatitude());
+            BusStops busStop = busStops.get(Integer.parseInt(favoriteStop.getData()));
 
-                    float Distance = location.distanceTo(stopLocation);
-                    if (Distance < 500 && Distance < Closest) {
-                        Closest = Distance;
-                        ClosestId = busStop.getId();
-                        ClosestStop = busStop;
-                    }
-                    break;
-                }
+            if (busStop == null) {
+                continue;
             }
+
+            Location stopLocation = new Location("");
+            stopLocation.setLongitude(busStop.getGpsLongitude());
+            stopLocation.setLatitude(busStop.getGpsLatitude());
+
+            float Distance = location.distanceTo(stopLocation);
+            if (Distance < 500 && Distance < Closest) {
+                Closest = Distance;
+                ClosestId = busStop.getId();
+                ClosestStop = busStop;
+            }
+            break;
         }
 
         if (ClosestId != -1) {
             SelectStop(ClosestId, false);
             ZoomClose(new LatLng(ClosestStop.getGpsLatitude(), ClosestStop.getGpsLongitude()), new LatLng(location.getLatitude(), location.getLongitude()));
         } else {
-            for (BusStops busStop : busStops) {
+            for (BusStops busStop : busStops.values()) {
                 Location stopLocation = new Location("");
                 stopLocation.setLongitude(busStop.getGpsLongitude());
                 stopLocation.setLatitude(busStop.getGpsLatitude());
@@ -900,10 +896,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (ZoomToFirst) {
-            for (BusStops busStop : busStops) {
-                if (busLine.getStops()[0].getStopId() == busStop.getId()) {
-                    ZoomTo(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude()));
-                }
+            BusStops busStop = busStops.get(busLine.getStops()[0].getStopId());
+            if (busStop != null) {
+                ZoomTo(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude()));
             }
         }
 
@@ -939,12 +934,13 @@ public class MainActivity extends AppCompatActivity {
         float Ratio = 0.33F;
 
         if (MinHeight > height) {
-            height = MinHeight;
             Ratio = ((float)MinHeight)/((float)displayMetrics.heightPixels);
         }
 
         bottomSheetBehavior.setFitToContents(false);
         bottomSheetBehavior.setHalfExpandedRatio(Ratio);
+
+        height = Math.round(BottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio());
 
         bottomSheetBehavior.setMaxHeight(-1);
         bottomSheetBehavior.setHideable(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
@@ -1009,21 +1005,18 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
+                    BusStops busStop;
+
                     if (ZoomToLast) {
-                        for (BusStops busStop : busStops) {
-                            if (busLine.getStops()[busLine.getStops().length - 1].getStopId() == busStop.getId()) {
-                                ZoomClose(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude()), new LatLng(BusPosition.latitude, BusPosition.longitude));
-                            }
-                        }
+                        busStop = busStops.get(busLine.getStops()[busLine.getStops().length - 1].getStopId());
+
                     } else {
-                        for (BusStops busStop : busStops) {
-                            if (busStop.getId() == CurrentStop) {
-                                ZoomClose(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude()), new LatLng(BusPosition.latitude, BusPosition.longitude));
-                            }
-                        }
+                        busStop  = busStops.get(CurrentStop);
                     }
 
-
+                    if (busStop != null) {
+                        ZoomClose(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude()), new LatLng(BusPosition.latitude, BusPosition.longitude));
+                    }
                 } else {
                     animateMarker(BusMarker, BusPosition, new LatLngInterpolator.Linear());
                     if (!UserTouchedMap && IsMapInitialized) {
@@ -1218,7 +1211,7 @@ public class MainActivity extends AppCompatActivity {
                     if (newState == SearchView.TransitionState.SHOWING) {
                         List<SearchResult> AllItemList = new ArrayList<>();
 
-                        for (BusPlaces busPlace : busPlaces) {
+                        for (BusPlaces busPlace : busPlaces.values()) {
                             AllItemList.add(new SearchResult(SearchResult.SearchType.Stop, busPlace.getName(), busPlace));
                         }
 

@@ -11,7 +11,6 @@ public class BackStack {
     private final ScheduleBackStack scheduleBackStack;
     private final boolean IsBackButtonCollapse;
     private final LatLng SelectedPlace;
-
     private final BusLine busLine;
 
     public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace) {

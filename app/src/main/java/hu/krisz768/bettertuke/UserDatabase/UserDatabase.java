@@ -21,7 +21,7 @@ import hu.krisz768.bettertuke.SplashActivity;
 public class UserDatabase {
     private static SQLiteDatabase Sld;
 
-    Context Ctx;
+    private final Context Ctx;
 
     public UserDatabase (Context Ctx) {
         this.Ctx = Ctx;

@@ -19,7 +19,7 @@ import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
-    Date StartTime;
+    private Date StartTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

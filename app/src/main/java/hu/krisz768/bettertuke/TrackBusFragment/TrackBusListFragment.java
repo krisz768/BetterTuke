@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.Calendar;
+import java.util.HashMap;
 
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
@@ -33,8 +34,8 @@ public class TrackBusListFragment extends Fragment {
 
     private int mStop;
 
-    private BusPlaces[] mPlaceList;
-    private BusStops[] mStopList;
+    private HashMap<Integer, BusPlaces> mPlaceList;
+    private HashMap<Integer, BusStops> mStopList;
     private BusLine mLine;
     private TrackBusRespModel mBusPosition;
 
@@ -46,7 +47,7 @@ public class TrackBusListFragment extends Fragment {
 
     }
 
-    public static TrackBusListFragment newInstance(BusLine LineInfo, int Stop, BusPlaces[] PlaceList, BusStops[] StopList, TrackBusRespModel BusPosition) {
+    public static TrackBusListFragment newInstance(BusLine LineInfo, int Stop, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList, TrackBusRespModel BusPosition) {
         TrackBusListFragment fragment = new TrackBusListFragment();
         Bundle args = new Bundle();
         args.putSerializable(LINES, LineInfo);
@@ -59,13 +60,14 @@ public class TrackBusListFragment extends Fragment {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mLine = (BusLine) getArguments().getSerializable(LINES);
             mStop = getArguments().getInt(STOP);
-            mPlaceList = (BusPlaces[]) getArguments().getSerializable(PLACELIST);
-            mStopList = (BusStops[]) getArguments().getSerializable(STOPLIST);
+            mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
+            mStopList = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPLIST);
             mBusPosition = (TrackBusRespModel) getArguments().getSerializable(POSITION);
         }
     }
@@ -143,29 +145,27 @@ public class TrackBusListFragment extends Fragment {
     }
 
     public void OnStopClick(int Id) {
-        for (BusStops busStops : mStopList) {
-            if (busStops.getId() == Id) {
-                if(getActivity() != null){
-                    ((MainActivity) getActivity()).SetUserTouchedMap(true);
-                    ((MainActivity) getActivity()).ZoomTo(new LatLng(busStops.getGpsLatitude(), busStops.getGpsLongitude()));
-                }
+        BusStops busStops = mStopList.get(Id);
 
-                if (mBusPosition != null) {
-                    for (int i = 0; i < mLine.getStops().length; i++) {
-                        if (mLine.getStops()[i].getOrder() == mBusPosition.getStopNumber()) {
-                            if (mLine.getStops()[i].getStopId() == Id){
-                                if(getActivity() != null){
-                                    ((MainActivity) getActivity()).SetUserTouchedMap(false);
-                                }
-                            }
-                            break;
+        if(getActivity() != null && busStops != null){
+            ((MainActivity) getActivity()).SetUserTouchedMap(true);
+            ((MainActivity) getActivity()).ZoomTo(new LatLng(busStops.getGpsLatitude(), busStops.getGpsLongitude()));
+        }
+
+        if (mBusPosition != null) {
+            for (int i = 0; i < mLine.getStops().length; i++) {
+                if (mLine.getStops()[i].getOrder() == mBusPosition.getStopNumber()) {
+                    if (mLine.getStops()[i].getStopId() == Id){
+                        if(getActivity() != null){
+                            ((MainActivity) getActivity()).SetUserTouchedMap(false);
                         }
                     }
-                } else {
-                    ((MainActivity) getActivity()).SetUserTouchedMap(false);
+                    break;
                 }
-
-                break;
+            }
+        } else {
+            if(getActivity() != null){
+                ((MainActivity) getActivity()).SetUserTouchedMap(false);
             }
         }
     }

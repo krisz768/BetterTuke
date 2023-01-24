@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,8 +40,8 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
     private int mStop;
 
-    private BusPlaces[] mPlaceList;
-    private BusStops[] mStopList;
+    private HashMap<Integer, BusPlaces> mPlaceList;
+    private HashMap<Integer, BusStops> mStopList;
     private BusLine mBusLine;
 
     private TrackBusListFragment TrackBusFragment;
@@ -64,7 +65,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
     }
 
-    public static BottomSheetTrackBusFragment newInstance(int Stop, BusPlaces[] PlaceList, BusStops[] StopList, BusLine LineObj) {
+    public static BottomSheetTrackBusFragment newInstance(int Stop, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList, BusLine LineObj) {
         BottomSheetTrackBusFragment fragment = new BottomSheetTrackBusFragment();
         Bundle args = new Bundle();
         args.putInt(STOP, Stop);
@@ -76,12 +77,13 @@ public class BottomSheetTrackBusFragment extends Fragment {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mStop = getArguments().getInt(STOP);
-            mPlaceList = (BusPlaces[]) getArguments().getSerializable(PLACELIST);
-            mStopList = (BusStops[]) getArguments().getSerializable(STOPLIST);
+            mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
+            mStopList = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPLIST);
             mBusLine = (BusLine) getArguments().getSerializable(LINEOBJ);
         }
     }

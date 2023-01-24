@@ -3,6 +3,7 @@ package hu.krisz768.bettertuke.Database;
 import android.content.Context;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 public class BusPlaces implements Serializable {
     private final int Id;
@@ -33,7 +34,7 @@ public class BusPlaces implements Serializable {
         return GpsLatitude;
     }
 
-    public static BusPlaces[] getAllBusPlaces(Context ctx) {
+    public static HashMap<Integer, BusPlaces> getAllBusPlaces(Context ctx) {
         DatabaseManager Dm = new DatabaseManager(ctx);
 
         return Dm.GetAllBusPlaces();

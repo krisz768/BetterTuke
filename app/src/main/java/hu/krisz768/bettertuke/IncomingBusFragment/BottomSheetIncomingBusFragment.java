@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
@@ -49,18 +50,18 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
     private int mPlace;
     private volatile int mStop;
-    private BusPlaces[] mPlaceList;
-    private BusStops[] mStopList;
+    private HashMap<Integer, BusPlaces> mPlaceList;
+    private HashMap<Integer, BusStops> mStopList;
 
     private IncomingBusStopSelectorAdapter Ibssa;
     private IncomingBusListFragment InBusFragment;
 
-    ScheduledExecutorService UpdateLoop;
+    private ScheduledExecutorService UpdateLoop;
 
     public BottomSheetIncomingBusFragment() {
 
     }
-    public static BottomSheetIncomingBusFragment newInstance(int Place, int Stop, BusPlaces[] PlaceList, BusStops[] StopList) {
+    public static BottomSheetIncomingBusFragment newInstance(int Place, int Stop, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList) {
         BottomSheetIncomingBusFragment fragment = new BottomSheetIncomingBusFragment();
         Bundle args = new Bundle();
         args.putInt(PLACE, Place);
@@ -72,13 +73,14 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mPlace = getArguments().getInt(PLACE);
             mStop = getArguments().getInt(STOP);
-            mPlaceList = (BusPlaces[]) getArguments().getSerializable(PLACELIST);
-            mStopList = (BusStops[]) getArguments().getSerializable(STOPLIST);
+            mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
+            mStopList = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPLIST);
         }
     }
 
@@ -97,14 +99,14 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
         List<BusStops> SelectedPlaceStops = new ArrayList<>();
 
-        for (BusPlaces busPlaces : mPlaceList) {
-            if (busPlaces.getId() == mPlace) {
-                BusStopName.setText(busPlaces.getName());
+        BusPlaces busPlace = mPlaceList.get(mPlace);
 
-                for (BusStops busStops : mStopList) {
-                    if (busStops.getPlace() == busPlaces.getId()) {
-                        SelectedPlaceStops.add(busStops);
-                    }
+        if (busPlace != null) {
+            BusStopName.setText(busPlace.getName());
+
+            for (BusStops busStops : mStopList.values()) {
+                if (busStops.getPlace() == busPlace.getId()) {
+                    SelectedPlaceStops.add(busStops);
                 }
             }
         }

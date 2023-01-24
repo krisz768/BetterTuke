@@ -3,6 +3,7 @@ package hu.krisz768.bettertuke.Database;
 import android.content.Context;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 public class BusStops implements Serializable {
     private final int Id;
@@ -46,7 +47,7 @@ public class BusStops implements Serializable {
         return StopNum;
     }
 
-    public static BusStops[] GetAllStops(Context ctx) {
+    public static HashMap<Integer, BusStops> GetAllStops(Context ctx) {
         DatabaseManager Dm = new DatabaseManager(ctx);
 
         return Dm.GetAllBusStops();

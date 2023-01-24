@@ -26,7 +26,7 @@ public class ScheduleActivity extends AppCompatActivity {
 
     private boolean PreSelected = false;
 
-    Parcelable ScrollState;
+    private Parcelable ScrollState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

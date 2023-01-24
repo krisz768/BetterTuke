@@ -10,13 +10,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class DatabaseManager {
-
     private static SQLiteDatabase Sld;
 
     public  DatabaseManager (Context Ctx) {
@@ -98,50 +98,46 @@ public class DatabaseManager {
         }
     }
 
-    public BusStops[] GetAllBusStops () {
+    public HashMap<Integer, BusStops> GetAllBusStops () {
         try
         {
             Cursor cursor = Sld.rawQuery("SELECT * FROM kocsiallasok WHERE 1", null);
-            List<BusStops> AllStops = new ArrayList<>();
+            HashMap<Integer, BusStops> AllStops = new HashMap<>();
             while(cursor.moveToNext()) {
                 int id = cursor.getInt(0);
                 if (id != 24901) {
-                    AllStops.add(new BusStops(id, cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3), cursor.getString(5)));
+                    AllStops.put(id,new BusStops(id, cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3), cursor.getString(5)));
                 }
 
             }
             cursor.close();
 
-            BusStops[] ret  = new BusStops[AllStops.size()];
-            AllStops.toArray(ret);
-            return ret;
+            return AllStops;
 
         } catch (Exception e) {
             log(e.toString());
-            return new BusStops[0];
+            return new HashMap<>(0);
         }
     }
 
-    public BusPlaces[] GetAllBusPlaces () {
+    public HashMap<Integer, BusPlaces> GetAllBusPlaces () {
         try
         {
             Cursor cursor = Sld.rawQuery("SELECT * FROM foldhelyek WHERE 1", null);
-            List<BusPlaces> AllPlaces = new ArrayList<>();
+            HashMap<Integer, BusPlaces> AllPlaces = new HashMap<>();
             while(cursor.moveToNext()) {
                 String PlaceName = cursor.getString(1);
                 if (!PlaceName.contains("KEDPLASMA plazma központ")) {
-                    AllPlaces.add(new BusPlaces(cursor.getInt(0), cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3)));
+                    AllPlaces.put(cursor.getInt(0), new BusPlaces(cursor.getInt(0), cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3)));
                 }
             }
             cursor.close();
 
-            BusPlaces[] ret  = new BusPlaces[AllPlaces.size()];
-            AllPlaces.toArray(ret);
-            return ret;
+            return AllPlaces;
 
         } catch (Exception e) {
             log(e.toString());
-            return new BusPlaces[0];
+            return new HashMap<>(0);
 
         }
     }

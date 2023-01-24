@@ -18,6 +18,7 @@ import com.google.android.material.color.MaterialColors;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
 
 import hu.krisz768.bettertuke.Database.BusPlaces;
@@ -29,8 +30,8 @@ import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
 public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapter.ViewHolder>{
     private final LineInfoTravelTime[] BusStopList;
-    private final BusPlaces[] BusPlaceList;
-    private final BusStops[] AllBusStopList;
+    private final HashMap<Integer, BusPlaces> BusPlaceList;
+    private final HashMap<Integer, BusStops> AllBusStopList;
     private final Context ctx;
     private final Calendar StartTime;
     private TrackBusRespModel BusPosition;
@@ -56,25 +57,24 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
             this.view = view;
         }
 
-        public void setData(LineInfoTravelTime Data, int Pos, int max, int PrevStopId, Context ctx, Calendar StartTime, BusPlaces[] BusPlaceList, BusStops[] AllBusStopList, TrackBusRespModel BusPosition, TrackBusListFragment Callback, int CurrentStop, String Date) {
+        public void setData(LineInfoTravelTime Data, int Pos, int max, int PrevStopId, Context ctx, Calendar StartTime, HashMap<Integer, BusPlaces> BusPlaceList, HashMap<Integer, BusStops> AllBusStopList, TrackBusRespModel BusPosition, TrackBusListFragment Callback, int CurrentStop, String Date) {
             int StopId = Data.getStopId();
 
-            BusPlaces BusPlace = null;
+            BusPlaces BusPlace;
 
             view.setOnClickListener(view -> Callback.OnStopClick(Data.getStopId()));
 
-            for (BusStops busStops : AllBusStopList) {
-                if (StopId == busStops.getId()) {
-                    int PlaceId = busStops.getPlace();
-                    for (BusPlaces busPlaces : BusPlaceList) {
-                        if (PlaceId == busPlaces.getId()) {
-                            BusPlace = busPlaces;
-                            break;
-                        }
-                    }
-                    break;
-                }
+            BusStops busStops = AllBusStopList.get(StopId);
+
+            int PlaceId;
+            if (busStops != null) {
+                PlaceId = busStops.getPlace();
+            } else {
+                PlaceId = -1;
             }
+
+
+            BusPlace = BusPlaceList.get(PlaceId);
 
             if (BusPlace != null) {
                 Name.setText(ctx.getString(R.string.TrackBusStopNameWithListNum, (Pos+1), BusPlace.getName()));
@@ -183,7 +183,7 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
         this.BusPosition = TrackData;
     }
 
-    public TrackBusListAdapter(LineInfoTravelTime[] BusStopList, BusPlaces[] BusPlaceList, BusStops[] AllBusStopList, Calendar StartTime, TrackBusRespModel BusPosition, int CurrentStop, TrackBusListFragment Callback, Context ctx, String Date) {
+    public TrackBusListAdapter(LineInfoTravelTime[] BusStopList, HashMap<Integer, BusPlaces> BusPlaceList, HashMap<Integer, BusStops> AllBusStopList, Calendar StartTime, TrackBusRespModel BusPosition, int CurrentStop, TrackBusListFragment Callback, Context ctx, String Date) {
         this.BusStopList = BusStopList;
         this.BusPlaceList = BusPlaceList;
         this.AllBusStopList = AllBusStopList;

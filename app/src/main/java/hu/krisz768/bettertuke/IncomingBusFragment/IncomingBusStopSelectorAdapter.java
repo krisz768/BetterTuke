@@ -18,11 +18,11 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Incomin
     private final BusStops[] BusStopList;
     private final Context ctx;
     private int SelectedStop;
-    BottomSheetIncomingBusFragment callback;
+    private final BottomSheetIncomingBusFragment callback;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        Button button;
+        private final Button button;
 
         public ViewHolder(View view) {
             super(view);

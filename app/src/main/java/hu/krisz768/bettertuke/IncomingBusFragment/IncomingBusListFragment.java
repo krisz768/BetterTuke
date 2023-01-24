@@ -16,11 +16,8 @@ import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class IncomingBusListFragment extends Fragment {
-
     private static final String ARG_PARAM1 = "List";
-
     private IncomingBusRespModel[] mList;
-
     private IncomingBusListAdapter Ibla;
 
 

@@ -3,10 +3,10 @@ package hu.krisz768.bettertuke.Database;
 import java.util.Calendar;
 
 public class BusScheduleTime {
-    int Hour;
-    int Minute;
-    String LineCode;
-    int LineId;
+    private int Hour;
+    private int Minute;
+    private final String LineCode;
+    private final int LineId;
 
     public BusScheduleTime(int hour, int minute, String lineCode, int lineId) {
         Hour = hour;

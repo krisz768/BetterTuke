@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +14,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import hu.krisz768.bettertuke.Database.BusPlaces;
@@ -24,7 +24,6 @@ import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 
 public class BottomSheetNearStops extends Fragment {
-
     private static final String LATITUDE = "Latitude";
     private static final String LONGITUDE = "Longitude";
     private static final String STOPS = "Stops";
@@ -32,14 +31,14 @@ public class BottomSheetNearStops extends Fragment {
 
     private double mLatitude;
     private double mLongitude;
-    private BusStops[] mStops;
-    private BusPlaces[] mPlaces;
+    private HashMap<Integer, BusStops> mStops;
+    private HashMap<Integer, BusPlaces> mPlaces;
 
     public BottomSheetNearStops() {
 
     }
 
-    public static BottomSheetNearStops newInstance(double Latitude, double Longitude, BusStops[] Stops, BusPlaces[] Places) {
+    public static BottomSheetNearStops newInstance(double Latitude, double Longitude, HashMap<Integer, BusStops> Stops, HashMap<Integer, BusPlaces> Places) {
         BottomSheetNearStops fragment = new BottomSheetNearStops();
         Bundle args = new Bundle();
 
@@ -52,11 +51,12 @@ public class BottomSheetNearStops extends Fragment {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mStops = (BusStops[]) getArguments().getSerializable(STOPS);
-            mPlaces = (BusPlaces[]) getArguments().getSerializable(PLACES);
+            mStops = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPS);
+            mPlaces = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACES);
             mLatitude = getArguments().getDouble(LATITUDE);
             mLongitude = getArguments().getDouble(LONGITUDE);
         }
@@ -99,7 +99,7 @@ public class BottomSheetNearStops extends Fragment {
 
             List<BusPlaces> NearBusPlacesList = new ArrayList<>();
 
-            for (BusPlaces mPlace : mPlaces) {
+            for (BusPlaces mPlace : mPlaces.values()) {
                 Location StopLocation = new Location("");
                 StopLocation.setLatitude(mPlace.getGpsLatitude());
                 StopLocation.setLongitude(mPlace.getGpsLongitude());
@@ -115,7 +115,7 @@ public class BottomSheetNearStops extends Fragment {
                 UserDatabase userDatabase = new UserDatabase(getContext());
 
                 for (int i = 0; i < NearBusPlacesList.size(); i++) {
-                    for (BusStops mStop : mStops) {
+                    for (BusStops mStop : mStops.values()) {
                         if (NearBusPlacesList.get(i).getId() == mStop.getPlace()) {
                             if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop.getId()))) {
                                 FavNearBusPlacesList.add(NearBusPlacesList.get(i));
