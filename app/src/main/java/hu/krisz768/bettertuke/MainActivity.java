@@ -83,7 +83,6 @@ import hu.krisz768.bettertuke.models.SearchResult;
 public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
 
-    private View BottomSheet;
     private BottomSheetBehavior<View> bottomSheetBehavior;
     private BottomSheetBehavior.BottomSheetCallback BottomSheetCallback;
 
@@ -148,8 +147,8 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        BottomSheet = findViewById(R.id.standard_bottom_sheet);
-        bottomSheetBehavior = BottomSheetBehavior.from(BottomSheet);
+        View bottomSheet = findViewById(R.id.standard_bottom_sheet);
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
 
         SetupBottomSheet();
 
