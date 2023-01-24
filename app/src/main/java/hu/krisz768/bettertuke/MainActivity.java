@@ -602,8 +602,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Closest = Float.MAX_VALUE;
-
         for (Favorite favoriteStop : favoriteStops) {
             BusStops busStop = busStops.get(Integer.parseInt(favoriteStop.getData()));
 
