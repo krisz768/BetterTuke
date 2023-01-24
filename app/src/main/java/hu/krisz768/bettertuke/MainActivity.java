@@ -796,6 +796,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (MinHeight > height) {
                 Ratio = ((float)MinHeight)/((float)displayMetrics.heightPixels);
+                height = MinHeight;
             }
 
             bottomSheetBehavior.setFitToContents(false);
@@ -934,13 +935,12 @@ public class MainActivity extends AppCompatActivity {
         float Ratio = 0.33F;
 
         if (MinHeight > height) {
+            height = MinHeight;
             Ratio = ((float)MinHeight)/((float)displayMetrics.heightPixels);
         }
 
         bottomSheetBehavior.setFitToContents(false);
         bottomSheetBehavior.setHalfExpandedRatio(Ratio);
-
-        height = Math.round(BottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio());
 
         bottomSheetBehavior.setMaxHeight(-1);
         bottomSheetBehavior.setHideable(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
