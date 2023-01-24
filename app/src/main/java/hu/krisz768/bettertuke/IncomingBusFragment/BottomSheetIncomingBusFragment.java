@@ -300,11 +300,14 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
             if (BusList.length > 0) {
                 if (InBusFragment == null) {
-
-                    InBusFragment = IncomingBusListFragment.newInstance(BusList);
-                    getChildFragmentManager().beginTransaction()
-                            .replace(R.id.BusListFragment, InBusFragment)
-                            .commit();
+                    try {
+                        InBusFragment = IncomingBusListFragment.newInstance(BusList);
+                        getChildFragmentManager().beginTransaction()
+                                .replace(R.id.BusListFragment, InBusFragment)
+                                .commit();
+                    } catch (Exception e) {
+                        InBusFragment = null;
+                    }
                 } else {
                     if (getActivity() != null) {
                         IncomingBusRespModel[] finalBusList = BusList;

@@ -114,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
     private Integer ShortcutType;
     private String ShortcutData;
 
+    private boolean IsMapInitialized = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -226,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
         assert mapFragment != null;
         mapFragment.getMapAsync(googleMap_ -> {
             googleMap = googleMap_;
+            IsMapInitialized = true;
 
             googleMap.getUiSettings().setZoomControlsEnabled(false);
             googleMap.getUiSettings().setMyLocationButtonEnabled(false);
@@ -299,7 +301,10 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < permissions.length; i++) {
             if (permissions[i].equals("android.permission.ACCESS_FINE_LOCATION")) {
                 if (grantResults[i] != -1) {
-                    googleMap.setMyLocationEnabled(true);
+                    if (IsMapInitialized) {
+                        googleMap.setMyLocationEnabled(true);
+                    }
+
                     findViewById(R.id.PosButton).setVisibility(View.VISIBLE);
                     GetClosestStop();
                 } else {
@@ -316,7 +321,10 @@ public class MainActivity extends AppCompatActivity {
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(Pecs).zoom(12).build();
 
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        if(IsMapInitialized) {
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        }
+
 
         bottomSheetBehavior.setHideable(true);
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
@@ -428,13 +436,19 @@ public class MainActivity extends AppCompatActivity {
                 CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(new LatLng(busStop.getGpsLatitude(), busStop.getGpsLongitude())).zoom(17.5F).build();
 
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                if (IsMapInitialized) {
+                    googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                }
             }
         }
     }
 
     private void MarkerRenderer() {
+        if (!IsMapInitialized)
+            return;
+
         googleMap.clear();
+
         if (busLine == null) {
             BusMarker = null;
         }
@@ -539,7 +553,10 @@ public class MainActivity extends AppCompatActivity {
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(Pecs).zoom(12).build();
 
-            googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            if (IsMapInitialized) {
+                googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            }
+
 
             fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, new CancellationToken() {
                 @NonNull
@@ -650,7 +667,9 @@ public class MainActivity extends AppCompatActivity {
                     displayMetrics
             ));
 
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(Bounds, dp20 * 4));
+            if (IsMapInitialized) {
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(Bounds, dp20 * 4));
+            }
         } catch (Exception e) {
             if (BusMarker != null) {
                 ZoomTo(location2);
@@ -688,20 +707,28 @@ public class MainActivity extends AppCompatActivity {
                         params.height = Math.round(bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio());
 
                         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                            googleMap.setPadding(0, dp20 * 4, 0, 0);
+                            if(IsMapInitialized) {
+                                googleMap.setPadding(0, dp20 * 4, 0, 0);
+                            }
                             params2.bottomMargin = dp20;
                         } else {
-                            googleMap.setPadding(0, dp20 * 4, 0, params.height);
+                            if(IsMapInitialized) {
+                                googleMap.setPadding(0, dp20 * 4, 0, params.height);
+                            }
                             params2.bottomMargin = params.height + dp20;
                         }
                     } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                         params.height = bottomSheet.getHeight();
                     } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                            googleMap.setPadding(0, dp20 * 4, 0, 0);
+                            if(IsMapInitialized) {
+                                googleMap.setPadding(0, dp20 * 4, 0, 0);
+                            }
                             params2.bottomMargin = dp20;
                         } else {
-                            googleMap.setPadding(0, dp20 * 4, 0, bottomSheetBehavior.getPeekHeight());
+                            if(IsMapInitialized) {
+                                googleMap.setPadding(0, dp20 * 4, 0, bottomSheetBehavior.getPeekHeight());
+                            }
                             params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20;
                         }
                     }
@@ -717,11 +744,15 @@ public class MainActivity extends AppCompatActivity {
 
                     if (((bottomSheet.getMeasuredHeight()-bottomSheetBehavior.getPeekHeight())*slideOffset)+bottomSheetBehavior.getPeekHeight() < bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio()) {
                         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                            googleMap.setPadding(0, dp20 * 4, 0, 0);
+                            if(IsMapInitialized) {
+                                googleMap.setPadding(0, dp20 * 4, 0, 0);
+                            }
                             params2.bottomMargin = dp20;
                         } else {
                             int CalculatedHeight = Math.round(((bottomSheet.getMeasuredHeight()-bottomSheetBehavior.getPeekHeight())*slideOffset)+bottomSheetBehavior.getPeekHeight());
-                            googleMap.setPadding(0, dp20 * 4, 0, CalculatedHeight);
+                            if(IsMapInitialized) {
+                                googleMap.setPadding(0, dp20 * 4, 0, CalculatedHeight);
+                            }
                             params2.bottomMargin = CalculatedHeight + dp20;
                         }
                     } else {
@@ -778,30 +809,42 @@ public class MainActivity extends AppCompatActivity {
 
             if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    googleMap.setPadding(0, dp20 * 4, 0, 0);
+                    if(IsMapInitialized) {
+                        googleMap.setPadding(0, dp20 * 4, 0, 0);
+                    }
                     params2.bottomMargin = dp20;
                 } else {
-                    googleMap.setPadding(0, dp20 * 4, 0, height);
+                    if(IsMapInitialized) {
+                        googleMap.setPadding(0, dp20 * 4, 0, height);
+                    }
                     params2.bottomMargin = height + dp20;
                 }
 
                 ScheduleButton.setLayoutParams(params2);
             } else if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED){
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    googleMap.setPadding(0, dp20 * 4, 0, 0);
+                    if(IsMapInitialized) {
+                        googleMap.setPadding(0, dp20 * 4, 0, 0);
+                    }
                     params2.bottomMargin = dp20;
                 } else {
-                    googleMap.setPadding(0, dp20 * 4, 0, height);
+                    if(IsMapInitialized) {
+                        googleMap.setPadding(0, dp20 * 4, 0, height);
+                    }
                     params2.bottomMargin = height + dp20;
                 }
 
                 ScheduleButton.setLayoutParams(params2);
             } else if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED){
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    googleMap.setPadding(0, dp20 * 4, 0, 0);
+                    if(IsMapInitialized) {
+                        googleMap.setPadding(0, dp20 * 4, 0, 0);
+                    }
                     params2.bottomMargin = dp20;
                 } else {
-                    googleMap.setPadding(0, dp20 * 4, 0, bottomSheetBehavior.getPeekHeight());
+                    if(IsMapInitialized) {
+                        googleMap.setPadding(0, dp20 * 4, 0, bottomSheetBehavior.getPeekHeight());
+                    }
                     params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20;
                 }
 
@@ -925,10 +968,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            googleMap.setPadding(0, dp20 * 4, 0, 0);
+            if(IsMapInitialized) {
+                googleMap.setPadding(0, dp20 * 4, 0, 0);
+            }
             params2.bottomMargin = dp20;
         } else {
-            googleMap.setPadding(0, dp20 * 4, 0, height);
+            if(IsMapInitialized) {
+                googleMap.setPadding(0, dp20 * 4, 0, height);
+            }
             params2.bottomMargin = height + dp20;
         }
         Fc.setLayoutParams(params);
@@ -946,7 +993,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void BusPositionMarker(LatLng BusPosition) {
         if (busLine != null) {
-            if (BusPosition != null) {
+            if (BusPosition != null && IsMapInitialized) {
                 BitmapDescriptor BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapBus));
                 if (BusMarker == null) {
                     UserTouchedMap = false;
@@ -979,7 +1026,7 @@ public class MainActivity extends AppCompatActivity {
 
                 } else {
                     animateMarker(BusMarker, BusPosition, new LatLngInterpolator.Linear());
-                    if (!UserTouchedMap) {
+                    if (!UserTouchedMap && IsMapInitialized) {
                         LatLngBounds currentScreen = googleMap.getProjection().getVisibleRegion().latLngBounds;
 
                         if(!currentScreen.contains(BusPosition)) {
@@ -1023,11 +1070,16 @@ public class MainActivity extends AppCompatActivity {
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(Position).zoom(15).build();
 
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        if(IsMapInitialized) {
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        }
     }
 
     private void CreateBusMarker(MarkerOptions option) {
-        BusMarker = googleMap.addMarker(option);
+        if (IsMapInitialized) {
+            BusMarker = googleMap.addMarker(option);
+        }
+
         assert BusMarker != null;
         BusMarker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Bus, -1));
         BusMarker.setZIndex(Float.MAX_VALUE);

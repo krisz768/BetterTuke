@@ -153,14 +153,19 @@ public class ScheduleBusTimeFragment extends Fragment {
         boolean IsForwardWayDescTextSet = false;
         boolean IsBackWayDescTextSet = false;
         for (BusVariation variation : Variations) {
-            if (!IsForwardWayDescTextSet && SelectedWay.equals(variation.getDirection())) {
+            if (!IsForwardWayDescTextSet && variation.getDirection().equals("O")) {
                 IsForwardWayDescTextSet = true;
                 WayDescStringForward = variation.getName();
-                DescText.setText(variation.getName());
+                if (SelectedWay.equals("O")) {
+                    DescText.setText(variation.getName());
+                }
             }
-            if (!IsBackWayDescTextSet && !SelectedWay.equals(variation.getDirection())) {
+            if (!IsBackWayDescTextSet && !variation.getDirection().equals("O")) {
                 IsBackWayDescTextSet = true;
                 WayDescStringBackwards = variation.getName();
+                if (!SelectedWay.equals("O")) {
+                    DescText.setText(variation.getName());
+                }
             }
         }
 

@@ -157,8 +157,8 @@ public class BottomSheetTrackBusFragment extends Fragment {
             TextView BusNum = getView().findViewById(R.id.TrackBusNumber);
 
             if (BusPosition != null) {
-                if (getContext() != null) {
-                    BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_active));
+                if (getContext() != null && getActivity() != null) {
+                    getActivity().runOnUiThread(() -> BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_active)));
                 }
                 if (!BusAttributesVisible) {
                     if (getActivity() != null){
@@ -170,7 +170,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
             } else {
                 if (getContext() != null && getActivity() != null) {
                     BusAttributesVisible = false;
-                    BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_inactive));
+                    getActivity().runOnUiThread(() -> BusNum.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bus_number_background_inactive)));
 
                     getActivity().runOnUiThread(this::hideBusAttributes);
                 }
