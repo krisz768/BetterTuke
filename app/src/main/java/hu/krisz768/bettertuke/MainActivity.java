@@ -589,7 +589,7 @@ public class MainActivity extends AppCompatActivity {
             stopLocation.setLatitude(busStop.getGpsLatitude());
 
             float Distance = location.distanceTo(stopLocation);
-            if (Distance < 17.5F) {
+            if (Distance < 17.5F && Closest > Distance) {
                 Closest = Distance;
                 ClosestId = busStop.getId();
                 ClosestStop = busStop;
@@ -601,6 +601,8 @@ public class MainActivity extends AppCompatActivity {
             ZoomClose(new LatLng(ClosestStop.getGpsLatitude(), ClosestStop.getGpsLongitude()), new LatLng(location.getLatitude(), location.getLongitude()));
             return;
         }
+
+        Closest = Float.MAX_VALUE;
 
         for (Favorite favoriteStop : favoriteStops) {
             BusStops busStop = busStops.get(Integer.parseInt(favoriteStop.getData()));
@@ -619,7 +621,6 @@ public class MainActivity extends AppCompatActivity {
                 ClosestId = busStop.getId();
                 ClosestStop = busStop;
             }
-            break;
         }
 
         if (ClosestId != -1) {
