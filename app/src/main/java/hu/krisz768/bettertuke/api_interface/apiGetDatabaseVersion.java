@@ -15,6 +15,7 @@ public class apiGetDatabaseVersion extends TukeServerApiFunctions<String> implem
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
             urlConnection.setConnectTimeout(3000);
+            urlConnection.setReadTimeout(3000);
 
             try {
                 urlConnection.connect();
