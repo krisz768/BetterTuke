@@ -264,16 +264,14 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
             IncomingBusRespModel[] BusList = serverApi.getNextIncomingBuses(mStop);
 
+            MainActivity mainActivity = (MainActivity)getActivity();
+
             if (BusList == null) {
-                if(getActivity() != null && HelperProvider.displayOfflineText()) {
-                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
+                if(mainActivity != null && HelperProvider.displayOfflineText()) {
+                    mainActivity.runOnUiThread(() -> Toast.makeText(mainActivity,R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
                     HelperProvider.setOfflineTextDisplayed();
                 }
-
-                if (getContext() == null) {
-                    return;
-                }
-                DatabaseManager Dm = new DatabaseManager(getContext());
+                DatabaseManager Dm = new DatabaseManager(mainActivity);
 
                 BusList = Dm.GetOfflineDepartureTimes(SendStopId);
             }
@@ -283,7 +281,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             SimpleDateFormat Sdf2 = new SimpleDateFormat("m", Locale.US);
 
             for (IncomingBusRespModel incomingBusRespModel : BusList) {
-                BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), getContext());
+                BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), mainActivity);
                 if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
                     Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId());
                     if (IsBusStarted == null) {
@@ -311,9 +309,9 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                         InBusFragment = null;
                     }
                 } else {
-                    if (getActivity() != null) {
+                    if (mainActivity != null) {
                         IncomingBusRespModel[] finalBusList = BusList;
-                        getActivity().runOnUiThread(() -> {
+                        mainActivity.runOnUiThread(() -> {
                             if (InBusFragment != null) {
                                 InBusFragment.UpdateList(finalBusList);
                             }

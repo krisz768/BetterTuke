@@ -80,10 +80,12 @@ public class BottomSheetNearStops extends Fragment {
 
     private void GetStreetName(View view) {
         new Thread(() -> {
-            if (getActivity() != null) {
-                String Name = ((MainActivity)getActivity()).getAddressFromLatLng(new LatLng(mLatitude, mLongitude));
+            MainActivity mainActivity = (MainActivity)getActivity();
 
-                getActivity().runOnUiThread(() -> {
+            if (mainActivity != null) {
+                String Name = mainActivity.getAddressFromLatLng(new LatLng(mLatitude, mLongitude));
+
+                mainActivity.runOnUiThread(() -> {
                     TextView NearStopLocationText = view.findViewById(R.id.NearStopLocationText);
                     NearStopLocationText.setText(Name);
                 });

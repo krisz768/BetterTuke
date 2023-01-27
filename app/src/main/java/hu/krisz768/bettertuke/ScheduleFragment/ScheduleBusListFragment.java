@@ -1,5 +1,6 @@
 package hu.krisz768.bettertuke.ScheduleFragment;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -143,8 +144,9 @@ public class ScheduleBusListFragment extends Fragment {
 
     public void OnLineClick(String Line) {
         mLayoutManager.onSaveInstanceState();
-        if (getActivity() != null) {
-            getActivity().runOnUiThread(() -> ((ScheduleActivity)getActivity()).selectLine(Line, mLayoutManager.onSaveInstanceState()));
+        ScheduleActivity activity = (ScheduleActivity) getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(() -> (activity).selectLine(Line, mLayoutManager.onSaveInstanceState()));
         }
     }
 }

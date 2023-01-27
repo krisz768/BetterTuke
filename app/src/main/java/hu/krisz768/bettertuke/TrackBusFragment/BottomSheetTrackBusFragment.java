@@ -1,6 +1,7 @@
 package hu.krisz768.bettertuke.TrackBusFragment;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -159,31 +160,32 @@ public class BottomSheetTrackBusFragment extends Fragment {
             }
             TextView BusNum = getView().findViewById(R.id.TrackBusNumber);
 
+            Activity activity = getActivity();
+
             if (BusPosition != null) {
-                if (getContext() != null && getActivity() != null) {
-                    getActivity().runOnUiThread(() -> BusNum.setBackground(getContext().getDrawable(R.drawable.bus_number_background_active)));
+                if (activity != null) {
+                    activity.runOnUiThread(() -> BusNum.setBackground(activity.getDrawable(R.drawable.bus_number_background_active)));
                 }
                 if (!BusAttributesVisible) {
-                    if (getActivity() != null){
-                        getActivity().runOnUiThread(() -> showBusAttributes(HelperProvider.getBusAttributes(getContext(),BusPosition.getLicensePlateNumber())));
+                    if (activity != null){
+                        activity.runOnUiThread(() -> showBusAttributes(HelperProvider.getBusAttributes(activity,BusPosition.getLicensePlateNumber())));
 
                         BusAttributesVisible = true;
                     }
                 }
             } else {
-                if (getContext() != null && getActivity() != null) {
+                if (activity != null) {
                     BusAttributesVisible = false;
-                    getActivity().runOnUiThread(() -> BusNum.setBackground(getContext().getDrawable(R.drawable.bus_number_background_inactive)));
+                    activity.runOnUiThread(() -> BusNum.setBackground(activity.getDrawable(R.drawable.bus_number_background_inactive)));
 
-                    getActivity().runOnUiThread(this::hideBusAttributes);
+                    activity.runOnUiThread(this::hideBusAttributes);
                 }
             }
 
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> {
-                    MainActivity mainActivity = (MainActivity)getActivity();
-                    if (TrackBusFragment != null && mainActivity != null) {
-                        mainActivity.BusPositionMarker(BusPosition != null ? new LatLng(BusPosition.getGpsLatitude(), BusPosition.getGpsLongitude()) : null);
+            if (activity != null) {
+                activity.runOnUiThread(() -> {
+                    if (TrackBusFragment != null) {
+                        ((MainActivity)activity).BusPositionMarker(BusPosition != null ? new LatLng(BusPosition.getGpsLatitude(), BusPosition.getGpsLongitude()) : null);
                     }
                 });
             }
@@ -193,8 +195,8 @@ public class BottomSheetTrackBusFragment extends Fragment {
                 getChildFragmentManager().beginTransaction()
                         .replace(R.id.BusTrackFragmentView, TrackBusFragment)
                         .commit();
-            } else {
-                getActivity().runOnUiThread(() -> {
+            } else if (activity != null){
+                activity.runOnUiThread(() -> {
                     if (TrackBusFragment != null) {
                         TrackBusFragment.UpdateData(BusPosition);
                         MainActivity mainActivity = (MainActivity)getActivity();

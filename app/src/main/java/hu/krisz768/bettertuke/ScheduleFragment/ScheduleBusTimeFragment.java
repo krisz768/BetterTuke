@@ -1,6 +1,7 @@
 package hu.krisz768.bettertuke.ScheduleFragment;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -491,12 +492,14 @@ public class ScheduleBusTimeFragment extends Fragment {
                 }
             }
 
-            if (getActivity() == null) {
+            ScheduleActivity scheduleActivity = (ScheduleActivity) getActivity();
+
+            if (scheduleActivity == null) {
                 return;
             }
 
             DisplayMetrics displayMetrics = new DisplayMetrics();
-            getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            scheduleActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             int width = displayMetrics.widthPixels;
 
             int ndp = Math.round(TypedValue.applyDimension(
@@ -513,45 +516,35 @@ public class ScheduleBusTimeFragment extends Fragment {
 
             RecyclerView Recv = view.findViewById(R.id.ScheduleTimeHoursRecView);
 
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> {
-                    SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
+            scheduleActivity.runOnUiThread(() -> {
+                SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
 
-                    if (Sbta == null) {
-                        swipeRefreshLayout.setVisibility(View.VISIBLE);
+                if (Sbta == null) {
+                    swipeRefreshLayout.setVisibility(View.VISIBLE);
 
-                        FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
-                        fragmentContainerView.setVisibility(View.GONE);
+                    FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
+                    fragmentContainerView.setVisibility(View.GONE);
 
-                        Sbta = new ScheduleBusTimeHourAdapter(CurrentHours, CurrentMinutes,BusCodes, Variations, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorSec, colorSecContainer, colorOnSecContainer, colorOnPrimary, colorOnError, MinuteBackground, MinuteBackgroundFull, MinuteBackgroundStarted, MinuteBackgroundFullStarted, MinuteBackgroundErr, MinuteBackgroundFullErr, getContext(), Callback);
-                        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-                        Recv.setLayoutManager(mLayoutManager);
-                        Recv.setAdapter(Sbta);
+                    Sbta = new ScheduleBusTimeHourAdapter(CurrentHours, CurrentMinutes,BusCodes, Variations, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorSec, colorSecContainer, colorOnSecContainer, colorOnPrimary, colorOnError, MinuteBackground, MinuteBackgroundFull, MinuteBackgroundStarted, MinuteBackgroundFullStarted, MinuteBackgroundErr, MinuteBackgroundFullErr, getContext(), Callback);
+                    RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(scheduleActivity);
+                    Recv.setLayoutManager(mLayoutManager);
+                    Recv.setAdapter(Sbta);
 
-                        new Thread(() -> {
-                            if (getActivity() != null) {
-                                getActivity().runOnUiThread(() -> ScrollToCurrentHour(view));
-                            }
-                        }).start();
-                    } else {
-                        Sbta.UpdateData(CurrentHours, CurrentMinutes, BusCodes);
-                        Sbta.notifyDataSetChanged();
-                        new Thread(() -> {
-                            if (getActivity() != null) {
-                                getActivity().runOnUiThread(() -> ScrollToCurrentHour(view));
-                            }
-                        }).start();
-                    }
+                    new Thread(() -> scheduleActivity.runOnUiThread(() -> ScrollToCurrentHour(view))).start();
+                } else {
+                    Sbta.UpdateData(CurrentHours, CurrentMinutes, BusCodes);
+                    Sbta.notifyDataSetChanged();
+                    new Thread(() -> scheduleActivity.runOnUiThread(() -> ScrollToCurrentHour(view))).start();
+                }
 
-                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-                    Date date = new Date();
-                    if (SelectedDate.equals(formatter.format(date))) {
-                        GetLiveData(CurrentLines);
-                    }else {
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-                });
-            }
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                Date date = new Date();
+                if (SelectedDate.equals(formatter.format(date))) {
+                    GetLiveData(CurrentLines);
+                }else {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            });
         }).start();
     }
 
@@ -620,8 +613,9 @@ public class ScheduleBusTimeFragment extends Fragment {
                         Boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
                         if (IsStarted == null){
                             if(HelperProvider.displayOfflineText()){
-                                if(getActivity() != null) {
-                                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
+                                Activity activity = getActivity();
+                                if(activity != null) {
+                                    activity.runOnUiThread(() -> Toast.makeText(activity,R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
                                 }
                                 HelperProvider.setOfflineTextDisplayed();
                             }
@@ -652,8 +646,9 @@ public class ScheduleBusTimeFragment extends Fragment {
                         Boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
                         if (IsStarted == null){
                             if(HelperProvider.displayOfflineText()){
-                                if(getActivity() != null) {
-                                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(),R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
+                                Activity activity = getActivity();
+                                if(activity != null) {
+                                    activity.runOnUiThread(() -> Toast.makeText(activity,R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
                                 }
                                 HelperProvider.setOfflineTextDisplayed();
                             }
@@ -703,8 +698,10 @@ public class ScheduleBusTimeFragment extends Fragment {
                 }
             }
 
-            if(getActivity() != null && Sbta != null && getView() != null) {
-                getActivity().runOnUiThread(() -> {
+            Activity activity = getActivity();
+
+            if(activity != null && Sbta != null && getView() != null) {
+                activity.runOnUiThread(() -> {
                     Sbta.AttachLiveData(Started, ErrNotStarted);
 
                     for (BusScheduleTime busScheduleTime : Started) {
@@ -735,12 +732,13 @@ public class ScheduleBusTimeFragment extends Fragment {
     }
 
     public void OnScheduleClick(int Hour, int Minute) {
-        if (getActivity() == null) {
+        ScheduleActivity scheduleActivity = (ScheduleActivity)getActivity();
+        if (scheduleActivity == null) {
             return;
         }
         for (BusScheduleTime busScheduleTime : CurrentLines) {
             if (busScheduleTime.getHour() == Hour && busScheduleTime.getMinute() == Minute) {
-                ((ScheduleActivity) getActivity()).OnSelectedSchedule(busScheduleTime.getLineId(), SelectedDate, SelectedWay);
+                (scheduleActivity).OnSelectedSchedule(busScheduleTime.getLineId(), SelectedDate, SelectedWay);
                 return;
             }
         }
@@ -748,12 +746,13 @@ public class ScheduleBusTimeFragment extends Fragment {
 
     @SuppressLint("NotifyDataSetChanged")
     public void UpdateMaxPerLine() {
-        if(getActivity() == null) {
+        Activity activity = getActivity();
+        if(activity == null) {
             return;
         }
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
 
         int ndp = Math.round(TypedValue.applyDimension(
