@@ -3,7 +3,6 @@ package hu.krisz768.bettertuke;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
@@ -52,6 +51,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.OnTokenCanceledListener;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.search.SearchBar;
 import com.google.android.material.search.SearchView;
@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (Error) {
-            AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+            MaterialAlertDialogBuilder dlgAlert  = new MaterialAlertDialogBuilder(this);
             dlgAlert.setMessage(R.string.FirstLaunchInternetError);
             dlgAlert.setTitle(R.string.Error);
             dlgAlert.setPositiveButton(R.string.Ok, (dialogInterface, i) -> finish());
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(FirstStart) {
-            AlertDialog.Builder welcomeAlert  = new AlertDialog.Builder(this);
+            MaterialAlertDialogBuilder welcomeAlert  = new MaterialAlertDialogBuilder(this);
             welcomeAlert.setMessage(R.string.WelcomeText);
             welcomeAlert.setTitle(R.string.WelcomeTextTitle);
             welcomeAlert.setPositiveButton(R.string.Ok,null);

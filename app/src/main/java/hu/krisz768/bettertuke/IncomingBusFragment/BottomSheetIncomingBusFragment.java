@@ -198,25 +198,18 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-
-        UpdateLoop.shutdown();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        ResetList();
-        StartNewUpdateThread();
-    }
-
-    @Override
     public void onStop() {
         super.onStop();
 
         UpdateLoop.shutdown();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        ResetList();
+        StartNewUpdateThread();
     }
 
     @SuppressLint("NotifyDataSetChanged")

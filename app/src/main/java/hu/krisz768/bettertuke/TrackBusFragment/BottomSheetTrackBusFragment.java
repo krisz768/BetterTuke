@@ -116,15 +116,15 @@ public class BottomSheetTrackBusFragment extends Fragment {
         return view;
     }
 
-    @Override
+    /*@Override
     public void onPause() {
         super.onPause();
         UpdateLoop.shutdown();
-    }
+    }*/
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
         StartUpdateThread();
     }
 
@@ -150,6 +150,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
     @SuppressLint("UseCompatLoadingForDrawables")
     private void GetBusPosition(TukeServerApi serverApi) {
         try {
+
             if (BuildConfig.DEBUG) {
                 Log.i("BusPositionUpdate", "Bus Pos Update");
             }
