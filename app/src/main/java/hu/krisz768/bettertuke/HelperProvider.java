@@ -507,14 +507,18 @@ public class HelperProvider {
         int i = 0;
         try {
             while(i<BusAttributes.getJSONArray("buses").length()) {
-                if(BusAttributes.getJSONArray("buses").getJSONObject(i).getString("platenumber").equals(PlateNumber))
+                String act_platenumber = BusAttributes.getJSONArray("buses").getJSONObject(i).getString("platenumber");
+                if(act_platenumber.length()>6)
+                    act_platenumber=act_platenumber.substring(1);
+                if(act_platenumber.equals(PlateNumber))
                     break;
                 i++;
             }
             if(i==BusAttributes.getJSONArray("buses").length()) {
                 return oneBusAttributes;
             } else {
-                oneBusAttributes=new BusAttributes(PlateNumber,
+                oneBusAttributes=new BusAttributes(
+                        BusAttributes.getJSONArray("buses").getJSONObject(i).getString("platenumber"),
                         BusAttributes.getJSONArray("buses").getJSONObject(i).getString("type"),
                         BusAttributes.getJSONArray("buses").getJSONObject(i).getInt("propulsion"),
                         BusAttributes.getJSONArray("buses").getJSONObject(i).getInt("articulated"),

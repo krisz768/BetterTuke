@@ -21,7 +21,7 @@
         android:layout_height="20dp"
         android:layout_marginBottom="10dp"
         android:gravity="center"
-        android:text="Összes járat" />
+        android:text="@string/AllLines" />
 
     <View
         android:id="@+id/divider7"

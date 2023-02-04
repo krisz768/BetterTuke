@@ -142,10 +142,20 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
                 }
 
                 if (BusPosition.getDelayMin() < 0) {
-                    Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "", BusPosition.getDelayMin()));
+                    if(BusPosition.getDelayMin()==-1) {
+                        Delay.setText(ctx.getString(R.string.DelayStringWithPosSignOneMinute, "", BusPosition.getDelayMin()));
+                    }
+                    else {
+                        Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "", BusPosition.getDelayMin()));
+                    }
                     Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#d60202")));
-                }else {
-                    Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "+", BusPosition.getDelayMin()));
+                } else {
+                    if(BusPosition.getDelayMin()==1) {
+                        Delay.setText(ctx.getString(R.string.DelayStringWithPosSignOneMinute, "+", BusPosition.getDelayMin()));
+                    }
+                    else {
+                        Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "+", BusPosition.getDelayMin()));
+                    }
                     if (BusPosition.getDelayMin() == 0) {
                         Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#02de32")));
                     } else {

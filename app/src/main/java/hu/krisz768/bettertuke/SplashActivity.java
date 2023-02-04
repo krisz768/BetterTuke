@@ -57,12 +57,12 @@ public class SplashActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> Toast.makeText(ctx, R.string.DatabaseVersionCheckFail, Toast.LENGTH_LONG).show());
 
-                StartMain(false);
+                StartMain(false,false);
             } else {
                 if (Version.equals(OnlineVersion) && !OnlineVersion.equals("Err")) {
                     AddLog("Database is up to date!");
 
-                    StartMain(false);
+                    StartMain(false,false);
                 } else {
                     AddLog("Database version does not match! Updating....");
 
@@ -79,11 +79,11 @@ public class SplashActivity extends AppCompatActivity {
 
                         runOnUiThread(() -> Toast.makeText(ctx, R.string.NewDatabaseWarning, Toast.LENGTH_LONG).show());
 
-                        StartMain(false);
+                        StartMain(false,false);
                     }else  {
                         AddLog("Database download fail!");
                         runOnUiThread(() -> Toast.makeText(ctx, R.string.DatabaseUpdateError, Toast.LENGTH_LONG).show());
-                        StartMain(false);
+                        StartMain(false,false);
                     }
                 }
             }
@@ -95,15 +95,15 @@ public class SplashActivity extends AppCompatActivity {
 
                 AddLog("Database version = " + Version);
 
-                StartMain(false);
+                StartMain(false,true);
             }else  {
                 AddLog("Database download fail!");
-                StartMain(true);
+                StartMain(true, true);
             }
         }
     }
 
-    private void StartMain(boolean Error) {
+    private void StartMain(boolean Error, boolean FirstStart) {
         Date FinishDate = new Date();
         if (FinishDate.getTime() - StartTime.getTime() < 500 && !(Build.VERSION.SDK_INT < 31)) {
             try {
@@ -115,6 +115,7 @@ public class SplashActivity extends AppCompatActivity {
 
         Intent mainIntent = new Intent(this, MainActivity.class);
         mainIntent.putExtra("ERROR", Error);
+        mainIntent.putExtra("FirstStart", FirstStart);
 
         Bundle b = getIntent().getExtras();
 

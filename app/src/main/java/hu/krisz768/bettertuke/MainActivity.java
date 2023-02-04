@@ -122,9 +122,11 @@ public class MainActivity extends AppCompatActivity {
         Bundle b = getIntent().getExtras();
 
         boolean Error = false;
+        boolean FirstStart = false;
 
         if (b != null) {
             Error = b.getBoolean("ERROR");
+            FirstStart = b.getBoolean("FirstStart");
 
             ShortcutType = b.getInt("ShortcutType");
             ShortcutData = b.getString("ShortcutId");
@@ -139,6 +141,15 @@ public class MainActivity extends AppCompatActivity {
             dlgAlert.create().show();
 
             return;
+        }
+
+        if(FirstStart) {
+            AlertDialog.Builder welcomeAlert  = new AlertDialog.Builder(this);
+            welcomeAlert.setMessage(R.string.WelcomeText);
+            welcomeAlert.setTitle(R.string.WelcomeTextTitle);
+            welcomeAlert.setPositiveButton(R.string.Ok,null);
+            welcomeAlert.setCancelable(false);
+            welcomeAlert.create().show();
         }
 
         setTheme();

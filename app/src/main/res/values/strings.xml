@@ -1,57 +1,63 @@
 <resources>
-    <string name="app_name">PécsLines</string>
+    <string name="app_name" translatable="false">PécsLines</string>
 
-    <string name="title_activity_main">Főképernyő</string>
-    <string name="BottomSheetTitle_Incoming">Érkező járatok:</string>
-    <string name="LoadingText">Betöltés…</string>
-    <string name="GPSHint">Nem sikerült meghatározni a poziciódat GPS-el</string>
-    <string name="BusInStop">Megállóban</string>
-    <string name="EmptyList">Ebből a megállóból a közeljövőben nem indul járat.</string>
-    <string name="GPSLoad">GPS pozició lekérése…</string>
-    <string name="Schedule">Menetrend</string>
-    <string name="EmptySchedule">Ma ez a járat, ebbe az irányba vagy megállóba nem közlekedik.</string>
-    <string name="OfflineDataWarning">Offline adatok. Az élő adatokhoz kapcsolódjon az internetre.</string>
-    <string name="TrackTimeString">%1$s (%2$d perc)</string>
-    <string name="TrackBusStopSelect">%1$s. megálló</string>
-    <string name="NearStopLocationText">%1$f, %2$f</string>
-    <string name="FavoriteText">Kedvencek:</string>
-    <string name="SumText">Összes:</string>
-    <string name="BusStopNameWithNum">%1$s (%2$s)</string>
-    <string name="StartingDataFromStartingPosition">Indulási adatok a kiinduló állásról</string>
-    <string name="StartingDataFromStop">Indulási adatok innen: %1$s (%2$s)</string>
-    <string name="SelectDate">Válassz Dátumot:</string>
-    <string name="Legend">Jelmagyarázat:</string>
-    <string name="SoloBus">szóló</string>
-    <string name="ArticulatedBus">csuklós</string>
+    <string name="Ok" translatable="false">OK</string>
+    <string name="Gps" translatable="false">Gps</string>
+    <string name="BottomSheetTitle_Incoming">Arriving buses:</string>
+    <string name="LoadingText">Loading...</string>
+    <string name="GPSHint">Failed to determine your position with GPS</string>
+    <string name="EmptyList">There will be no service from this stop in the near future.</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="GPSLoad">Request GPS position...</string>
+    <string name="BusInStop">At stop</string>
+    <string name="Schedule">Schedule</string>
+    <string name="EmptySchedule">Today this line does not operate in this direction or in this stop.</string>
+    <string name="OfflineDataWarning">Offline data. For live data please connect to the internet!</string>
+    <string name="TrackTimeString">%1$s (%2$d minutes)</string>
+    <string name="Legend">Legend:</string>
+    <string name="SoloBus">non-articulated</string>
+    <string name="ArticulatedBus">articulated</string>
     <string name="MidiBus">midi</string>
-    <string name="BusDoorNumberText">%1$d ajtós</string>
-    <string name="TrackBusStopNameWithListNum">%1$d - %2$s</string>
-    <string name="DelayStringWithPosSign">%1$s%2$d perc</string>
-    <string name="Brackets">(%1$s)</string>
-    <string name="FirstLaunchInternetError">Az alkalmazás első indításához internetkapcsolat szükséges.</string>
-    <string name="Error">Hiba</string>
-    <string name="Ok">OK</string>
-    <string name="DatabaseUpdateError">NEM SIKERÜLT frissíteni az adatbázist.</string>
-    <string name="NewDatabaseWarning">Új menetrendre frissítve! Előfordulhatnak válzotások.</string>
-    <string name="DatabaseVersionCheckFail">Nem sikerült ellenőrizni hogy elérhető e frissítés.</string>
-    <string name="Search">Keresés</string>
-    <string name="Gps">Gps</string>
-    <string name="FavoriteButton">Kedvencek gomb</string>
-    <string name="ScheduleButton">Menetrend az adott kocsiálláshoz</string>
-    <string name="NearStops">Közeli megállók:</string>
-    <string name="LowFloorIndicator">Alacsony padlós</string>
-    <string name="ElectricBusIndicator">Elektromos busz</string>
-    <string name="AirConditionIndicator">Légkonis busz</string>
-    <string name="WifiOnBusIndicator">Wifi a buszon</string>
-    <string name="UsbOnBusIndicator">Usb töltési lehetőség a buszon</string>
-    <string name="HourText">Óra:</string>
-    <string name="MinuteText">Perc:</string>
-    <string name="SwitchDirectionButton">Irányváltás</string>
-    <string name="StopSelectorButton">Megálló választó gomb</string>
-    <string name="NearStopIcon">Közeli megálló tábla ikon</string>
-    <string name="NearStopFavIcon">Ez a megálló kedvencnek van jelölve</string>
-    <string name="ScheduleMinuteButton">Menetrend perc gomb</string>
-    <string name="SearchStopResultIcon">Keresés megálló találat</string>
-    <string name="BusPositionIcon">Busz pozició ikon</string>
-    <string name="BusText">%1$s jelzésű járat</string>
+    <string name="Error">Error</string>
+    <string name="FirstLaunchInternetError">You need an internet connection to start the application for the first time.</string>
+    <string name="DatabaseUpdateError">The updating of the database was UNSUCCESSFUL.</string>
+    <string name="Search">Search</string>
+    <string name="FavoriteButton">Favourites button</string>
+    <string name="FavoriteText">Favourites:</string>
+    <string name="SumText">All:</string>
+    <string name="TrackBusStopSelect">%1$s. stop</string>
+    <string name="NearStopLocationText" translatable="false">%1$f, %2$f</string>
+    <string name="BusDoorNumberText">%1$d doors</string>
+    <string name="TrackBusStopNameWithListNum" translatable="false">%1$d - %2$s</string>
+    <string name="DelayStringWithPosSign">%1$s%2$d minutes</string>
+    <string name="ScheduleButton">Schedule for this stop</string>
+    <string name="NearStops">Nearby stops:</string>
+    <string name="LowFloorIndicator">Low-floor</string>
+    <string name="ElectricBusIndicator">Electric</string>
+    <string name="AirConditionIndicator">Air conditioning</string>
+    <string name="WifiOnBusIndicator" translatable="false">Wifi</string>
+    <string name="UsbOnBusIndicator">USB charging</string>
+    <string name="HourText">Hour:</string>
+    <string name="MinuteText">Minute:</string>
+    <string name="SwitchDirectionButton">Change direction</string>
+    <string name="StopSelectorButton">Stop select button</string>
+    <string name="NearStopIcon">Nearby stop</string>
+    <string name="NearStopFavIcon">This stop is marked as favourite</string>
+    <string name="ScheduleMinuteButton">Schedule minute button</string>
+    <string name="SearchStopResultIcon">Search stop result</string>
+    <string name="BusPositionIcon">Bus position icon</string>
+    <string name="BusText">Line %1$s</string>
+    <string name="DatabaseVersionCheckFail">Checking the updates was unsuccessful.</string>
+    <string name="NewDatabaseWarning">Updated to new timetable! Changes may occur.</string>
+    <string name="Brackets" translatable="false">(%1$s)</string>
+    <string name="SelectDate">Select date:</string>
+    <string name="StartingDataFromStop">Departures from: %1$s (%2$s)</string>
+    <string name="StartingDataFromStartingPosition">Departures from the starting:</string>
+    <string name="BusStopNameWithNum" translatable="false">%1$s (%2$s)</string>
+    <string name="action_settings">Settings</string>
+    <string name="WelcomeText">PécsLines is a bus timetable application for Pécs, which provides real-time information about the local public transport.\nMain features:\n- Virtual bus stop board with real-time data\n- Line timetables\n- Interactive, map based user interface\n- Display current bus positions\n- Information about buses (type, low floor, climate, etc.)\n\n- Automatic selection of stops based on GPS position\n- Possibility to set favourite stops and routes\n\nThis application is part of an individual open source development project, not commissioned by Tüke Busz Zrt.\n\nYour questions and comments are welcome at email@email.hu.\n\nWe wish you a pleasant journey!</string>
+    <string name="WelcomeTextTitle">Welcome to PécsLines!</string>
+    <string name="TrackTimeStringOneMinute">%1$s (%2$d minute)</string>
+    <string name="DelayStringWithPosSignOneMinute">%1$s%2$d minute</string>
+    <string name="AllLines">All lines</string>
 </resources>

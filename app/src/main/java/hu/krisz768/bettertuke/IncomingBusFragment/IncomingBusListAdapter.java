@@ -48,9 +48,12 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
             SimpleDateFormat Sdf = new SimpleDateFormat("HH:mm", Locale.US);
             if (Data.isAtStop()) {
                 arrtime.setText(R.string.BusInStop);
+            } else if (Data.getRemainingMin()==1){
+                arrtime.setText(ctx.getString(R.string.TrackTimeStringOneMinute, Sdf.format(Arrtime), Data.getRemainingMin()));
             } else {
                 arrtime.setText(ctx.getString(R.string.TrackTimeString, Sdf.format(Arrtime), Data.getRemainingMin()));
             }
+
 
             int WhiteColor = Color.rgb(255,255,255);
             number.setTextColor(WhiteColor);
