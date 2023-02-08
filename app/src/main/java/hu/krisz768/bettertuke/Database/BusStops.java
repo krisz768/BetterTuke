@@ -11,13 +11,15 @@ public class BusStops implements Serializable {
     private final float GpsLongitude;
     private final float GpsLatitude;
     private final String StopNum;
+    private final String DirectionText;
 
-    public BusStops(int id, String place, float gpsLongitude, float gpsLatitude, String stopNum) {
+    public BusStops(int id, String place, float gpsLongitude, float gpsLatitude, String stopNum, String directionText) {
         Id = id;
         Place = place;
         GpsLongitude = gpsLongitude;
         GpsLatitude = gpsLatitude;
         StopNum = stopNum;
+        DirectionText = directionText;
     }
 
     public int getId() {
@@ -51,5 +53,9 @@ public class BusStops implements Serializable {
         DatabaseManager Dm = new DatabaseManager(ctx);
 
         return Dm.GetAllBusStops();
+    }
+
+    public String getDirectionText() {
+        return DirectionText;
     }
 }

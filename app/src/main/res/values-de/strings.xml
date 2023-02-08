@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="title_activity_main">Hauptbildschirm</string>
+    <string name="BottomSheetTitle_Incoming">Ankommende Busse:</string>
+    <string name="LoadingText">wird geladen…</string>
+    <string name="GPSHint">Ihre Position konnte mit GPS nicht bestimmt werden</string>
+    <string name="BusInStop">in Bushaltestelle</string>
+    <string name="EmptyList">Von dieser Haltestelle wird es in nächster Zeit keine Abfahrten geben.</string>
+    <string name="GPSLoad">GPS-Position abfrage…</string>
+    <string name="Schedule">Zeitplan</string>
+    <string name="EmptySchedule">Heute verkehrt dieser Bus nicht in diese Richtung oder zu dieser Haltestelle.</string>
+    <string name="OfflineDataWarning">Offline-Daten. Verbinden Sie sich mit dem Internet für Live-Daten.</string>
+    <string name="TrackTimeString">%1$s (%2$d Minuten)</string>
+    <string name="TrackBusStopSelect">%1$s. Haltestelle</string>
+    <string name="FavoriteText">Favoriten:</string>
+    <string name="SumText">Alle:</string>
+    <string name="StartingDataFromStartingPosition">Abfartsdaten über die Startposition</string>
+    <string name="StartingDataFromStop">Abfahrtsinformationen von hier: %1$s (%2$s)</string>
+    <string name="SelectDate">Wählen Sie ein Datum:</string>
+    <string name="Legend">Erklärung:</string>
+    <string name="SoloBus">Solobus</string>
+    <string name="ArticulatedBus">Gelenkbus</string>
+    <string name="MidiBus">midi</string>
+    <string name="BusDoorNumberText">%1$d Türe</string>
+    <string name="DelayStringWithPosSign">%1$s%2$d Minuten</string>
+    <string name="FirstLaunchInternetError">Für den ersten Start der Anwendung ist eine Internetverbindung erforderlich.</string>
+    <string name="Error">Fehler</string>
+    <string name="DatabaseUpdateError">Fehler beim Aktualisieren der Datenbank.</string>
+    <string name="NewDatabaseWarning">Aktualisiert auf neuen Zeitplan! Es können Abweichungen auftreten.</string>
+    <string name="DatabaseVersionCheckFail">Es konnte nicht überprüft werden, ob dieses Update verfügbar ist.</string>
+    <string name="Search">Suche</string>
+    <string name="FavoriteButton">Favoritenbutton</string>
+    <string name="ScheduleButton">Fahrplan für die gegebene Station</string>
+    <string name="NearStops">Haltestellen in der Nähe:</string>
+    <string name="LowFloorIndicator">Niedriger Boden</string>
+    <string name="ElectricBusIndicator">Elektrobus</string>
+    <string name="AirConditionIndicator">Klimatisierter Bus</string>
+    <string name="WifiOnBusIndicator">WLAN im Bus</string>
+    <string name="UsbOnBusIndicator">USB-Lademöglichkeit im Bus</string>
+    <string name="HourText">Stunde:</string>
+    <string name="MinuteText">Minute:</string>
+    <string name="SwitchDirectionButton">Richtungswechsel</string>
+    <string name="StopSelectorButton">Haltestellewahltaste</string>
+    <string name="NearStopIcon">Haltestelle in der nähe Symbol</string>
+    <string name="NearStopFavIcon">Diese Haltestelle ist als Favorit markiert</string>
+    <string name="ScheduleMinuteButton">Zeitplan minute Taste</string>
+    <string name="SearchStopResultIcon">Haltestelle Suchen Treffen</string>
+    <string name="BusPositionIcon">Busposition Symbol</string>
+    <string name="BusText">%1$s gekennzeichneter Bus</string>
+    <string name="DelayStringWithPosSignOneMinute">%1$s%2$d Minute</string>
+    <string name="TrackTimeStringOneMinute">%1$s (%2$d Minute)</string>
+</resources>

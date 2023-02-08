@@ -14,10 +14,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class DatabaseManager {
     private static SQLiteDatabase Sld;
+    private final Context Ctx;
 
     public  DatabaseManager (Context Ctx) {
         String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "track.db")).getAbsolutePath();
@@ -26,6 +28,8 @@ public class DatabaseManager {
             TukeDatabaseHelper Dbh = new TukeDatabaseHelper(Ctx, DATABASEFILE);
             Sld = Dbh.getReadableDatabase();
         }
+
+        this.Ctx = Ctx;
     }
 
     public static boolean IsDatabaseExist (Context Ctx) {
@@ -106,7 +110,7 @@ public class DatabaseManager {
             while(cursor.moveToNext()) {
                 int id = cursor.getInt(0);
                 if (id != 24901) {
-                    AllStops.put(id,new BusStops(id, cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3), cursor.getString(5)));
+                    AllStops.put(id,new BusStops(id, cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3), cursor.getString(5), HelperProvider.GetStopDirectionString(Ctx,id)));
                 }
 
             }

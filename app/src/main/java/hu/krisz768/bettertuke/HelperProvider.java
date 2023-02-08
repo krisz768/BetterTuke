@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
@@ -19,12 +20,14 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.color.MaterialColors;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Objects;
 
 import hu.krisz768.bettertuke.models.BusAttributes;
@@ -32,6 +35,7 @@ import hu.krisz768.bettertuke.models.BusAttributes;
 public class HelperProvider {
     private static final Bitmap[] BitmapContainer = new Bitmap[28];
     private static JSONObject BusAttributes;
+    private static HashMap<Integer, String> BusStopDirections;
 
     private static boolean IsOfflineTextDisplayed = false;
 
@@ -532,5 +536,46 @@ public class HelperProvider {
             return oneBusAttributes;
         }
         return oneBusAttributes;
+    }
+
+    public static String GetStopDirectionString(Context ctx, int id) {
+        if (BusStopDirections == null) {
+            BusStopDirections = new HashMap<>();
+
+            InputStream inputStream = ctx.getResources().openRawResource(R.raw.stop_directions);
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder JsonString = new StringBuilder();
+            while (true) {
+                try {
+                    String temp = br.readLine();
+                    if (temp == null)
+                        break;
+                    else
+                        JsonString.append(temp);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return "-";
+                }
+            }
+            try {
+
+                JSONArray StopList = new JSONArray(JsonString.toString());
+                for (int i = 0; i < StopList.length(); i++) {
+                    BusStopDirections.put(StopList.getJSONObject(i).getInt("Id"), StopList.getJSONObject(i).getString("Direction"));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return "-";
+            }
+        }
+
+        String Dir = BusStopDirections.get(id);
+        if (Dir == null) {
+            Log.e("ASDASD", BusStopDirections.size() + "");
+            Dir = "-";
+        }
+
+        return Dir;
     }
 }

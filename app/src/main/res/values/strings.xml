@@ -4,11 +4,11 @@
     <string name="Ok" translatable="false">OK</string>
     <string name="Gps" translatable="false">Gps</string>
     <string name="BottomSheetTitle_Incoming">Arriving buses:</string>
-    <string name="LoadingText">Loading...</string>
+    <string name="LoadingText">Loading…</string>
     <string name="GPSHint">Failed to determine your position with GPS</string>
     <string name="EmptyList">There will be no service from this stop in the near future.</string>
     <string name="title_activity_main">MainActivity</string>
-    <string name="GPSLoad">Request GPS position...</string>
+    <string name="GPSLoad">Request GPS position…</string>
     <string name="BusInStop">At stop</string>
     <string name="Schedule">Schedule</string>
     <string name="EmptySchedule">Today this line does not operate in this direction or in this stop.</string>
@@ -35,7 +35,7 @@
     <string name="LowFloorIndicator">Low-floor</string>
     <string name="ElectricBusIndicator">Electric</string>
     <string name="AirConditionIndicator">Air conditioning</string>
-    <string name="WifiOnBusIndicator" translatable="false">Wifi</string>
+    <string name="WifiOnBusIndicator">Wifi</string>
     <string name="UsbOnBusIndicator">USB charging</string>
     <string name="HourText">Hour:</string>
     <string name="MinuteText">Minute:</string>
@@ -54,7 +54,6 @@
     <string name="StartingDataFromStop">Departures from: %1$s (%2$s)</string>
     <string name="StartingDataFromStartingPosition">Departures from the starting:</string>
     <string name="BusStopNameWithNum" translatable="false">%1$s (%2$s)</string>
-    <string name="action_settings">Settings</string>
     <string name="WelcomeText">PécsLines is a bus timetable application for Pécs, which provides real-time information about the local public transport.\nMain features:\n- Virtual bus stop board with real-time data\n- Line timetables\n- Interactive, map based user interface\n- Display current bus positions\n- Information about buses (type, low floor, climate, etc.)\n\n- Automatic selection of stops based on GPS position\n- Possibility to set favourite stops and routes\n\nThis application is part of an individual open source development project, not commissioned by Tüke Busz Zrt.\n\nYour questions and comments are welcome at email@email.hu.\n\nWe wish you a pleasant journey!</string>
     <string name="WelcomeTextTitle">Welcome to PécsLines!</string>
     <string name="TrackTimeStringOneMinute">%1$s (%2$d minute)</string>

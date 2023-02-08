@@ -90,6 +90,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_bottom_sheet_incoming_bus_view, container, false);
 
         TextView BusStopName = view.findViewById(R.id.BusStopName);
+        TextView BusStopDir = view.findViewById(R.id.BusStopDir);
 
         ImageView ScheduleButton = view.findViewById(R.id.StopScheduleButton);
         ScheduleButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected));
@@ -103,6 +104,11 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
         if (busPlace != null) {
             BusStopName.setText(busPlace.getName());
+
+            BusStops busStop = mStopList.get(mStop);
+            if (busStop != null) {
+                BusStopDir.setText(busStop.getDirectionText());
+            }
 
             for (BusStops busStops : mStopList.values()) {
                 if (busStops.getPlace() == busPlace.getId()) {
@@ -221,9 +227,16 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         mStop = Id;
         Ibssa.setSelectedStop(mStop);
         Ibssa.notifyDataSetChanged();
+
         ResetList();
 
         if (getView() != null && getContext() != null){
+            TextView BusStopDir = getView().findViewById(R.id.BusStopDir);
+            BusStops busStop = mStopList.get(mStop);
+            if (busStop != null) {
+                BusStopDir.setText(busStop.getDirectionText());
+            }
+
             ImageView FavButton = getView().findViewById(R.id.StopFavoriteButton);
 
             UserDatabase userDatabase = new UserDatabase(getContext());
@@ -264,34 +277,38 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                     mainActivity.runOnUiThread(() -> Toast.makeText(mainActivity,R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
                     HelperProvider.setOfflineTextDisplayed();
                 }
-                DatabaseManager Dm = new DatabaseManager(mainActivity);
+                if (mainActivity != null) {
+                    DatabaseManager Dm = new DatabaseManager(mainActivity);
 
-                BusList = Dm.GetOfflineDepartureTimes(SendStopId);
+                    BusList = Dm.GetOfflineDepartureTimes(SendStopId);
+                }
             }
 
             Date currentTime = Calendar.getInstance().getTime();
             SimpleDateFormat Sdf = new SimpleDateFormat("H", Locale.US);
             SimpleDateFormat Sdf2 = new SimpleDateFormat("m", Locale.US);
 
-            for (IncomingBusRespModel incomingBusRespModel : BusList) {
-                BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), mainActivity);
-                if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
-                    Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId());
-                    if (IsBusStarted == null) {
-                        IsBusStarted = false;
+            if (BusList != null) {
+                for (IncomingBusRespModel incomingBusRespModel : BusList) {
+                    BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), mainActivity);
+                    if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
+                        Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId());
+                        if (IsBusStarted == null) {
+                            IsBusStarted = false;
+                        }
+                        incomingBusRespModel.setStarted(IsBusStarted);
+                    } else {
+                        incomingBusRespModel.setStarted(false);
                     }
-                    incomingBusRespModel.setStarted(IsBusStarted);
-                } else {
-                    incomingBusRespModel.setStarted(false);
                 }
-
             }
+
 
             if(SendStopId != mStop) {
                 return;
             }
 
-            if (BusList.length > 0) {
+            if (BusList != null && BusList.length > 0) {
                 if (InBusFragment == null) {
                     try {
                         InBusFragment = IncomingBusListFragment.newInstance(BusList);

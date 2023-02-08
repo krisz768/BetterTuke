@@ -25,7 +25,6 @@
     <string name="LoadingText">Betöltés…</string>
     <string name="BottomSheetTitle_Incoming">Érkező járatok:</string>
     <string name="title_activity_main">Főképernyő</string>
-    <string name="action_settings">Beállítások</string>
     <string name="DatabaseUpdateError">NEM SIKERÜLT frissíteni az adatbázist.</string>
     <string name="NewDatabaseWarning">Új menetrendre frissítve! Előfordulhatnak változások.</string>
     <string name="DatabaseVersionCheckFail">A frissítések ellenőrzése sikertelen volt.</string>
@@ -52,4 +51,5 @@
     <string name="TrackTimeStringOneMinute">%1$s (%2$d perc)</string>
     <string name="DelayStringWithPosSignOneMinute">%1$s%2$d perc</string>
     <string name="AllLines">Összes járat</string>
+    <string name="WifiOnBusIndicator">Wifi</string>
 </resources>
