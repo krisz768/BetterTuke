@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import hu.krisz768.bettertuke.Database.BusStops;
+import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.R;
 
 public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<IncomingBusStopSelectorAdapter.ViewHolder>{
@@ -30,7 +31,13 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Incomin
         }
 
         public void setData(BusStops Data, int SelectedStop, BottomSheetIncomingBusFragment callback, Context ctx) {
-           button.setText(ctx.getString(R.string.TrackBusStopSelect, Data.getStopNum().trim()));
+            String DirectionText =  HelperProvider.GetStopDirectionString(ctx,Data.getId());
+            if (DirectionText.equals("-") || DirectionText.equals("") || DirectionText.equals(" ")) {
+                button.setText(ctx.getString(R.string.TrackBusStopSelect, Data.getStopNum().trim()));
+            } else {
+                button.setText(DirectionText);
+            }
+
 
            button.setOnClickListener(view -> callback.OnStopClick(Data.getId()));
 

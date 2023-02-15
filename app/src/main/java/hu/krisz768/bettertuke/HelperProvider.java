@@ -572,7 +572,6 @@ public class HelperProvider {
 
         String Dir = BusStopDirections.get(id);
         if (Dir == null) {
-            Log.e("ASDASD", BusStopDirections.size() + "");
             Dir = "-";
         }
 

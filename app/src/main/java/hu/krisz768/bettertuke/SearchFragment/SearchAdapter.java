@@ -53,7 +53,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             DatabaseManager Dm = new DatabaseManager(ctx);
 
             String StopName = Dm.GetStopName(Integer.parseInt(StopId));
-            String StopNum = Dm.GetStopNum(Integer.parseInt(StopId));
+            String StopNum = HelperProvider.GetStopDirectionString(ctx,Integer.parseInt(StopId));
 
             this.StopName.setText(ctx.getString(R.string.BusStopNameWithNum, StopName.trim(), StopNum));
 

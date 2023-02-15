@@ -19,7 +19,6 @@ import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class DatabaseManager {
     private static SQLiteDatabase Sld;
-    private final Context Ctx;
 
     public  DatabaseManager (Context Ctx) {
         String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "track.db")).getAbsolutePath();
@@ -29,7 +28,6 @@ public class DatabaseManager {
             Sld = Dbh.getReadableDatabase();
         }
 
-        this.Ctx = Ctx;
     }
 
     public static boolean IsDatabaseExist (Context Ctx) {
@@ -85,23 +83,6 @@ public class DatabaseManager {
         }
     }
 
-    public String GetStopNum (int StopId) {
-        try
-        {
-            Cursor cursor = Sld.rawQuery("SELECT k.kocsiallas_szam FROM kocsiallasok k WHERE k.id_kocsiallas = " + StopId +";", null);
-            String Num = "";
-            while(cursor.moveToNext()) {
-                Num = Integer.toString(cursor.getInt(0));
-            }
-            cursor.close();
-            return Num;
-        } catch (Exception e) {
-            log(e.toString());
-            return "Err";
-
-        }
-    }
-
     public HashMap<Integer, BusStops> GetAllBusStops () {
         try
         {
@@ -110,7 +91,7 @@ public class DatabaseManager {
             while(cursor.moveToNext()) {
                 int id = cursor.getInt(0);
                 if (id != 24901) {
-                    AllStops.put(id,new BusStops(id, cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3), cursor.getString(5), HelperProvider.GetStopDirectionString(Ctx,id)));
+                    AllStops.put(id,new BusStops(id, cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3), cursor.getString(5)));
                 }
 
             }

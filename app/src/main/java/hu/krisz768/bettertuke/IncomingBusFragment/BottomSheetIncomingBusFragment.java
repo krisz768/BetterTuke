@@ -90,7 +90,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_bottom_sheet_incoming_bus_view, container, false);
 
         TextView BusStopName = view.findViewById(R.id.BusStopName);
-        TextView BusStopDir = view.findViewById(R.id.BusStopDir);
 
         ImageView ScheduleButton = view.findViewById(R.id.StopScheduleButton);
         ScheduleButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected));
@@ -104,11 +103,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
         if (busPlace != null) {
             BusStopName.setText(busPlace.getName());
-
-            BusStops busStop = mStopList.get(mStop);
-            if (busStop != null) {
-                BusStopDir.setText(busStop.getDirectionText());
-            }
 
             for (BusStops busStops : mStopList.values()) {
                 if (busStops.getPlace() == busPlace.getId()) {
@@ -231,12 +225,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         ResetList();
 
         if (getView() != null && getContext() != null){
-            TextView BusStopDir = getView().findViewById(R.id.BusStopDir);
-            BusStops busStop = mStopList.get(mStop);
-            if (busStop != null) {
-                BusStopDir.setText(busStop.getDirectionText());
-            }
-
             ImageView FavButton = getView().findViewById(R.id.StopFavoriteButton);
 
             UserDatabase userDatabase = new UserDatabase(getContext());

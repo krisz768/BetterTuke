@@ -136,7 +136,7 @@ public class ScheduleBusTimeFragment extends Fragment {
             StartPosText.setText(getString(R.string.StartingDataFromStartingPosition));
         } else {
             String StopName = Dm.GetStopName(mStopId);
-            String StopNum = Dm.GetStopNum(mStopId);
+            String StopNum = HelperProvider.GetStopDirectionString(getContext(), mStopId);
             StartPosText.setText(getString(R.string.StartingDataFromStop, StopName.trim(), StopNum));
         }
 

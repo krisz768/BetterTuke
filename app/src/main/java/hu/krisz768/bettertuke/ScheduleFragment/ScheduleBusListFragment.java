@@ -1,6 +1,5 @@
 package hu.krisz768.bettertuke.ScheduleFragment;
 
-import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -20,6 +19,7 @@ import java.util.List;
 
 import hu.krisz768.bettertuke.Database.BusNum;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
+import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.ScheduleActivity;
 import hu.krisz768.bettertuke.UserDatabase.Favorite;
@@ -72,7 +72,7 @@ public class ScheduleBusListFragment extends Fragment {
         } else{
             busNums = Dm.GetActiveBusLinesFromStop(mStopId);
             String StopName = Dm.GetStopName(mStopId);
-            String StopNum = Dm.GetStopNum(mStopId);
+            String StopNum = HelperProvider.GetStopDirectionString(getContext(), mStopId);
 
             ((TextView)view.findViewById(R.id.ScheduleTargetText)).setText(getString(R.string.BusStopNameWithNum, StopName.trim(), StopNum));
         }
