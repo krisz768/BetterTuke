@@ -156,6 +156,9 @@ public class MainActivity extends AppCompatActivity {
 
         HelperProvider.RenderAllBitmap(this);
 
+        busStops = BusStops.GetAllStops(this);
+        busPlaces = BusPlaces.getAllBusPlaces(this);
+
         setContentView(R.layout.activity_main);
 
         View bottomSheet = findViewById(R.id.standard_bottom_sheet);
@@ -170,9 +173,6 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.PosButton).setOnClickListener(view -> SelectPosUserPos());
 
         findViewById(R.id.PosButton).setVisibility(View.GONE);
-
-        busStops = BusStops.GetAllStops(this);
-        busPlaces = BusPlaces.getAllBusPlaces(this);
 
         SetupGoogleMap();
     }
@@ -323,7 +323,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-
     }
 
     private void GPSErr() {

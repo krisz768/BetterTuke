@@ -2267,7 +2267,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 0
 		},
 		{
@@ -2278,7 +2278,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 0
 		},
 		{
@@ -2289,7 +2289,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 0
 		},
 		{
@@ -2300,7 +2300,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 0
 		},
 		{
@@ -2311,7 +2311,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 0
 		},
 		{
@@ -2322,7 +2322,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 0
 		},
 		{
@@ -2333,7 +2333,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 0
 		},
 		{
@@ -2344,7 +2344,7 @@
 			"lowfloor": 1,
 			"doors": 3,
 			"airconditioner": 1,
-			"wifi": 0,
+			"wifi": 1,
 			"usb": 0
 		}
 	]

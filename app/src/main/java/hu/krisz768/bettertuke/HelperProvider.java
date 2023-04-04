@@ -512,8 +512,6 @@ public class HelperProvider {
         try {
             while(i<BusAttributes.getJSONArray("buses").length()) {
                 String act_platenumber = BusAttributes.getJSONArray("buses").getJSONObject(i).getString("platenumber");
-                if(act_platenumber.length()>6)
-                    act_platenumber=act_platenumber.substring(1);
                 if(act_platenumber.equals(PlateNumber))
                     break;
                 i++;
