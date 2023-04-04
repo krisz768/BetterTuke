@@ -11,7 +11,7 @@
     <string name="GPSLoad">Request GPS position…</string>
     <string name="BusInStop">At stop</string>
     <string name="Schedule">Schedule</string>
-    <string name="EmptySchedule">Today this line does not operate in this direction or in this stop.</string>
+    <string name="EmptySchedule">There is no service in this direction or to this stop on this day.</string>
     <string name="OfflineDataWarning">Offline data. For live data please connect to the internet!</string>
     <string name="TrackTimeString">%1$s (%2$d minutes)</string>
     <string name="Legend">Legend:</string>
@@ -54,7 +54,7 @@
     <string name="StartingDataFromStop">Departures from: %1$s (%2$s)</string>
     <string name="StartingDataFromStartingPosition">Departures from the starting:</string>
     <string name="BusStopNameWithNum" translatable="false">%1$s (%2$s)</string>
-    <string name="WelcomeText">PécsLines is a bus timetable application for Pécs, which provides real-time information about the local public transport.\nMain features:\n- Virtual bus stop board with real-time data\n- Line timetables\n- Interactive, map based user interface\n- Display current bus positions\n- Information about buses (type, low floor, climate, etc.)\n\n- Automatic selection of stops based on GPS position\n- Possibility to set favourite stops and routes\n\nThis application is part of an individual open source development project, not commissioned by Tüke Busz Zrt.\n\nYour questions and comments are welcome at email@email.hu.\n\nWe wish you a pleasant journey!</string>
+    <string name="WelcomeText">PécsLines is a non official bus timetable application for Pécs, which provides real-time information about the local public transport.\nMain features:\n- Virtual bus stop board with real-time data\n- Line timetables\n- Interactive, map based user interface\n- Display current bus positions\n- Information about buses (type, low floor, climate, etc.)\n\n- Automatic selection of stops based on GPS position\n- Possibility to set favourite stops and routes\n\nThis application is part of an individual open source development project, not commissioned by Tüke Busz Zrt.\n\nYour questions and comments are welcome at pecslines@gmail.com.\n\nWe wish you a pleasant journey!\n\nhttps://github.com/krisz768/BetterTuke</string>
     <string name="WelcomeTextTitle">Welcome to PécsLines!</string>
     <string name="TrackTimeStringOneMinute">%1$s (%2$d minute)</string>
     <string name="DelayStringWithPosSignOneMinute">%1$s%2$d minute</string>

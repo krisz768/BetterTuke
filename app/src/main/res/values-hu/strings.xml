@@ -16,7 +16,7 @@
     <string name="TrackBusStopSelect">%1$s. megálló</string>
     <string name="TrackTimeString">%1$s (%2$d perc)</string>
     <string name="OfflineDataWarning">Offline adatok. Az élő adatokhoz kapcsolódjon az internetre!</string>
-    <string name="EmptySchedule">Ma ez a járat, ebbe az irányba vagy megállóba nem közlekedik.</string>
+    <string name="EmptySchedule">Ezen a napon ez a járat, ebbe az irányba vagy megállóba nem közlekedik.</string>
     <string name="Schedule">Menetrend</string>
     <string name="GPSLoad">GPS pozició lekérése…</string>
     <string name="EmptyList">Ebből a megállóból a közeljövőben nem indul járat.</string>
@@ -46,7 +46,7 @@
     <string name="SearchStopResultIcon">Keresés megálló találat</string>
     <string name="BusPositionIcon">Busz pozició ikon</string>
     <string name="BusText">%1$s jelzésű járat</string>
-    <string name="WelcomeText">A PécsLines egy pécsi buszmenetrend alkalmazás, ami segítségével valós idejű\ninformációkat kaphat a helyi tömegközlekedésről.\nFőbb funkciók:\n- Virtuális megállótábla valós idejű adatokkal\n- Vonalak menetrendjei\n- Interaktív, térképes felhasználói felület\n- Buszok aktuális pozícióinak megjelenítése\n- Információ a buszokról (típus, alacsonypadlósság, klíma, stb.)\n- GPS pozíció alapján történő automatikus megálló kiválasztás\n- Kedvenc megállók, járatok beállításának lehetősége\n\nEz az alkalmazás egy egyéni, nyílt forráskodú fejlesztési projekt részeként jött létre, nem a Tüke Busz Zrt. megrendelésére.\n\nBármilyen jellegű kérdését, észrevételét várjuk az email@email.hu email címen.\n\nKellemes utazást kívánunk!</string>
+    <string name="WelcomeText">A PécsLines egy nem hivatalos pécsi buszmenetrend alkalmazás, ami segítségével valós idejű\ninformációkat kaphat a helyi tömegközlekedésről.\nFőbb funkciók:\n- Virtuális megállótábla valós idejű adatokkal\n- Vonalak menetrendjei\n- Interaktív, térképes felhasználói felület\n- Buszok aktuális pozícióinak megjelenítése\n- Információ a buszokról (típus, alacsonypadlósság, klíma, stb.)\n- GPS pozíció alapján történő automatikus megálló kiválasztás\n- Kedvenc megállók, járatok beállításának lehetősége\n\nEz az alkalmazás egy egyéni, nyílt forráskodú fejlesztési projekt részeként jött létre, nem a Tüke Busz Zrt. megrendelésére.\n\nBármilyen jellegű kérdését, észrevételét várjuk az pecslines@gmail.com email címen.\n\nKellemes utazást kívánunk!\n\nhttps://github.com/krisz768/BetterTuke</string>
     <string name="WelcomeTextTitle">Üdvözöljük a PécsLines-ban!</string>
     <string name="TrackTimeStringOneMinute">%1$s (%2$d perc)</string>
     <string name="DelayStringWithPosSignOneMinute">%1$s%2$d perc</string>

@@ -9,7 +9,7 @@
     <string name="EmptyList">Von dieser Haltestelle wird es in nächster Zeit keine Abfahrten geben.</string>
     <string name="GPSLoad">GPS-Position abfrage…</string>
     <string name="Schedule">Zeitplan</string>
-    <string name="EmptySchedule">Heute verkehrt dieser Bus nicht in diese Richtung oder zu dieser Haltestelle.</string>
+    <string name="EmptySchedule">In dieser Richtung und zu dieser Haltestelle gibt es an diesem Tag keine Verbindung.</string>
     <string name="OfflineDataWarning">Offline-Daten. Verbinden Sie sich mit dem Internet für Live-Daten.</string>
     <string name="TrackTimeString">%1$s (%2$d Minuten)</string>
     <string name="TrackBusStopSelect">%1$s. Haltestelle</string>
@@ -50,4 +50,7 @@
     <string name="BusText">%1$s gekennzeichneter Bus</string>
     <string name="DelayStringWithPosSignOneMinute">%1$s%2$d Minute</string>
     <string name="TrackTimeStringOneMinute">%1$s (%2$d Minute)</string>
+    <string name="WelcomeText">PécsLines ist eine nicht offizielle Busfahrplan-Anwendung für Pécs, die Echtzeit-Informationen über den öffentlichen Nahverkehr bietet.\nHauptmerkmale:\n- Virtuelle Haltestellentafel mit Echtzeit-Daten\n- Linienfahrpläne\n- Interaktive, kartenbasierte Benutzeroberfläche\n- Anzeige der aktuellen Buspositionen\n- Informationen über Busse (Typ, Niederflur, Klima, etc.) )\n\n- Automatische Auswahl von Haltestellen auf der Grundlage der GPS-Position\n- Möglichkeit, bevorzugte Haltestellen und Routen festzulegen\n\nDiese Anwendung ist Teil eines individuellen Open-Source-Entwicklungsprojekts, das nicht von der Tüke Busz Zrt. in Auftrag gegeben wurde.\n\nIhre Fragen und Kommentare sind unter pecslines@gmail.com willkommen.\n\nWir wünschen Ihnen eine angenehme Reise!\n\nhttps://github.com/krisz768/BetterTuke</string>
+    <string name="WelcomeTextTitle">Willkommen bei PécsLines!</string>
+    <string name="AllLines">Alle Buslinien</string>
 </resources>
