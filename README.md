@@ -1,6 +1,8 @@
 # BetterTuke
 Egy modern, újragondolt menetrend alkalmazás a pécsi tömegközlekedéshez.
 
+Google play: [Link](https://play.google.com/store/apps/details?id=hu.krisz768.bettertuke)
+
 ## Funkciók
 * Megállók megjelenítése térképen
 * Közeli megállók
