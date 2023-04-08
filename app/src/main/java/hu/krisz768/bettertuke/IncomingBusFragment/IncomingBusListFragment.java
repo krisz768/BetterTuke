@@ -17,14 +17,22 @@ import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class IncomingBusListFragment extends Fragment {
     private static final String ARG_PARAM1 = "List";
+    private static final String ARG_PARAM2 = "Date";
+    private static final String ARG_PARAM3 = "Custom";
+
     private IncomingBusRespModel[] mList;
     private IncomingBusListAdapter Ibla;
+    private String mDate;
+    private boolean mCustom;
 
 
-    public static IncomingBusListFragment newInstance(IncomingBusRespModel[] List) {
+    public static IncomingBusListFragment newInstance(IncomingBusRespModel[] List, String Date, Boolean Custom) {
         IncomingBusListFragment fragment = new IncomingBusListFragment();
         Bundle args = new Bundle();
         args.putSerializable(ARG_PARAM1, List);
+        args.putString(ARG_PARAM2, Date);
+        args.putBoolean(ARG_PARAM3, Custom);
+
         fragment.setArguments(args);
         return fragment;
     }
@@ -38,6 +46,8 @@ public class IncomingBusListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mList = (IncomingBusRespModel[])getArguments().getSerializable(ARG_PARAM1);
+            mDate = getArguments().getString(ARG_PARAM2);
+            mCustom = getArguments().getBoolean(ARG_PARAM3);
         }
     }
 
@@ -48,7 +58,7 @@ public class IncomingBusListFragment extends Fragment {
 
         RecyclerView Recv = view.findViewById(R.id.InBusListRecView);
 
-        Ibla = new IncomingBusListAdapter(mList, getContext(), this);
+        Ibla = new IncomingBusListAdapter(mList,mDate, mCustom, getContext(), this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         Recv.setLayoutManager(mLayoutManager);
         Recv.setAdapter(Ibla);
@@ -64,9 +74,9 @@ public class IncomingBusListFragment extends Fragment {
         }
     }
 
-    public void OnBusClick(int Id) {
+    public void OnBusClick(int Id, String Date) {
         if (getActivity() != null) {
-            ((MainActivity)getActivity()).TrackBus(Id, null);
+            ((MainActivity)getActivity()).TrackBus(Id, Date);
         }
     }
 }

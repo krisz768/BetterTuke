@@ -12,8 +12,9 @@ public class BackStack {
     private final boolean IsBackButtonCollapse;
     private final LatLng SelectedPlace;
     private final BusLine busLine;
+    private final IncomBusBackStack IncomBusMode;
 
-    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace) {
+    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace, IncomBusBackStack IncomBusMode) {
         CurrentPlace = currentPlace;
         CurrentStop = currentStop;
         CurrentBusTrack = currentBusTrack;
@@ -21,6 +22,7 @@ public class BackStack {
         this.scheduleBackStack = scheduleBackStack;
         this.IsBackButtonCollapse = IsBackButtonCollapse;
         this.SelectedPlace = SelectedPlace;
+        this.IncomBusMode = IncomBusMode;
     }
 
     public Integer getCurrentPlace() {
@@ -49,5 +51,9 @@ public class BackStack {
 
     public LatLng getSelectedPlace() {
         return SelectedPlace;
+    }
+
+    public IncomBusBackStack getIncomBusMode() {
+        return IncomBusMode;
     }
 }

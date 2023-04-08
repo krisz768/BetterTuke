@@ -385,6 +385,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         DatePicker.show(getChildFragmentManager(), "DatePicker");
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void ReloadSchedules(View view) {
         final ScheduleBusTimeFragment Callback = this;
 
@@ -415,13 +416,22 @@ public class ScheduleBusTimeFragment extends Fragment {
             }
 
             if(CurrentLines.length == 0) {
+
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
-                        InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptySchedule), -1);
+                        if (Dm.GetBusDatabaseValidDate(SelectedDate)) {
+                            InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptySchedule), -1);
 
-                        getChildFragmentManager().beginTransaction()
-                                .replace(R.id.ScheduleTimeFragmentContainer, Fragment)
-                                .commit();
+                            getChildFragmentManager().beginTransaction()
+                                    .replace(R.id.ScheduleTimeFragmentContainer, Fragment)
+                                    .commit();
+                        } else {
+                            InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.DatabaseNotContain), -1);
+
+                            getChildFragmentManager().beginTransaction()
+                                    .replace(R.id.ScheduleTimeFragmentContainer, Fragment)
+                                    .commit();
+                        }
 
                         SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
                         swipeRefreshLayout.setVisibility(View.GONE);

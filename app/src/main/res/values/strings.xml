@@ -51,6 +51,7 @@
     <string name="NewDatabaseWarning">Updated to new timetable! Changes may occur.</string>
     <string name="Brackets" translatable="false">(%1$s)</string>
     <string name="SelectDate">Select date:</string>
+    <string name="SelectTime">Select time:</string>
     <string name="StartingDataFromStop">Departures from: %1$s (%2$s)</string>
     <string name="StartingDataFromStartingPosition">Departures from the starting:</string>
     <string name="BusStopNameWithNum" translatable="false">%1$s (%2$s)</string>
@@ -59,4 +60,6 @@
     <string name="TrackTimeStringOneMinute">%1$s (%2$d minute)</string>
     <string name="DelayStringWithPosSignOneMinute">%1$s%2$d minute</string>
     <string name="AllLines">All lines</string>
+    <string name="DatabaseNotContain">The database does not contain data for this date.</string>
+    <string name="IncBusAnotherDay" translatable="false">%1$s</string>
 </resources>

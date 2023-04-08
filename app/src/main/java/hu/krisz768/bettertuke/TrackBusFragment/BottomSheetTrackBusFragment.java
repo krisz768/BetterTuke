@@ -116,12 +116,6 @@ public class BottomSheetTrackBusFragment extends Fragment {
         return view;
     }
 
-    /*@Override
-    public void onPause() {
-        super.onPause();
-        UpdateLoop.shutdown();
-    }*/
-
     @Override
     public void onStart() {
         super.onStart();
@@ -153,6 +147,11 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
             if (BuildConfig.DEBUG) {
                 Log.i("BusPositionUpdate", "Bus Pos Update");
+            }
+
+            if (mBusLine.getDate() != null) {
+                UpdateLoop.shutdown();
+                return;
             }
 
             TrackBusRespModel BusPosition = serverApi.getBusLocation(mBusLine.getLineId());

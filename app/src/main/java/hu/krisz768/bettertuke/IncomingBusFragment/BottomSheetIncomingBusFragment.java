@@ -1,6 +1,7 @@
 package hu.krisz768.bettertuke.IncomingBusFragment;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -17,6 +18,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.timepicker.MaterialTimePicker;
+import com.google.android.material.timepicker.TimeFormat;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -24,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -41,10 +47,12 @@ import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
+import hu.krisz768.bettertuke.models.IncomBusBackStack;
 
 public class BottomSheetIncomingBusFragment extends Fragment {
     private static final String PLACE = "Place";
     private static final String STOP = "Stop";
+    private static final String STARTMODE = "StartMode";
     private static final String PLACELIST = "PlaceList";
     private static final String STOPLIST = "StopList";
 
@@ -52,22 +60,28 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private volatile int mStop;
     private HashMap<Integer, BusPlaces> mPlaceList;
     private HashMap<Integer, BusStops> mStopList;
+    private IncomBusBackStack mStartMode;
 
     private IncomingBusStopSelectorAdapter Ibssa;
     private IncomingBusListFragment InBusFragment;
 
     private ScheduledExecutorService UpdateLoop;
 
+    private String SelectedDate;
+    private String SelectedTime;
+    private boolean DateTimeSelected = false;
+
     public BottomSheetIncomingBusFragment() {
 
     }
-    public static BottomSheetIncomingBusFragment newInstance(int Place, int Stop, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList) {
+    public static BottomSheetIncomingBusFragment newInstance(int Place, int Stop, IncomBusBackStack StartMode, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList) {
         BottomSheetIncomingBusFragment fragment = new BottomSheetIncomingBusFragment();
         Bundle args = new Bundle();
         args.putInt(PLACE, Place);
         args.putInt(STOP, Stop);
         args.putSerializable(PLACELIST, PlaceList);
         args.putSerializable(STOPLIST, StopList);
+        args.putSerializable(STARTMODE, StartMode);
         fragment.setArguments(args);
         return fragment;
     }
@@ -81,6 +95,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             mStop = getArguments().getInt(STOP);
             mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
             mStopList = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPLIST);
+            mStartMode = (IncomBusBackStack) getArguments().getSerializable(STARTMODE);
         }
     }
 
@@ -88,6 +103,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_bottom_sheet_incoming_bus_view, container, false);
+
+        SelectedDate = mStartMode.getDate();
+        SelectedTime = mStartMode.getTime();
+        DateTimeSelected = mStartMode.isCustomTime();
 
         TextView BusStopName = view.findViewById(R.id.BusStopName);
 
@@ -151,6 +170,9 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
         StopSelectorRec.setLayoutManager(mLayoutManager);
         StopSelectorRec.setAdapter(Ibssa);
+        StopSelectorRec.setItemAnimator(null);
+
+        UpdateDateTimeOnSelector();
 
         RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
             @Override
@@ -212,6 +234,54 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         StartNewUpdateThread();
     }
 
+    public void OnSelectDateClick() {
+        MaterialDatePicker<Long> DatePicker = MaterialDatePicker.Builder.datePicker().setTitleText(getString(R.string.SelectDate)).setSelection((new Date()).getTime()).build();
+        DatePicker.addOnPositiveButtonClickListener(selection -> {
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            sdf1.setTimeZone(TimeZone.getTimeZone("UTC"));
+            SelectedDate = sdf1.format(new Date(selection));
+
+            SelectTime();
+        });
+        DatePicker.show(getChildFragmentManager(), "DatePicker");
+    }
+
+    @SuppressLint("DefaultLocale")
+    public void SelectTime() {
+        Calendar Now = Calendar.getInstance();
+
+        int CurrentHour = Now.get(Calendar.HOUR_OF_DAY);
+        int CurrentMinute = Now.get(Calendar.MINUTE);
+
+        MaterialTimePicker TimePicker = new  MaterialTimePicker.Builder().setTimeFormat(TimeFormat.CLOCK_24H).setTitleText(getString(R.string.SelectTime)).setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK).setHour(CurrentHour).setMinute(CurrentMinute).build();
+
+        TimePicker.addOnPositiveButtonClickListener(view -> {
+            Activity mainActivity = getActivity();
+
+            SelectedTime = String.format("%02d", TimePicker.getHour()) + ":" + String.format("%02d", TimePicker.getMinute());
+
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            String CurrentDate = sdf1.format(new Date());
+
+            DateTimeSelected = !SelectedDate.equals(CurrentDate) || CurrentHour != TimePicker.getHour() || (CurrentMinute != TimePicker.getMinute() && CurrentMinute != TimePicker.getMinute() - 1);
+
+            if (mainActivity != null) {
+                ((MainActivity)mainActivity).IncBusSelectedDate(new IncomBusBackStack(SelectedDate, SelectedTime, DateTimeSelected));
+            }
+
+            UpdateDateTimeOnSelector();
+
+            new Thread(() -> {
+                ResetList();
+
+                TukeServerApi serverApi = new TukeServerApi(getActivity());
+                GetIncomingBuses(serverApi);
+            }).start();
+        });
+
+        TimePicker.show(getChildFragmentManager(), "TimePicker");
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     public void OnStopClick(int Id) {
         if (getActivity() != null){
@@ -248,6 +318,22 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         InBusFragment = null;
     }
 
+    private void UpdateDateTimeOnSelector() {
+        if (Ibssa != null) {
+            if (DateTimeSelected) {
+                Ibssa.UpdateDateTime(SelectedDate.replace("-", ". ") + ". " + SelectedTime);
+            } else {
+                Calendar Now = Calendar.getInstance();
+
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd. HH:mm", Locale.US);
+
+                Ibssa.UpdateDateTime(formatter.format(Now.getTime()));
+            }
+
+            Ibssa.notifyItemChanged(Ibssa.getItemCount()-1);
+        }
+    }
+
     private void GetIncomingBuses(TukeServerApi serverApi) {
         try {
             if (BuildConfig.DEBUG) {
@@ -256,9 +342,24 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
             final int SendStopId = mStop;
 
-            IncomingBusRespModel[] BusList = serverApi.getNextIncomingBuses(mStop);
+            IncomingBusRespModel[] BusList = null;
 
             MainActivity mainActivity = (MainActivity)getActivity();
+
+            if (DateTimeSelected) {
+                if (mainActivity != null) {
+                    DatabaseManager Dm = new DatabaseManager(mainActivity);
+                    BusList = Dm.GetOfflineDepartureTimes(SendStopId, SelectedDate, SelectedTime);
+                }
+            } else {
+                BusList = serverApi.getNextIncomingBuses(mStop);
+            }
+
+            if (mainActivity != null) {
+                mainActivity.runOnUiThread(this::UpdateDateTimeOnSelector);
+            }
+
+            Date currentTime = Calendar.getInstance().getTime();
 
             if (BusList == null) {
                 if(mainActivity != null && HelperProvider.displayOfflineText()) {
@@ -268,38 +369,50 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 if (mainActivity != null) {
                     DatabaseManager Dm = new DatabaseManager(mainActivity);
 
-                    BusList = Dm.GetOfflineDepartureTimes(SendStopId);
+                    SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                    SimpleDateFormat Sdf2 = new SimpleDateFormat("HH:mm", Locale.US);
+                    String CurrentDate = sdf1.format(new Date());
+                    String CurrentTime = Sdf2.format(new Date());
+
+                    BusList = Dm.GetOfflineDepartureTimes(SendStopId, CurrentDate, CurrentTime);
                 }
             }
 
-            Date currentTime = Calendar.getInstance().getTime();
+
             SimpleDateFormat Sdf = new SimpleDateFormat("H", Locale.US);
             SimpleDateFormat Sdf2 = new SimpleDateFormat("m", Locale.US);
+            SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
-            if (BusList != null) {
-                for (IncomingBusRespModel incomingBusRespModel : BusList) {
-                    BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), mainActivity);
-                    if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
-                        Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId());
-                        if (IsBusStarted == null) {
-                            IsBusStarted = false;
+            if (!DateTimeSelected || sdf3.format(new Date()).equals(SelectedDate)) {
+                if (BusList != null) {
+                    for (IncomingBusRespModel incomingBusRespModel : BusList) {
+                        incomingBusRespModel.setMiss(false);
+
+                        BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), mainActivity);
+                        if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
+                            Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId());
+                            if (IsBusStarted == null) {
+                                IsBusStarted = false;
+                            }
+                            incomingBusRespModel.setStarted(IsBusStarted);
+                            if (!IsBusStarted && (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() < Integer.parseInt(Sdf2.format(currentTime)))) {
+                                incomingBusRespModel.setMiss(true);
+                            }
+                        } else {
+                            incomingBusRespModel.setStarted(false);
                         }
-                        incomingBusRespModel.setStarted(IsBusStarted);
-                    } else {
-                        incomingBusRespModel.setStarted(false);
                     }
                 }
             }
 
-
-            if(SendStopId != mStop) {
+            if(SendStopId != mStop && !DateTimeSelected) {
                 return;
             }
 
             if (BusList != null && BusList.length > 0) {
                 if (InBusFragment == null) {
                     try {
-                        InBusFragment = IncomingBusListFragment.newInstance(BusList);
+                        InBusFragment = IncomingBusListFragment.newInstance(BusList, SelectedDate, DateTimeSelected);
                         getChildFragmentManager().beginTransaction()
                                 .replace(R.id.BusListFragment, InBusFragment)
                                 .commit();

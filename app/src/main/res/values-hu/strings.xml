@@ -9,6 +9,7 @@
     <string name="SoloBus">szóló</string>
     <string name="Legend">Jelmagyarázat:</string>
     <string name="SelectDate">Válassz dátumot:</string>
+    <string name="SelectTime">Válassz időt:</string>
     <string name="StartingDataFromStop">Indulási adatok innen: %1$s (%2$s)</string>
     <string name="StartingDataFromStartingPosition">Indulási adatok a kiinduló állásról</string>
     <string name="SumText">Összes:</string>
@@ -52,4 +53,5 @@
     <string name="DelayStringWithPosSignOneMinute">%1$s%2$d perc</string>
     <string name="AllLines">Összes járat</string>
     <string name="WifiOnBusIndicator">Wifi</string>
+    <string name="DatabaseNotContain">Az adatbázis erre a napra nem tartalmaz adatokat.</string>
 </resources>

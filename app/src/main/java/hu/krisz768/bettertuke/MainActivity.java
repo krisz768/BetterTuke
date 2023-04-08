@@ -75,6 +75,7 @@ import hu.krisz768.bettertuke.TrackBusFragment.BottomSheetTrackBusFragment;
 import hu.krisz768.bettertuke.UserDatabase.Favorite;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.models.BackStack;
+import hu.krisz768.bettertuke.models.IncomBusBackStack;
 import hu.krisz768.bettertuke.models.LatLngInterpolator;
 import hu.krisz768.bettertuke.models.MarkerDescriptor;
 import hu.krisz768.bettertuke.models.ScheduleBackStack;
@@ -94,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
     private Integer CurrentBusTrack = -1;
     private BusLine busLine;
     private LatLng SelectedPlace;
+    private IncomBusBackStack IncomBusMode = new IncomBusBackStack("", "", false);
 
     private GoogleMap googleMap;
 
@@ -382,6 +384,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         ZoomToMarker();
+
+        IncomBusMode = new IncomBusBackStack("", "", false);
         ShowBottomSheetIncomingBuses();
         MarkerRenderer();
     }
@@ -427,6 +431,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         ZoomToMarker();
+
+        IncomBusMode = new IncomBusBackStack("", "", false);
         ShowBottomSheetIncomingBuses();
         MarkerRenderer();
     }
@@ -862,7 +868,7 @@ public class MainActivity extends AppCompatActivity {
         BottomSheetSetNormalParams(65);
 
         try{
-            BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, busPlaces, busStops);
+            BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, IncomBusMode, busPlaces, busStops);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainerView2, InBusFragment)
                     .commit();
@@ -1132,6 +1138,7 @@ public class MainActivity extends AppCompatActivity {
         CurrentBusTrack = PrevState.getCurrentBusTrack();
         busLine = PrevState.getBusLine();
         SelectedPlace = PrevState.getSelectedPlace();
+        IncomBusMode = PrevState.getIncomBusMode();
 
         backStack.remove(backStack.size() - 1);
 
@@ -1183,7 +1190,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void AddBackStack() {
-        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace));
+        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace, IncomBusMode));
     }
 
     public void ShowSchedule(int StopId, String LineNum, String Direction, String Date, boolean PreSelected) {
@@ -1204,7 +1211,7 @@ public class MainActivity extends AppCompatActivity {
                         TrackBus(result.getData().getExtras().getInt("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
                     }
 
-                    backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getInt("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null));
+                    backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getInt("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null));
                 }
             });
 
@@ -1341,5 +1348,11 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean isUserTouchedMap() {
         return UserTouchedMap;
+    }
+
+    public void IncBusSelectedDate(IncomBusBackStack Data) {
+        AddBackStack();
+
+        IncomBusMode = Data;
     }
 }

@@ -20,6 +20,7 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
     private final Context ctx;
     private int SelectedStop;
     private final BottomSheetIncomingBusFragment callback;
+    private String DateTime;
 
     public static class StopViewHolder extends RecyclerView.ViewHolder {
 
@@ -63,12 +64,12 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
             button = view.findViewById(R.id.SDateButton);
         }
 
-        public void setData(BottomSheetIncomingBusFragment callback, Context ctx) {
+        public void setData(BottomSheetIncomingBusFragment callback, String DateTime, Context ctx) {
 
-            button.setText("2023. 04. 05. 15:23");
+            button.setText(DateTime);
 
 
-            //button.setOnClickListener(view -> callback.OnStopClick(Data.getId()));
+            button.setOnClickListener(view -> callback.OnSelectDateClick());
 
             TypedValue typedValue = new TypedValue();
             ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondary, typedValue, true);
@@ -87,6 +88,10 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
 
     public void setSelectedStop(int SelectedStop) {
         this.SelectedStop = SelectedStop;
+    }
+
+    public void UpdateDateTime(String DateTime) {
+        this.DateTime = DateTime;
     }
 
     @NonNull
@@ -112,7 +117,7 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
         if (viewHolder.getItemViewType() == 0) {
             ((StopViewHolder)viewHolder).setData(BusStopList[position],SelectedStop, callback, ctx);
         } else {
-            ((DateViewHolder)viewHolder).setData(callback, ctx);
+            ((DateViewHolder)viewHolder).setData(callback, DateTime, ctx);
         }
     }
 

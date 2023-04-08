@@ -10,7 +10,9 @@ public class IncomingBusRespModel implements Serializable {
     private final int LineId;
     private final int RemainingMin;
     private final boolean AtStop;
+
     private boolean Started;
+    private boolean Miss;
 
     public IncomingBusRespModel(String lineNum, String lineName, Date arriveTime, int LineId, int remainingMin, boolean AtStop) {
         LineNum = lineNum;
@@ -23,6 +25,14 @@ public class IncomingBusRespModel implements Serializable {
 
     public void setStarted(boolean started) {
         Started = started;
+    }
+
+    public void setMiss(boolean miss) {
+        Miss = miss;
+    }
+
+    public boolean isMiss() {
+        return Miss;
     }
 
     public String getLineNum() {
