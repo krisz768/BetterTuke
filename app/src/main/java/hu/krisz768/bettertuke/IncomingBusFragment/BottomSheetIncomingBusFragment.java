@@ -116,6 +116,14 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             ScheduleButton.setOnClickListener(view1 -> ((MainActivity)getActivity()).ShowSchedule(mStop, null, null, null, false));
         }
 
+        ImageView DateSelectButton = view.findViewById(R.id.StopDateTimeButton);
+        if (DateTimeSelected) {
+            DateSelectButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DateSelectActive));
+        } else {
+            DateSelectButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DateSelectInactive));
+        }
+        DateSelectButton.setOnClickListener(view13 -> OnSelectDateClick());
+
         List<BusStops> SelectedPlaceStops = new ArrayList<>();
 
         BusPlaces busPlace = mPlaceList.get(mPlace);
@@ -172,7 +180,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         StopSelectorRec.setAdapter(Ibssa);
         StopSelectorRec.setItemAnimator(null);
 
-        UpdateDateTimeOnSelector();
+        UpdateDateTimeOnSelector(view);
 
         RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
             @Override
@@ -269,7 +277,17 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 ((MainActivity)mainActivity).IncBusSelectedDate(new IncomBusBackStack(SelectedDate, SelectedTime, DateTimeSelected));
             }
 
-            UpdateDateTimeOnSelector();
+            UpdateDateTimeOnSelector(getView());
+
+            if (getView() != null) {
+                ImageView DateSelectButton = getView().findViewById(R.id.StopDateTimeButton);
+                if (DateTimeSelected) {
+                    DateSelectButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DateSelectActive));
+                } else {
+                    DateSelectButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DateSelectInactive));
+                }
+            }
+
 
             new Thread(() -> {
                 ResetList();
@@ -318,19 +336,20 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         InBusFragment = null;
     }
 
-    private void UpdateDateTimeOnSelector() {
-        if (Ibssa != null) {
-            if (DateTimeSelected) {
-                Ibssa.UpdateDateTime(SelectedDate.replace("-", ". ") + ". " + SelectedTime);
-            } else {
-                Calendar Now = Calendar.getInstance();
+    private void UpdateDateTimeOnSelector(View view) {
+        if (view != null) {
+            TextView DateText = view.findViewById(R.id.BusStopDate);
+            if (DateText != null) {
+                if (DateTimeSelected) {
+                    DateText.setText(getString(R.string.IncBusAnotherDay, SelectedDate.replace("-", ". ") + ". " + SelectedTime));
+                } else {
+                    Calendar Now = Calendar.getInstance();
 
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd. HH:mm", Locale.US);
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd. HH:mm", Locale.US);
 
-                Ibssa.UpdateDateTime(formatter.format(Now.getTime()));
+                    DateText.setText(formatter.format(Now.getTime()));
+                }
             }
-
-            Ibssa.notifyItemChanged(Ibssa.getItemCount()-1);
         }
     }
 
@@ -341,6 +360,9 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
 
             final int SendStopId = mStop;
+            final String SendDate = SelectedDate;
+            final String SendTime = SelectedTime;
+            final boolean SendCustom = DateTimeSelected;
 
             IncomingBusRespModel[] BusList = null;
 
@@ -356,7 +378,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
 
             if (mainActivity != null) {
-                mainActivity.runOnUiThread(this::UpdateDateTimeOnSelector);
+                mainActivity.runOnUiThread(() -> UpdateDateTimeOnSelector(getView()));
             }
 
             Date currentTime = Calendar.getInstance().getTime();
@@ -405,7 +427,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 }
             }
 
-            if(SendStopId != mStop && !DateTimeSelected) {
+            if(SendStopId != mStop || !SendDate.equals(SelectedDate) || !SendTime.equals(SelectedTime) || SendCustom != DateTimeSelected) {
                 return;
             }
 

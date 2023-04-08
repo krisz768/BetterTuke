@@ -33,7 +33,7 @@ import java.util.Objects;
 import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class HelperProvider {
-    private static final Bitmap[] BitmapContainer = new Bitmap[28];
+    private static final Bitmap[] BitmapContainer = new Bitmap[30];
     private static JSONObject BusAttributes;
     private static HashMap<Integer, String> BusStopDirections;
 
@@ -81,6 +81,8 @@ public class HelperProvider {
         BitmapContainer[25] = HelperProvider.BitmapFromVector(R.drawable.direction1wayarrow,com.google.android.material.R.attr.colorPrimary,ctx,false);
         BitmapContainer[26] = HelperProvider.BitmapFromVector(R.drawable.location_pinpoint,com.google.android.material.R.attr.colorPrimary,ctx,true);
         BitmapContainer[27] = HelperProvider.BitmapFromVector(R.drawable.navigation,com.google.android.material.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[28] = HelperProvider.BitmapFromVector(R.drawable.date,com.google.android.material.R.attr.colorOutline,ctx,false);
+        BitmapContainer[29] = HelperProvider.BitmapFromVector(R.drawable.date,com.google.android.material.R.attr.colorPrimary,ctx,false);
     }
 
     @NonNull
@@ -140,6 +142,10 @@ public class HelperProvider {
                 return BitmapContainer[26];
             case Navigation:
                 return BitmapContainer[27];
+            case DateSelectInactive:
+                return BitmapContainer[28];
+            case DateSelectActive:
+                return BitmapContainer[29];
             case MapStopSelected:
             default:
                 return BitmapContainer[0];
@@ -174,7 +180,9 @@ public class HelperProvider {
         DirectionBackwards,
         DirectionOneWay,
         LocationPin,
-        Navigation
+        Navigation,
+        DateSelectInactive,
+        DateSelectActive
     }
 
     private static Bitmap overlay(Bitmap bmp1, Bitmap bmp2) {

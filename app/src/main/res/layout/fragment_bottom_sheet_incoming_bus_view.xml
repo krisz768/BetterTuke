@@ -14,17 +14,49 @@
         android:layout_marginEnd="5dp"
         android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/BusStopName"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginHorizontal="20dp"
             android:layout_weight="1"
-            android:gravity="start|center"
-            android:text=""
-            android:textSize="25sp"
-            app:autoSizeMaxTextSize="30sp"
-            app:autoSizeTextType="uniform" />
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/BusStopName"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginStart="20dp"
+                android:layout_weight="0"
+                android:gravity="start|center"
+                android:text=""
+                android:textSize="25sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeTextType="uniform" />
+
+            <TextView
+                android:id="@+id/BusStopDate"
+                android:layout_width="match_parent"
+                android:layout_height="13dp"
+                android:layout_marginStart="20dp"
+                android:layout_weight="0"
+                android:text=""
+                android:textSize="25sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeTextType="uniform" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/StopDateTimeButton"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:layout_weight="0"
+            android:clickable="true"
+            android:contentDescription="@string/SelectDate"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:padding="5dp"
+            android:src="@drawable/date"
+            tools:ignore="TouchTargetSizeCheck" />
 
         <ImageView
             android:id="@+id/StopFavoriteButton"
