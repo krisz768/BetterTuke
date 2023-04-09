@@ -411,14 +411,19 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                         incomingBusRespModel.setMiss(false);
 
                         BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), mainActivity);
+
                         if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
                             Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId());
                             if (IsBusStarted == null) {
                                 IsBusStarted = false;
                             }
                             incomingBusRespModel.setStarted(IsBusStarted);
-                            if (!IsBusStarted && (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() < Integer.parseInt(Sdf2.format(currentTime)))) {
-                                incomingBusRespModel.setMiss(true);
+                            if (!IsBusStarted && ((Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() < Integer.parseInt(Sdf2.format(currentTime))) || Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)))) {
+                                Calendar ArrTime = Calendar.getInstance();
+                                ArrTime.setTime(incomingBusRespModel.getArriveTime());
+                                if (ArrTime.after(currentTime)) {
+                                    incomingBusRespModel.setMiss(true);
+                                }
                             }
                         } else {
                             incomingBusRespModel.setStarted(false);
