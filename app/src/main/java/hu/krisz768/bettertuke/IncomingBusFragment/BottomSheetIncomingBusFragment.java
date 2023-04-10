@@ -407,6 +407,8 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
             if (!DateTimeSelected || sdf3.format(new Date()).equals(SelectedDate)) {
                 if (BusList != null) {
+
+                    Calendar Now = Calendar.getInstance();
                     for (IncomingBusRespModel incomingBusRespModel : BusList) {
                         incomingBusRespModel.setMiss(false);
 
@@ -421,7 +423,8 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                             if (!IsBusStarted && ((Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() < Integer.parseInt(Sdf2.format(currentTime))) || Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)))) {
                                 Calendar ArrTime = Calendar.getInstance();
                                 ArrTime.setTime(incomingBusRespModel.getArriveTime());
-                                if (ArrTime.after(currentTime)) {
+
+                                if (ArrTime.after(Now)) {
                                     incomingBusRespModel.setMiss(true);
                                 }
                             }
