@@ -709,8 +709,9 @@ public class ScheduleBusTimeFragment extends Fragment {
             }
 
             Activity activity = getActivity();
+            View view = getView();
 
-            if(activity != null && Sbta != null && getView() != null) {
+            if(activity != null && Sbta != null && view != null) {
                 activity.runOnUiThread(() -> {
                     Sbta.AttachLiveData(Started, ErrNotStarted);
 
@@ -733,7 +734,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                             }
                         }
                     }
-                    SwipeRefreshLayout swipeRefreshLayout = getView().findViewById(R.id.swiperefresh);
+                    SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
                     swipeRefreshLayout.setRefreshing(false);
                 });
             }
