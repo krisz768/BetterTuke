@@ -35,7 +35,7 @@
             <TextView
                 android:id="@+id/BusStopDate"
                 android:layout_width="match_parent"
-                android:layout_height="13dp"
+                android:layout_height="15dp"
                 android:layout_marginStart="20dp"
                 android:layout_weight="0"
                 android:text=""
