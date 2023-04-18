@@ -86,6 +86,7 @@ public class UserDatabase {
                     .setIntent(intent)
                     .build();
 
+
             ShortcutManagerCompat.pushDynamicShortcut(Ctx, shortcut);
         }
 
