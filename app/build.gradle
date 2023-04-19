@@ -12,7 +12,7 @@ android {
         applicationId "hu.krisz768.bettertuke"
         minSdk 23
         targetSdk 32
-        versionCode 13
+        versionCode 15
         versionName "1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
