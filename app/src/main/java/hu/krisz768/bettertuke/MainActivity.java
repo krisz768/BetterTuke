@@ -115,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Integer ShortcutType;
     private String ShortcutData;
+    private boolean OnStartFragmentError = false;
 
     private boolean IsMapInitialized = false;
     @Override
@@ -872,8 +873,9 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainerView2, InBusFragment)
                     .commit();
-        }catch (Exception ignored) {
 
+        }catch (Exception ignored) {
+            OnStartFragmentError = true;
         }
     }
 
@@ -1354,5 +1356,14 @@ public class MainActivity extends AppCompatActivity {
         AddBackStack();
 
         IncomBusMode = Data;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (OnStartFragmentError) {
+            ShowBottomSheetIncomingBuses();
+        }
     }
 }
