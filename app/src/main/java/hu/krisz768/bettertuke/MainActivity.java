@@ -1364,6 +1364,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (OnStartFragmentError) {
             ShowBottomSheetIncomingBuses();
+            OnStartFragmentError = false;
         }
     }
 }
