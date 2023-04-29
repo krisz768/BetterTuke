@@ -463,11 +463,25 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 }
             } else {
                 InBusFragment = null;
-
-                InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptyList), -1);
-                getChildFragmentManager().beginTransaction()
-                        .replace(R.id.BusListFragment, Fragment)
-                        .commit();
+                if (mainActivity != null) {
+                    DatabaseManager Dm = new DatabaseManager(mainActivity);
+                    if (DateTimeSelected && !Dm.GetBusDatabaseValidDate(SelectedDate)) {
+                        InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.DatabaseNotContain), -1);
+                        getChildFragmentManager().beginTransaction()
+                                .replace(R.id.BusListFragment, Fragment)
+                                .commit();
+                    } else {
+                        InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptyList), -1);
+                        getChildFragmentManager().beginTransaction()
+                                .replace(R.id.BusListFragment, Fragment)
+                                .commit();
+                    }
+                } else {
+                    InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptyList), -1);
+                    getChildFragmentManager().beginTransaction()
+                            .replace(R.id.BusListFragment, Fragment)
+                            .commit();
+                }
             }
         } catch (Exception e) {
             Log.e("Update bus list error", e.toString());

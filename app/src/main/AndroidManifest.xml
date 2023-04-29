@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BetterTuke"
         android:usesCleartextTraffic="true"
-        tools:targetApi="31">
+        tools:targetApi="33">
         <activity
             android:name=".ScheduleActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"

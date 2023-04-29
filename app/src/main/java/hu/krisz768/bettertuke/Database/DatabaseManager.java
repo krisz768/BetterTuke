@@ -6,15 +6,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
-import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class DatabaseManager {

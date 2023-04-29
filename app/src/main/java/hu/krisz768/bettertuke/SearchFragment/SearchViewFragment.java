@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -142,7 +143,7 @@ public class SearchViewFragment extends Fragment {
             List<SearchResult> ResultsList = new ArrayList<>();
 
             for (SearchResult searchResult : mAllItem) {
-                if (searchResult.getSearchText().toLowerCase().contains(text.toLowerCase())) {
+                if (Normalizer.normalize(searchResult.getSearchText(), Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toLowerCase().contains(Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toLowerCase())) {
                     ResultsList.add(searchResult);
                 }
             }
