@@ -882,12 +882,17 @@ public class MainActivity extends AppCompatActivity {
     public void TrackBus(int Id, String Date) {
         AddBackStack();
 
+        busLine = BusLine.BusLinesByLineId(Id, this);
+        if (busLine == null) {
+            Toast.makeText(this, R.string.DatabaseError, Toast.LENGTH_LONG).show();
+            return;
+        }
+
         if (SelectedPlace != null) {
             SelectedPlace = null;
         }
 
         CurrentBusTrack = Id;
-        busLine = BusLine.BusLinesByLineId(Id, this);
         if (Date != null) {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             java.util.Date date = new Date();

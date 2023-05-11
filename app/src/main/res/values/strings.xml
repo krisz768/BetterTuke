@@ -62,4 +62,5 @@
     <string name="AllLines">All lines</string>
     <string name="DatabaseNotContain">The database does not contain data for this date.</string>
     <string name="IncBusAnotherDay" translatable="false">%1$s</string>
+    <string name="DatabaseError">Error: this busline is not included in the database.</string>
 </resources>

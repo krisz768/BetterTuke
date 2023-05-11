@@ -54,4 +54,5 @@
     <string name="AllLines">Összes járat</string>
     <string name="WifiOnBusIndicator">Wifi</string>
     <string name="DatabaseNotContain">Az adatbázis erre a napra nem tartalmaz adatokat.</string>
+    <string name="DatabaseError">Hiba: Az adatbázis nem tartalmazza ezt a járatot.</string>
 </resources>

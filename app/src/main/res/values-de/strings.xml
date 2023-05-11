@@ -55,4 +55,5 @@
     <string name="WelcomeTextTitle">Willkommen bei PécsLines!</string>
     <string name="AllLines">Alle Buslinien</string>
     <string name="DatabaseNotContain">Die Datenbank enthält keine Daten für dieses Datum.</string>
+    <string name="DatabaseError">Fehler: Die Datenbank enthält diese Buslinie nicht.</string>
 </resources>

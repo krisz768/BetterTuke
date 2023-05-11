@@ -414,23 +414,27 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
                         BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), mainActivity);
 
-                        if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
-                            Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId());
-                            if (IsBusStarted == null) {
-                                IsBusStarted = false;
-                            } else {
-                                if (!IsBusStarted && ((Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() < Integer.parseInt(Sdf2.format(currentTime))) || Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)))) {
-                                    Calendar ArrTime = Calendar.getInstance();
-                                    ArrTime.setTime(incomingBusRespModel.getArriveTime());
+                        if (Bj != null) {
+                            if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
+                                Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId());
+                                if (IsBusStarted == null) {
+                                    IsBusStarted = false;
+                                } else {
+                                    if (!IsBusStarted && ((Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() < Integer.parseInt(Sdf2.format(currentTime))) || Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)))) {
+                                        Calendar ArrTime = Calendar.getInstance();
+                                        ArrTime.setTime(incomingBusRespModel.getArriveTime());
 
-                                    if (ArrTime.after(Now)) {
-                                        incomingBusRespModel.setMiss(true);
+                                        if (ArrTime.after(Now)) {
+                                            incomingBusRespModel.setMiss(true);
+                                        }
                                     }
                                 }
+                                incomingBusRespModel.setStarted(IsBusStarted);
+                            } else {
+                                incomingBusRespModel.setStarted(false);
                             }
-                            incomingBusRespModel.setStarted(IsBusStarted);
                         } else {
-                            incomingBusRespModel.setStarted(false);
+                            incomingBusRespModel.setMiss(true);
                         }
                     }
                 }
