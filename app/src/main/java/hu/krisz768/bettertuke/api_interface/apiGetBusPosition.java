@@ -24,6 +24,8 @@ public class apiGetBusPosition extends TukeServerApiFunctions<TrackBusRespModel>
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            urlConnection.setConnectTimeout(6000);
+            urlConnection.setReadTimeout(6000);
 
             Map<String, Object> queryParams = new HashMap<>();
             queryParams.put("BLATE", LineId);

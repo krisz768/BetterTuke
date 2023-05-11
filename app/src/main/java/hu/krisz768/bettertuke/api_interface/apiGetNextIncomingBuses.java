@@ -26,6 +26,8 @@ public class apiGetNextIncomingBuses extends TukeServerApiFunctions<IncomingBusR
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            urlConnection.setConnectTimeout(10000);
+            urlConnection.setReadTimeout(10000);
 
             Map<String, Object> queryParams = new HashMap<>();
             queryParams.put("SMART", StopId);
