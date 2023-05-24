@@ -1372,4 +1372,8 @@ public class MainActivity extends AppCompatActivity {
             OnStartFragmentError = false;
         }
     }
+
+    public void CollapseBottomSheet() {
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+    }
 }

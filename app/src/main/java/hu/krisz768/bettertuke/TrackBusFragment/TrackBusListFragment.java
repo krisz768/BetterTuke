@@ -150,6 +150,7 @@ public class TrackBusListFragment extends Fragment {
         if(getActivity() != null && busStops != null){
             ((MainActivity) getActivity()).SetUserTouchedMap(true);
             ((MainActivity) getActivity()).ZoomTo(new LatLng(busStops.getGpsLatitude(), busStops.getGpsLongitude()));
+            ((MainActivity) getActivity()).CollapseBottomSheet();
         }
 
         if (mBusPosition != null) {
