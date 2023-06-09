@@ -163,10 +163,14 @@ public class BottomSheetNearStops extends Fragment {
 
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
-                    NearBusStopListFragment NearStopFragment = NearBusStopListFragment.newInstance(busPlaces, FavNum);
-                    getChildFragmentManager().beginTransaction()
-                            .replace(R.id.NearStopListFragment, NearStopFragment)
-                            .commit();
+                    try {
+                        NearBusStopListFragment NearStopFragment = NearBusStopListFragment.newInstance(busPlaces, FavNum);
+                        getChildFragmentManager().beginTransaction()
+                                .replace(R.id.NearStopListFragment, NearStopFragment)
+                                .commit();
+                    } catch (Exception ignored) {
+
+                    }
                 });
             }
 
