@@ -59,7 +59,7 @@ public class SplashActivity extends AppCompatActivity {
 
                 StartMain(false,false);
             } else {
-                if (Version.equals(OnlineVersion) && !OnlineVersion.equals("Err")) {
+                if (Version.equals(OnlineVersion) && !OnlineVersion.equals("Err") && DatabaseManager.IsDatabaseValid(ctx)) {
                     AddLog("Database is up to date!");
 
                     StartMain(false,false);

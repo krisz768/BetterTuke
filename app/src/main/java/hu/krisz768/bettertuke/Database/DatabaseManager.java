@@ -64,6 +64,29 @@ public class DatabaseManager {
         }
     }
 
+    public static boolean IsDatabaseValid(Context Ctx) {
+        try
+        {
+            TukeDatabaseHelper Dbh = new TukeDatabaseHelper(Ctx, new File(Ctx.getFilesDir() + "/Database", "track.db").getAbsolutePath());
+            SQLiteDatabase Sld = Dbh.getReadableDatabase();
+
+            Cursor cursor = Sld.rawQuery("SELECT DISTINCT v.vonal_nev FROM vonalak v WHERE 1", null);
+
+            int Count = 0;
+            while(cursor.moveToNext()) {
+                Count++;
+            }
+            cursor.close();
+
+            Sld.close();
+            Dbh.close();
+            return Count>0;
+        } catch (Exception e) {
+            Log.e("DatabaseManager", e.toString());
+            return false;
+        }
+    }
+
     public String GetStopName (int StopId) {
         try
         {
