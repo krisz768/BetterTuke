@@ -1,7 +1,5 @@
-package hu.krisz768.bettertuke.gtfs;
+package hu.krisz768.bettertuke.Gtfs;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 

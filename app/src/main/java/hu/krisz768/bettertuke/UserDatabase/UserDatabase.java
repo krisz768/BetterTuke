@@ -161,6 +161,56 @@ public class UserDatabase {
         }
     }
 
+    public String GetPreference(String Id) {
+        try
+        {
+            Cursor cursor = Sld.rawQuery("SELECT Value FROM Preferences WHERE Id = '" + Id + "';", null);
+            String Data = null;
+            while(cursor.moveToNext()) {
+                Data = cursor.getString(0);
+            }
+            cursor.close();
+
+            return Data;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+        }
+    }
+
+    public void SetPreference(String Id, String Value) {
+        try
+        {
+            if (IsPreferenceExist(Id)) {
+                Sld.execSQL("update Preferences set Value = " + Value + " where Id = " + Id + ";");
+            } else {
+                Sld.execSQL("INSERT INTO Preferences (Id, Value) VALUES (" + Id + ", \"" + Value + "\");");
+            }
+
+        } catch (Exception e) {
+            log(e.toString());
+        }
+    }
+
+    private boolean IsPreferenceExist(String Id) {
+        try
+        {
+            Cursor cursor = Sld.rawQuery("SELECT Value FROM Preferences WHERE Id = '" + Id + "';", null);
+            String Data = null;
+            while(cursor.moveToNext()) {
+                Data = cursor.getString(0);
+            }
+            cursor.close();
+
+            return Data!=null;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return false;
+        }
+    }
+
     private void log (String msg) {
         Log.e("UserDatabaseManager", msg);
     }

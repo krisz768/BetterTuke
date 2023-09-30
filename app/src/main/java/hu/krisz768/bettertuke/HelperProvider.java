@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Objects;
 
+import hu.krisz768.bettertuke.Gtfs.GTFSDatabase;
 import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class HelperProvider {
@@ -545,7 +546,7 @@ public class HelperProvider {
     }
 
     public static String GetStopDirectionString(Context ctx, int id) {
-        if (BusStopDirections == null) {
+        /*if (BusStopDirections == null) {
             BusStopDirections = new HashMap<>();
 
             InputStream inputStream = ctx.getResources().openRawResource(R.raw.stop_directions);
@@ -581,6 +582,13 @@ public class HelperProvider {
             Dir = "-";
         }
 
-        return Dir;
+        return Dir;*/
+        GTFSDatabase gtfsDatabase = new GTFSDatabase(ctx);
+        String name = gtfsDatabase.GetStopName(id);
+        if (name == null) {
+            return "-";
+        }
+        return name;
+
     }
 }
