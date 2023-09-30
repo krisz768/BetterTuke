@@ -9,11 +9,11 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "hu.krisz768.bettertuke"
+        applicationId "hu.krisz768.bettertukeDEV"
         minSdk 23
         targetSdk 33
         versionCode 22
-        versionName "1.3.3"
+        versionName "2.0 DEV"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

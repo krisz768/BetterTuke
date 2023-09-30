@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.Date;
 
 import hu.krisz768.bettertuke.Database.DatabaseManager;
+import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseManager;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
 @SuppressLint("CustomSplashScreen")
@@ -62,6 +63,9 @@ public class SplashActivity extends AppCompatActivity {
                 if (Version.equals(OnlineVersion) && !OnlineVersion.equals("Err") && DatabaseManager.IsDatabaseValid(ctx)) {
                     AddLog("Database is up to date!");
 
+                    GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
+                    gtfsDatabaseManager.CheckForUpdate(this);
+
                     StartMain(false,false);
                 } else {
                     AddLog("Database version does not match! Updating....");
@@ -76,6 +80,10 @@ public class SplashActivity extends AppCompatActivity {
                         Version = DatabaseManager.GetDatabaseVersion(ctx);
 
                         AddLog("Database version = " + Version);
+
+                        GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
+                        runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());
+                        gtfsDatabaseManager.ForceUpdate();
 
                         runOnUiThread(() -> Toast.makeText(ctx, R.string.NewDatabaseWarning, Toast.LENGTH_LONG).show());
 
@@ -94,6 +102,10 @@ public class SplashActivity extends AppCompatActivity {
                 String Version = DatabaseManager.GetDatabaseVersion(ctx);
 
                 AddLog("Database version = " + Version);
+
+                GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
+                runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());
+                gtfsDatabaseManager.ForceUpdate();
 
                 StartMain(false,true);
             }else  {
