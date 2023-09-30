@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import java.io.File;
+import java.util.Date;
 
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabaseHelper;
@@ -26,6 +27,22 @@ public class GTFSDatabase {
             }
             cursor.close();
             return Name;
+        } catch (Exception e) {
+            log(e.toString());
+            return "Err";
+        }
+    }
+
+    public String ConvertTripId (String StartingStopId, String DepartureTime, String Date) {
+        try
+        {
+            Cursor cursor = Sld.rawQuery("SELECT st.trip_id FROM stop_times as st INNER JOIN trips as t ON st.trip_id = t.trip_id INNER JOIN calendar_dates as cd ON t.service_id = cd.service_id WHERE st.stop_sequence = 0 AND st.stop_id = " + StartingStopId + " AND st.departure_time = \"" + DepartureTime + "\" AND cd.date = \"" + Date + "\" AND cd.exception_type = 1;", null);
+            String TripId = null;
+            while(cursor.moveToNext()) {
+                TripId = cursor.getString(0);
+            }
+            cursor.close();
+            return TripId;
         } catch (Exception e) {
             log(e.toString());
             return "Err";
