@@ -46,10 +46,10 @@ public class BusLine implements Serializable {
         RouteInfo = routeInfo;
     }
 
-    public static BusLine BusLinesByLineId(int Id, Context ctx) {
+    public static BusLine BusLinesByLineId(int Id, boolean GetGTFS, Context ctx) {
         DatabaseManager Dm = new DatabaseManager(ctx);
 
-        return Dm.GetBusLineById(Id);
+        return Dm.GetBusLineById(Id, GetGTFS);
     }
 
     public String getDate() {

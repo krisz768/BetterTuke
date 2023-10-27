@@ -83,8 +83,8 @@ public class SplashActivity extends AppCompatActivity {
 
                         GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
                         runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());
-                        gtfsDatabaseManager.ForceUpdate();
-
+                        //gtfsDatabaseManager.ForceUpdate();
+                        gtfsDatabaseManager.CheckForUpdate(this); //NEM VÉGLEGES
                         runOnUiThread(() -> Toast.makeText(ctx, R.string.NewDatabaseWarning, Toast.LENGTH_LONG).show());
 
                         StartMain(false,false);

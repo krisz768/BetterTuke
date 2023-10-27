@@ -26,8 +26,8 @@ public class GTFSDatabaseManager {
             String Current = userDatabase.GetPreference("GTFS-cl");
             String Online = contentLength.ContentLength;
 
-            Toast.makeText(ctx, "Current: " + Current, Toast.LENGTH_SHORT).show(); ///
-            Toast.makeText(ctx, "Online: " + Online, Toast.LENGTH_SHORT).show(); ///
+            UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Current: " + Current, Toast.LENGTH_SHORT).show()); ///
+            UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Online: " + Online, Toast.LENGTH_SHORT).show()); ///
             if (Current == null) {
                 UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());
                 ForceUpdate();
@@ -35,6 +35,8 @@ public class GTFSDatabaseManager {
                 UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());
                 ForceUpdate();
             }
+            UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Nincs update", Toast.LENGTH_SHORT).show());
+
         } catch (Exception e) {
             log(e.toString());
         }
