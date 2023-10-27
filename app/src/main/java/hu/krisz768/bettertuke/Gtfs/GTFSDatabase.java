@@ -7,8 +7,12 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import hu.krisz768.bettertuke.Database.LineInfoRoute;
+import hu.krisz768.bettertuke.Database.LineInfoTravelTime;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabaseHelper;
 
@@ -33,10 +37,10 @@ public class GTFSDatabase {
         }
     }
 
-    public String ConvertTripId (String StartingStopId, String DepartureTime, String Date) {
+    public String ConvertTripId (String StartingStopId, String DepartureTime, String Date, String TripName) {
         try
         {
-            Cursor cursor = Sld.rawQuery("SELECT st.trip_id FROM stop_times as st INNER JOIN trips as t ON st.trip_id = t.trip_id INNER JOIN calendar_dates as cd ON t.service_id = cd.service_id WHERE st.stop_sequence = 0 AND st.stop_id = " + StartingStopId + " AND st.departure_time = \"" + DepartureTime + "\" AND cd.date = \"" + Date + "\" AND cd.exception_type = 1;", null);
+            Cursor cursor = Sld.rawQuery("SELECT st.trip_id FROM stop_times as st INNER JOIN trips as t ON st.trip_id = t.trip_id INNER JOIN calendar_dates as cd ON t.service_id = cd.service_id INNER JOIN routes as r ON t.route_id = r.route_id WHERE r.route_short_name = \"" + TripName + "\" AND st.stop_sequence = 0 AND st.stop_id = " + StartingStopId + " AND st.departure_time = \"" + DepartureTime + "\" AND cd.date = \"" + Date + "\" AND cd.exception_type = 1;", null);
             String TripId = null;
             while(cursor.moveToNext()) {
                 TripId = cursor.getString(0);
@@ -45,7 +49,26 @@ public class GTFSDatabase {
             return TripId;
         } catch (Exception e) {
             log(e.toString());
-            return "Err";
+            return null;
+        }
+    }
+
+    public LineInfoRoute[] GetGTFSGPSRoute(String Id){
+        try
+        {
+            Cursor cursor = Sld.rawQuery("SELECT s.shape_pt_lat, s.shape_pt_lon, s.shape_id, s.shape_pt_sequence FROM shapes as s INNER JOIN trips as t on t.shape_id = s.shape_id WHERE t.trip_id = \"" + Id + "\" ORDER BY s.shape_pt_sequence DESC;", null);
+            List<LineInfoRoute> lineInfoRoutes = new ArrayList<>();
+            while(cursor.moveToNext()) {
+                lineInfoRoutes.add(new LineInfoRoute(cursor.getInt(2), Float.parseFloat(cursor.getString(1)), Float.parseFloat(cursor.getString(0))));
+            }
+            cursor.close();
+
+            LineInfoRoute[] ret  = new LineInfoRoute[lineInfoRoutes.size()];
+            lineInfoRoutes.toArray(ret);
+            return ret;
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
         }
     }
 

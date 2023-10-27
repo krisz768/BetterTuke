@@ -412,7 +412,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                     for (IncomingBusRespModel incomingBusRespModel : BusList) {
                         incomingBusRespModel.setMiss(false);
 
-                        BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), mainActivity);
+                        BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), false,mainActivity);
 
                         if (Bj != null) {
                             if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {

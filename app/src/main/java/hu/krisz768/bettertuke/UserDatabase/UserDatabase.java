@@ -185,7 +185,7 @@ public class UserDatabase {
             if (IsPreferenceExist(Id)) {
                 Sld.execSQL("update Preferences set Value = " + Value + " where Id = " + Id + ";");
             } else {
-                Sld.execSQL("INSERT INTO Preferences (Id, Value) VALUES (" + Id + ", \"" + Value + "\");");
+                Sld.execSQL("INSERT INTO Preferences (Id, Value) VALUES (\"" + Id + "\", \"" + Value + "\");");
             }
 
         } catch (Exception e) {
@@ -196,7 +196,7 @@ public class UserDatabase {
     private boolean IsPreferenceExist(String Id) {
         try
         {
-            Cursor cursor = Sld.rawQuery("SELECT Value FROM Preferences WHERE Id = '" + Id + "';", null);
+            Cursor cursor = Sld.rawQuery("SELECT Value FROM Preferences WHERE Id = \"" + Id + "\";", null);
             String Data = null;
             while(cursor.moveToNext()) {
                 Data = cursor.getString(0);

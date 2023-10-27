@@ -6,18 +6,24 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import hu.krisz768.bettertuke.Gtfs.GTFSDatabase;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class DatabaseManager {
     private static SQLiteDatabase Sld;
+    private Context ctx;
 
     public  DatabaseManager (Context Ctx) {
+        this.ctx = Ctx;
         String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "track.db")).getAbsolutePath();
 
         if (Sld == null) {
@@ -147,13 +153,53 @@ public class DatabaseManager {
         }
     }
 
-    public BusLine GetBusLineById(int Id) {
+    public BusLine GetBusLineById(int Id, boolean GetGTFS) {
         try
         {
             BusLine ret = null;
             Cursor cursor = Sld.rawQuery("SELECT * FROM jaratok WHERE id_jarat = " + Id + ";", null);
             while(cursor.moveToNext()) {
-                ret = new BusLine(cursor.getInt(0), cursor.getInt(2),cursor.getInt(3), GetBusLineTravelTimeById(cursor.getInt(4)), GetBusLineRouteById(cursor.getInt(6)), GetBusLineRouteInfoById(cursor.getInt(6)));
+                LineInfoTravelTime[] lineInfoTravelTimes = GetBusLineTravelTimeById(cursor.getInt(4));
+                LineInfoTravelTime StartStop = null;
+
+                for (LineInfoTravelTime lineInfoTravelTime : lineInfoTravelTimes) {
+                    if (StartStop == null || StartStop.getOrder() > lineInfoTravelTime.getOrder()) {
+                        StartStop = lineInfoTravelTime;
+                    }
+                }
+
+                int DepartureHour = cursor.getInt(2);
+                int DepartureMinute = cursor.getInt(3);
+
+                DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+                Date date = new Date();
+
+                LineInfoRouteInfo lineInfoRouteInfo = GetBusLineRouteInfoById(cursor.getInt(6));
+
+                GTFSDatabase gtfsDatabase = new GTFSDatabase(this.ctx);
+                LineInfoRoute[] lineInfoRoute = null;
+
+                if (GetGTFS) {
+                    String GTFSId = gtfsDatabase.ConvertTripId(Integer.toString(StartStop.getStopId()), String.format("%02d", DepartureHour) + ":" + String.format("%02d", DepartureMinute) + ":00", dateFormat.format(date), lineInfoRouteInfo.getLineNum());
+
+
+                    if (GTFSId == null) {
+                        GTFSId = gtfsDatabase.ConvertTripId(Integer.toString(StartStop.getStopId()), String.format("%02d", DepartureHour+24) + ":" + String.format("%02d", DepartureMinute) + ":00", dateFormat.format(date), lineInfoRouteInfo.getLineNum());
+                    }
+
+                    log(GTFSId);
+
+                    if (GTFSId != null) {
+                        lineInfoRoute = gtfsDatabase.GetGTFSGPSRoute(GTFSId);
+                    }
+                }
+
+                if (lineInfoRoute == null) {
+                    lineInfoRoute = GetBusLineRouteById(cursor.getInt(6));
+                }
+
+
+                ret = new BusLine(cursor.getInt(0), DepartureHour,DepartureMinute, lineInfoTravelTimes, lineInfoRoute, lineInfoRouteInfo);
             }
             cursor.close();
 
