@@ -183,7 +183,7 @@ public class UserDatabase {
         try
         {
             if (IsPreferenceExist(Id)) {
-                Sld.execSQL("update Preferences set Value = " + Value + " where Id = " + Id + ";");
+                Sld.execSQL("update Preferences set Value = \"" + Value + "\" where Id = \"" + Id + "\";");
             } else {
                 Sld.execSQL("INSERT INTO Preferences (Id, Value) VALUES (\"" + Id + "\", \"" + Value + "\");");
             }
