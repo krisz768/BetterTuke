@@ -191,6 +191,7 @@ public class DatabaseManager {
 
                     if (GTFSId != null) {
                         lineInfoRoute = gtfsDatabase.GetGTFSGPSRoute(GTFSId);
+                        log("CGTFSid: " + gtfsDatabase.GetContinueTrip(GTFSId, String.format("%02d", DepartureHour) + ":" + String.format("%02d", DepartureMinute) + ":00"));
                     }
                 }
 
