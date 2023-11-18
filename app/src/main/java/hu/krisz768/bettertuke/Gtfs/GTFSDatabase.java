@@ -72,6 +72,33 @@ public class GTFSDatabase {
         }
     }
 
+    public String GetContinueTrip(String TripId, String CurrenStartTime){
+        try
+        {
+            Cursor cursor = Sld.rawQuery("SELECT block_id FROM trips WHERE trip_id = \"" + TripId + "\";", null);
+            String CTripId = null;
+
+            String BlockId = null;
+            while(cursor.moveToNext()) {
+                BlockId = cursor.getString(0);
+            }
+            cursor.close();
+
+            if (BlockId != null && !BlockId.equals("")) {
+                cursor = Sld.rawQuery("SELECT t.trip_id from trips as t INNER JOIN stop_times as st ON st.trip_id = t.trip_id WHERE t.block_id = " + BlockId + " AND st.arrival_time > \"" + CurrenStartTime + "\" AND st.stop_sequence = 0 ORDER BY st.arrival_time LIMIT 1;", null);
+                //CTripId = "SELECT t.trip_id from trips as t INNER JOIN stop_times as st ON st.trip_id = t.trip_id WHERE t.block_id = " + BlockId + " AND st.arrival_time > \"" + CurrenStartTime + "\" AND st.stop_sequence = 0 ORDER BY st.arrival_time LIMIT 1;";
+                while(cursor.moveToNext()) {
+                    CTripId = cursor.getString(0);
+                }
+            }
+
+            return CTripId;
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+        }
+    }
+
 
 
 
