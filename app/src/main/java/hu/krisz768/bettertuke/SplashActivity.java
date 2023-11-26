@@ -16,6 +16,7 @@ import java.util.Date;
 
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseManager;
+import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
 @SuppressLint("CustomSplashScreen")
@@ -34,10 +35,20 @@ public class SplashActivity extends AppCompatActivity {
 
         AddLog("init...");
 
-        new Thread(this::InitTasks).start();
+        UserDatabase userDatabase = new UserDatabase(this);
+        String FirstStart = userDatabase.GetPreference("FirstStartComplete");
+        if (FirstStart != null && FirstStart.equals("true")){
+            //StartMain(false,false);
+            new Thread(this::CheckForUpdates).start();
+        } else {
+            ShowSetupScreen();
+        }
+
+        //new Thread(this::InitTasks).start();
+
     }
 
-    private void InitTasks() {
+    private void CheckForUpdates() {
         AddLog("Check is database exist...\n(" + (new File(getFilesDir() + "/Database", "track.db")).getAbsolutePath() + ")");
 
         TukeServerApi serverApi = new TukeServerApi(this);
@@ -64,13 +75,23 @@ public class SplashActivity extends AppCompatActivity {
                     AddLog("Database is up to date!");
 
                     GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
-                    gtfsDatabaseManager.CheckForUpdate(this);
+                    if (gtfsDatabaseManager.CheckForUpdate(this)){
+                        StartUpdate(false, true);
+                    } else {
+                        StartMain(false,false);
+                    }
 
-                    StartMain(false,false);
+
                 } else {
                     AddLog("Database version does not match! Updating....");
 
-                    if (!DatabaseManager.DeleteDatabase(ctx)){
+                    GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
+                    if (gtfsDatabaseManager.CheckForUpdate(this)){
+                        StartUpdate(true, true);
+                    } else {
+                        StartUpdate(true, false);
+                    }
+                    /*if (!DatabaseManager.DeleteDatabase(ctx)){
                         AddLog("Database delete error. Continue anyway...");
                     }
 
@@ -92,12 +113,12 @@ public class SplashActivity extends AppCompatActivity {
                         AddLog("Database download fail!");
                         runOnUiThread(() -> Toast.makeText(ctx, R.string.DatabaseUpdateError, Toast.LENGTH_LONG).show());
                         StartMain(false,false);
-                    }
+                    }*/
                 }
             }
         } else  {
             AddLog("Database not found, attempt to download...");
-            if (serverApi.downloadDatabaseFile()) {
+            /*if (serverApi.downloadDatabaseFile()) {
                 AddLog("Database downloaded successfully");
                 String Version = DatabaseManager.GetDatabaseVersion(ctx);
 
@@ -105,12 +126,19 @@ public class SplashActivity extends AppCompatActivity {
 
                 GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
                 runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());
-                gtfsDatabaseManager.ForceUpdate();
+                //gtfsDatabaseManager.ForceUpdate();
 
                 StartMain(false,true);
             }else  {
                 AddLog("Database download fail!");
                 StartMain(true, true);
+            }*/
+
+            GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
+            if (gtfsDatabaseManager.CheckForUpdate(this)){
+                StartUpdate(true, true);
+            } else {
+                StartUpdate(true, false);
             }
         }
     }
@@ -136,6 +164,29 @@ public class SplashActivity extends AppCompatActivity {
             mainIntent.putExtra("ShortcutId", b.getString("ShortcutId"));
         }
 
+        startActivity(mainIntent);
+    }
+
+    private void StartUpdate(boolean BaseDB, boolean GTFSDB) {
+        Intent updateIntent = new Intent(this, UpdateAndOnboarding.class);
+
+        int Update = (BaseDB == true ? 1 : 0 ) + (GTFSDB == true ? 2 : 0 );
+
+        updateIntent.putExtra("Update", true);
+        updateIntent.putExtra("UpdateType", Update);
+
+        Bundle b = getIntent().getExtras();
+
+        if (b != null) {
+            updateIntent.putExtra("ShortcutType", b.getInt("ShortcutType"));
+            updateIntent.putExtra("ShortcutId", b.getString("ShortcutId"));
+        }
+
+        startActivity(updateIntent);
+    }
+
+    private void ShowSetupScreen() {
+        Intent mainIntent = new Intent(this, UpdateAndOnboarding.class);
         startActivity(mainIntent);
     }
 

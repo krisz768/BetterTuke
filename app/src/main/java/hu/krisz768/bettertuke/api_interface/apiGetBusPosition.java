@@ -44,7 +44,7 @@ public class apiGetBusPosition extends TukeServerApiFunctions<TrackBusRespModel>
                     if (line != null ) {
                         String[] parts = line.split("\\|");
 
-                        value = new TrackBusRespModel(parts[0], Integer.parseInt(parts[4]), Integer.parseInt(parts[5]),parts[6].equals("8"), Float.parseFloat(parts[8]), Float.parseFloat(parts[9]),Integer.parseInt(parts[11]));
+                        value = new TrackBusRespModel(parts[0], Integer.parseInt(parts[4]), Integer.parseInt(parts[5]),parts[6].equals("8"), Float.parseFloat(parts[8]), Float.parseFloat(parts[9]),Integer.parseInt(parts[11]), Integer.parseInt(parts[10]), DateParser(parts[7]));
                     } else {
                         break;
                     }

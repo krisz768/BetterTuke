@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 
+import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.Database.LineInfoTravelTime;
@@ -28,7 +29,7 @@ import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
-public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapter.ViewHolder>{
+public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     private final LineInfoTravelTime[] BusStopList;
     private final HashMap<Integer, BusPlaces> BusPlaceList;
     private final HashMap<Integer, BusStops> AllBusStopList;
@@ -38,6 +39,9 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
     private final TrackBusListFragment Callback;
     private final int CurrentStop;
     private final String Date;
+
+    private final BusLine CTrip;
+    private boolean IsViewLongClicked = false;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView Name;
@@ -57,12 +61,19 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
             this.view = view;
         }
 
-        public void setData(LineInfoTravelTime Data, int Pos, int max, int PrevStopId, Context ctx, Calendar StartTime, HashMap<Integer, BusPlaces> BusPlaceList, HashMap<Integer, BusStops> AllBusStopList, TrackBusRespModel BusPosition, TrackBusListFragment Callback, int CurrentStop, String Date) {
+        public void setData(LineInfoTravelTime Data, int Pos, int max, int PrevStopId, Context ctx, Calendar StartTime, HashMap<Integer, BusPlaces> BusPlaceList, HashMap<Integer, BusStops> AllBusStopList, TrackBusRespModel BusPosition, TrackBusListFragment Callback, int CurrentStop, String Date, TrackBusListAdapter trackBusListAdapter) {
             int StopId = Data.getStopId();
 
             BusPlaces BusPlace;
 
             view.setOnClickListener(view -> Callback.OnStopClick(Data.getStopId()));
+            view.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    trackBusListAdapter.IsViewLongClicked = true;
+                    return true;
+                }
+            });
 
             BusStops busStops = AllBusStopList.get(StopId);
 
@@ -98,17 +109,22 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
             Time.setText(TimeString);
 
             if (BusPosition != null) {
+                boolean ShowDelay = false;
+
                 if (Pos == 0) {
                     if (BusPosition.getStopId() == Data.getStopId()) {
                         if (BusPosition.isAtStop()) {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackStartHalf));
+                            ShowDelay = true;
                         } else {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackStartFull));
+                            ShowDelay = true;
                         }
                     } else if (BusPosition.getStopNumber() > Data.getOrder()){
                         trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackStartFull));
                     } else {
                         trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackStartEmpty));
+                        ShowDelay = true;
                     }
                 } else if(Pos+1 == max) {
                     if (BusPosition.getStopId() == Data.getStopId()) {
@@ -116,8 +132,10 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
                     } else if (BusPosition.getStopNumber() < Data.getOrder()) {
                         if (PrevStopId == BusPosition.getStopNumber() && !BusPosition.isAtStop()) {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackEndInc));
+                            ShowDelay = true;
                         } else {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackEndEmpty));
+                            ShowDelay = true;
                         }
                     } else
                     {
@@ -127,40 +145,83 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
                     if (BusPosition.getStopId() == Data.getStopId()) {
                         if (BusPosition.isAtStop()) {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackNormalHalf));
+                            ShowDelay = true;
                         } else {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackNormalFull));
+                            ShowDelay = true;
                         }
                     } else if (BusPosition.getStopNumber() > Data.getOrder()) {
                         trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackNormalFull));
                     } else {
                         if (PrevStopId == BusPosition.getStopNumber() && !BusPosition.isAtStop()) {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackNormalInc));
+                            ShowDelay = true;
                         } else {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackNormalEmpty));
+                            ShowDelay = true;
                         }
                     }
                 }
 
-                if (BusPosition.getDelayMin() < 0) {
-                    if(BusPosition.getDelayMin()==-1) {
-                        Delay.setText(ctx.getString(R.string.DelayStringWithPosSignOneMinute, "", BusPosition.getDelayMin()));
-                    }
-                    else {
-                        Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "", BusPosition.getDelayMin()));
-                    }
-                    Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#d60202")));
-                } else {
-                    if(BusPosition.getDelayMin()==1) {
-                        Delay.setText(ctx.getString(R.string.DelayStringWithPosSignOneMinute, "+", BusPosition.getDelayMin()));
-                    }
-                    else {
-                        Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "+", BusPosition.getDelayMin()));
-                    }
-                    if (BusPosition.getDelayMin() == 0) {
-                        Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#02de32")));
+                if (ShowDelay) {
+                    if (trackBusListAdapter.IsViewLongClicked) {
+                        String SecoundText = "";
+                        int DelaySec = BusPosition.getDelaySec();
+                        int DelayMinute = DelaySec/60;
+                        DelaySec = DelaySec%60;
+
+                        if (BusPosition.getDelaySec() == 1) {
+                            SecoundText = ctx.getString(R.string.DelayStringWithSecOneSecond, DelaySec);
+                        } else {
+                            SecoundText = ctx.getString(R.string.DelayStringWithSec, DelaySec);
+                        }
+
+                        if (BusPosition.getDelayMin() < 0) {
+                            if(BusPosition.getDelayMin()==-1) {
+                                Delay.setText(ctx.getString(R.string.DelayStringWithPosSignOneMinute, "", DelayMinute) + SecoundText);
+                            }
+                            else {
+                                Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "", DelayMinute) + SecoundText);
+                            }
+                            Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#d60202")));
+                        } else {
+                            if(BusPosition.getDelayMin()==1) {
+                                Delay.setText(ctx.getString(R.string.DelayStringWithPosSignOneMinute, "+", DelayMinute) + SecoundText);
+                            }
+                            else {
+                                Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "+", DelayMinute) + SecoundText);
+                            }
+                            if (BusPosition.getDelayMin() == 0) {
+                                Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#02de32")));
+                            } else {
+                                Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#ff7f1b")));
+                            }
+                        }
                     } else {
-                        Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#ff7f1b")));
+                        if (BusPosition.getDelayMin() < 0) {
+                            if(BusPosition.getDelayMin()==-1) {
+                                Delay.setText(ctx.getString(R.string.DelayStringWithPosSignOneMinute, "", BusPosition.getDelayMin()));
+                            }
+                            else {
+                                Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "", BusPosition.getDelayMin()));
+                            }
+                            Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#d60202")));
+                        } else {
+                            if(BusPosition.getDelayMin()==1) {
+                                Delay.setText(ctx.getString(R.string.DelayStringWithPosSignOneMinute, "+", BusPosition.getDelayMin()));
+                            }
+                            else {
+                                Delay.setText(ctx.getString(R.string.DelayStringWithPosSign, "+", BusPosition.getDelayMin()));
+                            }
+                            if (BusPosition.getDelayMin() == 0) {
+                                Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#02de32")));
+                            } else {
+                                Delay.setTextColor(MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#ff7f1b")));
+                            }
+                        }
                     }
+                } else {
+                    Delay.setText("");
                 }
             } else {
                 if (Date == null) {
@@ -189,11 +250,28 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
         }
     }
 
+    public static class CViewHolder extends RecyclerView.ViewHolder {
+        private final TextView Num;
+        private final TextView Desc;
+
+        public CViewHolder(View view) {
+            super(view);
+
+            Num = view.findViewById(R.id.CTrackBusNumber);
+            Desc = view.findViewById(R.id.CTrackBusName);
+        }
+
+        public void setData(BusLine busLine) {
+            Num.setText(busLine.getRouteInfo().getLineNum());
+            Desc.setText(busLine.getRouteInfo().getLineName());
+        }
+    }
+
     public void UpdateList(TrackBusRespModel TrackData) {
         this.BusPosition = TrackData;
     }
 
-    public TrackBusListAdapter(LineInfoTravelTime[] BusStopList, HashMap<Integer, BusPlaces> BusPlaceList, HashMap<Integer, BusStops> AllBusStopList, Calendar StartTime, TrackBusRespModel BusPosition, int CurrentStop, TrackBusListFragment Callback, Context ctx, String Date) {
+    public TrackBusListAdapter(LineInfoTravelTime[] BusStopList, HashMap<Integer, BusPlaces> BusPlaceList, HashMap<Integer, BusStops> AllBusStopList, Calendar StartTime, TrackBusRespModel BusPosition, int CurrentStop, TrackBusListFragment Callback, Context ctx, String Date, BusLine cTrip) {
         this.BusStopList = BusStopList;
         this.BusPlaceList = BusPlaceList;
         this.AllBusStopList = AllBusStopList;
@@ -203,28 +281,57 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<TrackBusListAdapte
         this.Callback = Callback;
         this.CurrentStop = CurrentStop;
         this.Date = Date;
+        this.CTrip = cTrip;
     }
 
     @NonNull
     @Override
-    public TrackBusListAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.track_bus_list_recview, viewGroup, false);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        if (viewType == 0 || viewType == 2) {
+            View view = LayoutInflater.from(viewGroup.getContext())
+                    .inflate(R.layout.track_bus_list_recview, viewGroup, false);
 
-        return new TrackBusListAdapter.ViewHolder(view);
+            return new TrackBusListAdapter.ViewHolder(view);
+        } else {
+            View view = LayoutInflater.from(viewGroup.getContext())
+                    .inflate(R.layout.track_bus_ctrip_label_recview, viewGroup, false);
+
+            return new TrackBusListAdapter.CViewHolder(view);
+        }
     }
 
     @Override
-    public void onBindViewHolder(TrackBusListAdapter.ViewHolder viewHolder, final int position) {
-        int max = BusStopList.length;
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
+        if (viewHolder.getItemViewType() == 0) {
+            int max = BusStopList.length;
 
-        int PrevStopId = position > 0 ? BusStopList[position-1].getOrder() : -1;
+            int PrevStopId = position > 0 ? BusStopList[position-1].getOrder() : -1;
 
-        viewHolder.setData(BusStopList[position],position, max, PrevStopId, ctx, StartTime, BusPlaceList, AllBusStopList, BusPosition, Callback, CurrentStop, Date);
+            ((TrackBusListAdapter.ViewHolder)viewHolder).setData(BusStopList[position],position, max, PrevStopId, ctx, StartTime, BusPlaceList, AllBusStopList, BusPosition, Callback, CurrentStop, Date, this);
+        } else if (viewHolder.getItemViewType() == 2) {
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), CTrip.getDepartureHour(), CTrip.getDepartureMinute());
+
+            ((TrackBusListAdapter.ViewHolder)viewHolder).setData(CTrip.getStops()[position-BusStopList.length-1],position-BusStopList.length-1, CTrip.getStops().length , -1, ctx, calendar, BusPlaceList, AllBusStopList, null, Callback, CurrentStop, Date, this);
+        } else {
+            ((TrackBusListAdapter.CViewHolder)viewHolder).setData(CTrip);
+        }
     }
 
     @Override
     public int getItemCount() {
-        return BusStopList.length;
+        return CTrip == null ? BusStopList.length : BusStopList.length+1+CTrip.getStops().length;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (position < BusStopList.length) {
+            return 0;
+        } else if (position == BusStopList.length) {
+            return 1;
+        } else {
+            return 2;
+        }
     }
 }

@@ -99,6 +99,22 @@ public class GTFSDatabase {
         }
     }
 
+    public GTFSBusLineData GetLineData (String TripId) {
+        try
+        {
+            Cursor cursor = Sld.rawQuery("SELECT r.route_short_name, st.departure_time, st.stop_id FROM stop_times as st INNER JOIN trips as t ON st.trip_id = t.trip_id INNER JOIN routes as r ON t.route_id = r.route_id WHERE st.stop_sequence = 0 AND st.trip_id = \"" + TripId + "\";", null);
+            GTFSBusLineData busLineData = null;
+            while(cursor.moveToNext()) {
+                busLineData = new GTFSBusLineData(cursor.getString(0), cursor.getString(1),cursor.getString(2));
+            }
+            cursor.close();
+            return busLineData;
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+        }
+    }
+
 
 
 

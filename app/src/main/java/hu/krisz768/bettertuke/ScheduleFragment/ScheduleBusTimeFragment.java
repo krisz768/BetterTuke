@@ -395,14 +395,21 @@ public class ScheduleBusTimeFragment extends Fragment {
             }
             DatabaseManager Dm = new DatabaseManager(getContext());
 
-            ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
-            if (TwoWay && SelectedWay.equals("O")) {
-                BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionForward));
-            } else if (TwoWay && SelectedWay.equals("V")){
-                BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionBackwards));
-            } else {
-                BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionOneWay));
+            ScheduleActivity scheduleActivity = (ScheduleActivity) getActivity();
+            if (scheduleActivity == null) {
+                return;
             }
+
+            scheduleActivity.runOnUiThread(() -> {
+                ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
+                if (TwoWay && SelectedWay.equals("O")) {
+                    BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionForward));
+                } else if (TwoWay && SelectedWay.equals("V")){
+                    BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionBackwards));
+                } else {
+                    BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionOneWay));
+                }
+            });
 
             if (mStopId == -1) {
                 CurrentLines = Dm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
@@ -419,27 +426,31 @@ public class ScheduleBusTimeFragment extends Fragment {
 
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
-                        if (Dm.GetBusDatabaseValidDate(SelectedDate)) {
-                            InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptySchedule), -1);
+                        try {
+                            if (Dm.GetBusDatabaseValidDate(SelectedDate)) {
+                                InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptySchedule), -1);
 
-                            getChildFragmentManager().beginTransaction()
-                                    .replace(R.id.ScheduleTimeFragmentContainer, Fragment)
-                                    .commit();
-                        } else {
-                            InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.DatabaseNotContain), -1);
+                                getChildFragmentManager().beginTransaction()
+                                        .replace(R.id.ScheduleTimeFragmentContainer, Fragment)
+                                        .commit();
+                            } else {
+                                InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.DatabaseNotContain), -1);
 
-                            getChildFragmentManager().beginTransaction()
-                                    .replace(R.id.ScheduleTimeFragmentContainer, Fragment)
-                                    .commit();
+                                getChildFragmentManager().beginTransaction()
+                                        .replace(R.id.ScheduleTimeFragmentContainer, Fragment)
+                                        .commit();
+                            }
+
+                            SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
+                            swipeRefreshLayout.setVisibility(View.GONE);
+
+                            FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
+                            fragmentContainerView.setVisibility(View.VISIBLE);
+
+                            Sbta = null;
+                        } catch (Exception e) {
+
                         }
-
-                        SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
-                        swipeRefreshLayout.setVisibility(View.GONE);
-
-                        FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
-                        fragmentContainerView.setVisibility(View.VISIBLE);
-
-                        Sbta = null;
                     });
                 }
                 return;
@@ -500,12 +511,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                     BusCodes[i][j] = CurrentLines[Counter].getLineCode().replace(mLineNum, "");
                     Counter++;
                 }
-            }
-
-            ScheduleActivity scheduleActivity = (ScheduleActivity) getActivity();
-
-            if (scheduleActivity == null) {
-                return;
             }
 
             DisplayMetrics displayMetrics = new DisplayMetrics();
