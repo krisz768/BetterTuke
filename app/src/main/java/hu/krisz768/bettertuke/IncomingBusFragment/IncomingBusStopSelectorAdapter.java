@@ -33,7 +33,12 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
         public void setData(BusStops Data, int SelectedStop, BottomSheetIncomingBusFragment callback, Context ctx) {
             String DirectionText =  HelperProvider.GetStopDirectionString(ctx,Data.getId());
             if (DirectionText.equals("-") || DirectionText.equals("") || DirectionText.equals(" ")) {
-                button.setText(ctx.getString(R.string.TrackBusStopSelect, Data.getStopNum().trim()));
+                if (Data.getId() == -1) {
+                    button.setText(Data.getStopNum().trim());
+                } else {
+                    button.setText(ctx.getString(R.string.TrackBusStopSelect, Data.getStopNum().trim()));
+                }
+
             } else {
                 button.setText(DirectionText);
             }
@@ -76,7 +81,11 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, final int position) {
-        ((StopViewHolder)viewHolder).setData(BusStopList[position],SelectedStop, callback, ctx);
+        if (position < BusStopList.length) {
+            ((StopViewHolder)viewHolder).setData(BusStopList[position],SelectedStop, callback, ctx);
+        } else {
+            ((StopViewHolder)viewHolder).setData(new BusStops(-1, "", 0, 0, ctx.getString(R.string.AllStopButton)),SelectedStop, callback, ctx);
+        }
     }
 
     @Override
@@ -86,6 +95,6 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
 
     @Override
     public int getItemCount() {
-        return BusStopList.length;
+        return BusStopList.length+1;
     }
 }

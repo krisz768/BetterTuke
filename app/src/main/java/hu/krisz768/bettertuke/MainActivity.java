@@ -494,7 +494,7 @@ public class MainActivity extends AppCompatActivity {
                         if (busStop.getPlace() == CurrentPlace) {
 
                             BitmapDescriptor icon;
-                            if (busStop.getId() == CurrentStop && SelectedPlace == null) {
+                            if ((busStop.getId() == CurrentStop || CurrentStop == -1) && SelectedPlace == null) {
                                 icon = StopSelected;
                             } else {
                                 icon = StopNotSelected;
@@ -880,12 +880,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void TrackBus(int Id, String Date) {
-        AddBackStack();
+        if (!(busLine != null && busLine.getCTrip() != null && busLine.getCTrip().getLineId() == Id)) {
+            AddBackStack();
+        }
 
         busLine = BusLine.BusLinesByLineId(Id, true, this);
         if (busLine == null) {
             Toast.makeText(this, R.string.DatabaseError, Toast.LENGTH_LONG).show();
             return;
+        }
+
+        if (busLine.getCTrip() != null) {
+            Toast.makeText(this, "folytatódik: " + busLine.getCTrip().getRouteInfo().getLineNum(), Toast.LENGTH_LONG).show();
         }
 
         if (SelectedPlace != null) {
@@ -1309,12 +1315,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void ShowBottomSheetNearStops() {
-        BottomSheetSetNormalParams(65);
+        try {
+            BottomSheetSetNormalParams(65);
 
-        BottomSheetNearStops NearStopFragment = BottomSheetNearStops.newInstance(SelectedPlace.latitude, SelectedPlace.longitude, busStops, busPlaces);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragmentContainerView2, NearStopFragment)
-                .commit();
+            BottomSheetNearStops NearStopFragment = BottomSheetNearStops.newInstance(SelectedPlace.latitude, SelectedPlace.longitude, busStops, busPlaces);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainerView2, NearStopFragment)
+                    .commit();
+        } catch (Exception e) {
+
+        }
     }
 
     public String getAddressFromLatLng(LatLng latLng) {

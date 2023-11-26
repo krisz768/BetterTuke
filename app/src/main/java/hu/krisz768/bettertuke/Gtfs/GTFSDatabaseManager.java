@@ -16,7 +16,7 @@ public class GTFSDatabaseManager {
         this.ctx = ctx;
     }
 
-    public void CheckForUpdate(Activity UiThread) {
+    public boolean CheckForUpdate(Activity UiThread) {
         GTFSContentLength contentLength = new GTFSContentLength();
         try {
             Thread thread = new Thread(contentLength);
@@ -30,28 +30,33 @@ public class GTFSDatabaseManager {
             UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Online: " + Online, Toast.LENGTH_SHORT).show()); ///
             if (Current == null) {
                 UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());
-                ForceUpdate();
+                //ForceUpdate();
+                return true;
             } else if (!Current.equals(Online)) {
                 UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());
-                ForceUpdate();
+                //ForceUpdate();
+                return true;
             }
             UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Nincs update", Toast.LENGTH_SHORT).show());
-
+            return false;
         } catch (Exception e) {
             log(e.toString());
+            return false;
         }
     }
 
-    public void ForceUpdate() {
+    public boolean ForceUpdate(GTFSDatabaseDownload.OnProgressChange onProgressChange) {
         try {
-            GTFSDatabaseDownload gtfsDatabaseDownload = new GTFSDatabaseDownload(ctx);
+            GTFSDatabaseDownload gtfsDatabaseDownload = new GTFSDatabaseDownload(ctx, onProgressChange);
             Thread thread = new Thread(gtfsDatabaseDownload);
             thread.start();
             thread.join();
 
             boolean RetCode = gtfsDatabaseDownload.RetCode;
+            return RetCode;
         } catch (Exception e){
-
+            log(e.toString());
+            return false;
         }
     }
 

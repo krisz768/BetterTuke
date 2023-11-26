@@ -13,9 +13,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -61,6 +63,8 @@ public class BottomSheetTrackBusFragment extends Fragment {
     private ScheduledExecutorService UpdateLoop;
 
     private TrackBusRespModel RecentBusPosition;
+
+    private boolean IsOldDataWarnDisplayed = false;
 
     public BottomSheetTrackBusFragment() {
 
@@ -164,7 +168,21 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
             if (BusPosition != null) {
                 if (activity != null) {
-                    activity.runOnUiThread(() -> BusNum.setBackground(activity.getDrawable(R.drawable.bus_number_background_active)));
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.MINUTE, -1);
+                    if (BusPosition.getLastUpdate().after(calendar.getTime())) {
+                        activity.runOnUiThread(() -> BusNum.setBackground(activity.getDrawable(R.drawable.bus_number_background_active)));
+                        IsOldDataWarnDisplayed = false;
+                    } else {
+                        activity.runOnUiThread(() -> {
+                            BusNum.setBackground(activity.getDrawable(R.drawable.bus_number_background_warn));
+                            if (!IsOldDataWarnDisplayed) {
+                                Toast.makeText(activity ,R.string.TrackOldDataWarm, Toast.LENGTH_LONG).show();
+                                IsOldDataWarnDisplayed = true;
+                            }
+                        });
+                    }
+
                 }
                 if (!BusAttributesVisible) {
                     if (activity != null){
@@ -179,6 +197,20 @@ public class BottomSheetTrackBusFragment extends Fragment {
                     activity.runOnUiThread(() -> BusNum.setBackground(activity.getDrawable(R.drawable.bus_number_background_inactive)));
 
                     activity.runOnUiThread(this::hideBusAttributes);
+
+                    if (mBusLine.getCTrip() != null) {
+                        Calendar Now = Calendar.getInstance();
+                        int CurrentHour = Now.get(Calendar.HOUR_OF_DAY);
+                        int CurrentMinute = Now.get(Calendar.MINUTE);
+
+                        if ((mBusLine.getDepartureHour() == CurrentHour && CurrentMinute > mBusLine.getDepartureMinute()) || mBusLine.getDepartureHour() < CurrentHour) {
+                            boolean IsCBusStarted = serverApi.getIsBusHasStarted(mBusLine.getCTrip().getLineId());
+
+                            if (IsCBusStarted) {
+                                activity.runOnUiThread(() -> ((MainActivity)activity).TrackBus(mBusLine.getCTrip().getLineId(), mBusLine.getDate()));
+                            }
+                        }
+                    }
                 }
             }
 
@@ -244,31 +276,35 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
     private void showBusAttributes(BusAttributes busAttributes)
     {
-        PlateNumber.setText(busAttributes.getPlateNumber());
+        try {
+            PlateNumber.setText(busAttributes.getPlateNumber());
 
-        if(busAttributes.getDoors()==-1)
-            return;
+            if(busAttributes.getDoors()==-1)
+                return;
 
-        BusType.setText(busAttributes.getType());
+            BusType.setText(busAttributes.getType());
 
-        if(busAttributes.getArticulated()==0)
-            Articulated.setText(getString(R.string.SoloBus));
-        else if(busAttributes.getArticulated()==1)
-            Articulated.setText(getString(R.string.ArticulatedBus));
-        else if(busAttributes.getArticulated()==2)
-            Articulated.setText(getString(R.string.MidiBus));
-        Doors.setText(getString(R.string.BusDoorNumberText, busAttributes.getDoors()));
+            if(busAttributes.getArticulated()==0)
+                Articulated.setText(getString(R.string.SoloBus));
+            else if(busAttributes.getArticulated()==1)
+                Articulated.setText(getString(R.string.ArticulatedBus));
+            else if(busAttributes.getArticulated()==2)
+                Articulated.setText(getString(R.string.MidiBus));
+            Doors.setText(getString(R.string.BusDoorNumberText, busAttributes.getDoors()));
 
-        if(busAttributes.getPropulsion()==1)
-            Electric.setVisibility(View.VISIBLE);
-        if(busAttributes.isLowFloor())
-            LowFloor.setVisibility(View.VISIBLE);
-        if(busAttributes.isAirConditioner())
-            AirConditioner.setVisibility(View.VISIBLE);
-        if(busAttributes.isWifi())
-            Wifi.setVisibility(View.VISIBLE);
-        if(busAttributes.isUsb())
-            Usb.setVisibility(View.VISIBLE);
+            if(busAttributes.getPropulsion()==1)
+                Electric.setVisibility(View.VISIBLE);
+            if(busAttributes.isLowFloor())
+                LowFloor.setVisibility(View.VISIBLE);
+            if(busAttributes.isAirConditioner())
+                AirConditioner.setVisibility(View.VISIBLE);
+            if(busAttributes.isWifi())
+                Wifi.setVisibility(View.VISIBLE);
+            if(busAttributes.isUsb())
+                Usb.setVisibility(View.VISIBLE);
+        } catch (Exception e) {
+
+        }
     }
 
     private void hideBusAttributes()

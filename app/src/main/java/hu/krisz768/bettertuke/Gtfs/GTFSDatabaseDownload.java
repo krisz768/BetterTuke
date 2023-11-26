@@ -24,14 +24,23 @@ public class GTFSDatabaseDownload implements Runnable {
     private final String DATABASEFILE;
     public boolean RetCode;
 
-    public GTFSDatabaseDownload(Context ctx) {
+    private OnProgressChange onProgressChange;
+
+    public GTFSDatabaseDownload(Context ctx, OnProgressChange onProgressChange) {
         this.ctx = ctx;
+        this.onProgressChange = onProgressChange;
         DATABASEFILE = (new File(ctx.getFilesDir() + "/Database", "gtfs.db")).getAbsolutePath();
+    }
+
+    public interface OnProgressChange {
+        void onNewProgress(int Step);
     }
 
     @Override
     public void run() {
         try {
+            int StepCounter = 1;
+
             BufferedInputStream in = new BufferedInputStream(new URL("https://mobilitas.biokom.hu/gtfs/").openStream());
 
             File tempFile = File.createTempFile("download", "gtfsdatabase", ctx.getCacheDir());
@@ -47,6 +56,11 @@ public class GTFSDatabaseDownload implements Runnable {
             } finally {
                 fileOutputStream.close();
                 in.close();
+            }
+
+            if (onProgressChange != null) {
+                onProgressChange.onNewProgress(StepCounter);
+                StepCounter++;
             }
 
             GTFSDatabase.DeleteDatabase(ctx);
@@ -65,6 +79,10 @@ public class GTFSDatabaseDownload implements Runnable {
                     }
                     String strUnzipped = result.toString("UTF-8");
                     db.InsertRoutes(strUnzipped);
+                    if (onProgressChange != null) {
+                        onProgressChange.onNewProgress(StepCounter);
+                        StepCounter++;
+                    }
                 }
                 if (ze.getName().toString().equals("calendar.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
@@ -75,6 +93,10 @@ public class GTFSDatabaseDownload implements Runnable {
                     }
                     String strUnzipped = result.toString("UTF-8");
                     db.InsertCalendar(strUnzipped);
+                    if (onProgressChange != null) {
+                        onProgressChange.onNewProgress(StepCounter);
+                        StepCounter++;
+                    }
                 }
                 if (ze.getName().toString().equals("calendar_dates.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
@@ -85,6 +107,10 @@ public class GTFSDatabaseDownload implements Runnable {
                     }
                     String strUnzipped = result.toString("UTF-8");
                     db.InsertCalendarDates(strUnzipped);
+                    if (onProgressChange != null) {
+                        onProgressChange.onNewProgress(StepCounter);
+                        StepCounter++;
+                    }
                 }
                 if (ze.getName().toString().equals("shapes.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
@@ -95,6 +121,10 @@ public class GTFSDatabaseDownload implements Runnable {
                     }
                     String strUnzipped = result.toString("UTF-8");
                     db.InsertShapes(strUnzipped);
+                    if (onProgressChange != null) {
+                        onProgressChange.onNewProgress(StepCounter);
+                        StepCounter++;
+                    }
                 }
                 if (ze.getName().toString().equals("stop_times.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
@@ -105,6 +135,10 @@ public class GTFSDatabaseDownload implements Runnable {
                     }
                     String strUnzipped = result.toString("UTF-8");
                     db.InsertStopTimes(strUnzipped);
+                    if (onProgressChange != null) {
+                        onProgressChange.onNewProgress(StepCounter);
+                        StepCounter++;
+                    }
                 }
                 if (ze.getName().toString().equals("stops.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
@@ -115,6 +149,10 @@ public class GTFSDatabaseDownload implements Runnable {
                     }
                     String strUnzipped = result.toString("UTF-8");
                     db.InsertStops(strUnzipped);
+                    if (onProgressChange != null) {
+                        onProgressChange.onNewProgress(StepCounter);
+                        StepCounter++;
+                    }
                 }
                 if (ze.getName().toString().equals("transfers.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
@@ -125,6 +163,10 @@ public class GTFSDatabaseDownload implements Runnable {
                     }
                     String strUnzipped = result.toString("UTF-8");
                     db.InsertTransfers(strUnzipped);
+                    if (onProgressChange != null) {
+                        onProgressChange.onNewProgress(StepCounter);
+                        StepCounter++;
+                    }
                 }
                 if (ze.getName().toString().equals("trips.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
@@ -135,6 +177,11 @@ public class GTFSDatabaseDownload implements Runnable {
                     }
                     String strUnzipped = result.toString("UTF-8");
                     db.InsertTrips(strUnzipped);
+
+                    if (onProgressChange != null) {
+                        onProgressChange.onNewProgress(StepCounter);
+                        StepCounter++;
+                    }
                 }
 
                 zin.closeEntry();
@@ -160,7 +207,7 @@ public class GTFSDatabaseDownload implements Runnable {
 
             RetCode = true;
         } catch (Exception e) {
-            log("Error :(" + e);
+            log(e.toString());
             RetCode = false;
         }
 

@@ -13,6 +13,8 @@ public class BusLine implements Serializable {
     private final LineInfoRouteInfo RouteInfo;
     private String Date;
 
+    private BusLine CTrip;
+
     public LineInfoRouteInfo getRouteInfo() {
         return RouteInfo;
     }
@@ -37,13 +39,18 @@ public class BusLine implements Serializable {
         return Route;
     }
 
-    public BusLine(int lineId, int departureHour, int departureMinute, LineInfoTravelTime[] stops, LineInfoRoute[] route, LineInfoRouteInfo routeInfo) {
+    public BusLine getCTrip() {
+        return CTrip;
+    }
+
+    public BusLine(int lineId, int departureHour, int departureMinute, LineInfoTravelTime[] stops, LineInfoRoute[] route, LineInfoRouteInfo routeInfo, BusLine cTrip) {
         LineId = lineId;
         DepartureHour = departureHour;
         DepartureMinute = departureMinute;
         Stops = stops;
         Route = route;
         RouteInfo = routeInfo;
+        CTrip = cTrip;
     }
 
     public static BusLine BusLinesByLineId(int Id, boolean GetGTFS, Context ctx) {

@@ -1,6 +1,7 @@
 package hu.krisz768.bettertuke.api_interface.models;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class TrackBusRespModel implements Serializable {
     private final String LicensePlateNumber;
@@ -10,8 +11,12 @@ public class TrackBusRespModel implements Serializable {
     private final float GpsLongitude;
     private final float GpsLatitude;
     private final int DelayMin;
+    private final int DelaySec;
+    private final Date LastUpdate;
 
-    public TrackBusRespModel(String licensePlateNumber, int stopNumber, int stopId, boolean atStop, float GpsLongitude, float GpsLatitude, int delayMin) {
+
+
+    public TrackBusRespModel(String licensePlateNumber, int stopNumber, int stopId, boolean atStop, float GpsLongitude, float GpsLatitude, int delayMin, int delaySec, Date lastUpdate) {
         LicensePlateNumber = licensePlateNumber;
         StopNumber = stopNumber;
         StopId = stopId;
@@ -19,6 +24,8 @@ public class TrackBusRespModel implements Serializable {
         this.GpsLongitude = GpsLongitude;
         this.GpsLatitude = GpsLatitude;
         DelayMin = delayMin;
+        DelaySec = delaySec;
+        LastUpdate = lastUpdate;
     }
 
     public String getLicensePlateNumber() {
@@ -47,5 +54,13 @@ public class TrackBusRespModel implements Serializable {
 
     public int getDelayMin() {
         return DelayMin;
+    }
+
+    public int getDelaySec() {
+        return DelaySec;
+    }
+
+    public Date getLastUpdate() {
+        return LastUpdate;
     }
 }

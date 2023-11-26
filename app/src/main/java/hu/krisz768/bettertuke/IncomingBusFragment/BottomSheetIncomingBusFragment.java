@@ -24,7 +24,10 @@ import com.google.android.material.timepicker.TimeFormat;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +73,8 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private String SelectedDate;
     private String SelectedTime;
     private boolean DateTimeSelected = false;
+
+    private BusStops[] SelectedPlaceStopsArray;
 
     public BottomSheetIncomingBusFragment() {
 
@@ -138,7 +143,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
         }
 
-        BusStops[] SelectedPlaceStopsArray = new BusStops[SelectedPlaceStops.size()];
+        SelectedPlaceStopsArray = new BusStops[SelectedPlaceStops.size()];
         SelectedPlaceStops.toArray(SelectedPlaceStopsArray);
 
         ImageView FavButton = view.findViewById(R.id.StopFavoriteButton);
@@ -370,11 +375,38 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
             if (DateTimeSelected) {
                 if (mainActivity != null) {
-                    DatabaseManager Dm = new DatabaseManager(mainActivity);
-                    BusList = Dm.GetOfflineDepartureTimes(SendStopId, SelectedDate, SelectedTime);
+                    if (mStop == -1) {
+                        ArrayList<IncomingBusRespModel> list = new ArrayList<>();
+                        DatabaseManager Dm = new DatabaseManager(mainActivity);
+
+                        for (BusStops element : SelectedPlaceStopsArray) {
+                            list.addAll(Arrays.asList(Dm.GetOfflineDepartureTimes(element.getId(), SelectedDate, SelectedTime)));
+                        }
+
+                        Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+
+                        BusList = new IncomingBusRespModel[list.size()];
+                        list.toArray(BusList);
+                    } else {
+                        DatabaseManager Dm = new DatabaseManager(mainActivity);
+                        BusList = Dm.GetOfflineDepartureTimes(SendStopId, SelectedDate, SelectedTime);
+                    }
                 }
             } else {
-                BusList = serverApi.getNextIncomingBuses(mStop);
+                if (mStop == -1) {
+                    ArrayList<IncomingBusRespModel> list = new ArrayList<>();
+
+                    for (BusStops element : SelectedPlaceStopsArray) {
+                        list.addAll(Arrays.asList(serverApi.getNextIncomingBuses(element.getId())));
+                    }
+
+                    Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+
+                    BusList = new IncomingBusRespModel[list.size()];
+                    list.toArray(BusList);
+                } else {
+                    BusList = serverApi.getNextIncomingBuses(mStop);
+                }
             }
 
             if (mainActivity != null) {

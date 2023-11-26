@@ -56,4 +56,8 @@
     <string name="AllLines">Alle Buslinien</string>
     <string name="DatabaseNotContain">Die Datenbank enthält keine Daten für dieses Datum.</string>
     <string name="DatabaseError">Fehler: Die Datenbank enthält diese Buslinie nicht.</string>
+    <string name="DelayStringWithSec">&#160;%1$d Sekunden</string>
+    <string name="DelayStringWithSecOneSecond">&#160;%1$d Sekunde</string>
+    <string name="TrackOldDataWarm">Veraltete Informationen</string>
+    <string name="AllStopButton">Alle</string>
 </resources>
