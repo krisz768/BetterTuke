@@ -59,4 +59,6 @@
     <string name="DelayStringWithSecOneSecond">&#160;%1$d másodperc</string>
     <string name="TrackOldDataWarm">Elavult információk</string>
     <string name="AllStopButton">Összes</string>
+    <string name="DisableAdMenu">Reklámok kikapcsolása</string>
+    <string name="AboutUsMenu">Névjegy</string>
 </resources>

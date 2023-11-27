@@ -9,6 +9,13 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.view.View;
+
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,6 +23,7 @@ import java.util.Locale;
 
 import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusListFragment;
 import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusTimeFragment;
+import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 
 public class ScheduleActivity extends AppCompatActivity {
     private String SelectedLine;
@@ -38,6 +46,17 @@ public class ScheduleActivity extends AppCompatActivity {
 
         String LineNum = null;
         String Direction = null;
+
+        UserDatabase userDatabase = new UserDatabase(this);
+        String AdEnabled = userDatabase.GetPreference("AdEnabled");
+        AdView mAdView = findViewById(R.id.adView2);
+        if (AdEnabled != null && AdEnabled.equals("true")){
+
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
+        }else {
+            mAdView.setVisibility(View.GONE);
+        }
 
         if (b != null) {
             StopId = b.getInt("StopId");
