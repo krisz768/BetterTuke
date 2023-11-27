@@ -67,6 +67,6 @@
     <string name="DelayStringWithSecOneSecond">&#160;%1$d second</string>
     <string name="TrackOldDataWarm">Outdated information</string>
     <string name="AllStopButton">All</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="DisableAdMenu">Disable ads</string>
+    <string name="AboutUsMenu">About</string>
 </resources>

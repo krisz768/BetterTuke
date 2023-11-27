@@ -60,4 +60,6 @@
     <string name="DelayStringWithSecOneSecond">&#160;%1$d Sekunde</string>
     <string name="TrackOldDataWarm">Veraltete Informationen</string>
     <string name="AllStopButton">Alle</string>
+    <string name="DisableAdMenu">Werbung ausschalten</string>
+    <string name="AboutUsMenu">Über uns</string>
 </resources>

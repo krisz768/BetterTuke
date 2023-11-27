@@ -33,6 +33,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
@@ -124,35 +129,9 @@ public class MainActivity extends AppCompatActivity {
 
         Bundle b = getIntent().getExtras();
 
-        boolean Error = false;
-        boolean FirstStart = false;
-
         if (b != null) {
-            Error = b.getBoolean("ERROR");
-            FirstStart = b.getBoolean("FirstStart");
-
             ShortcutType = b.getInt("ShortcutType");
             ShortcutData = b.getString("ShortcutId");
-        }
-
-        if (Error) {
-            MaterialAlertDialogBuilder dlgAlert  = new MaterialAlertDialogBuilder(this);
-            dlgAlert.setMessage(R.string.FirstLaunchInternetError);
-            dlgAlert.setTitle(R.string.Error);
-            dlgAlert.setPositiveButton(R.string.Ok, (dialogInterface, i) -> finish());
-            dlgAlert.setCancelable(false);
-            dlgAlert.create().show();
-
-            return;
-        }
-
-        if(FirstStart) {
-            MaterialAlertDialogBuilder welcomeAlert  = new MaterialAlertDialogBuilder(this);
-            welcomeAlert.setMessage(R.string.WelcomeText);
-            welcomeAlert.setTitle(R.string.WelcomeTextTitle);
-            welcomeAlert.setPositiveButton(R.string.Ok,null);
-            welcomeAlert.setCancelable(false);
-            welcomeAlert.create().show();
         }
 
         setTheme();
@@ -176,6 +155,26 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.PosButton).setOnClickListener(view -> SelectPosUserPos());
 
         findViewById(R.id.PosButton).setVisibility(View.GONE);
+
+        UserDatabase userDatabase = new UserDatabase(this);
+
+        userDatabase.SetPreference("AdEnabled", "false");
+
+        String AdEnabled = userDatabase.GetPreference("AdEnabled");
+        AdView mAdView = findViewById(R.id.adView);
+        if (AdEnabled != null && AdEnabled.equals("true")){
+            MobileAds.initialize(this, new OnInitializationCompleteListener() {
+                @Override
+                public void onInitializationComplete(InitializationStatus initializationStatus) {
+                }
+            });
+
+
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
+        } else {
+            mAdView.setVisibility(View.GONE);
+        }
 
         SetupGoogleMap();
     }
