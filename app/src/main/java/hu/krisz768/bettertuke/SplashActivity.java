@@ -78,7 +78,8 @@ public class SplashActivity extends AppCompatActivity {
                     if (gtfsDatabaseManager.CheckForUpdate(this)){
                         StartUpdate(false, true);
                     } else {
-                        StartMain(false,false);
+                        //StartMain(false,false);
+                        StartUpdate(true, true);
                     }
 
 

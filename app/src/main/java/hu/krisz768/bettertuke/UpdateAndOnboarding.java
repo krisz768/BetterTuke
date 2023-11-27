@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
 import android.widget.Toast;
 
 import java.util.Date;
@@ -31,6 +32,7 @@ public class UpdateAndOnboarding extends AppCompatActivity {
         }
 
         if (Update) {
+
             DatabaseUpdate databaseUpdate = DatabaseUpdate.newInstance(UpdateType == 1 || UpdateType == 3, UpdateType == 2 || UpdateType == 3, true, new DatabaseUpdate.OnUpdateFinish() {
                 @Override
                 public void onFinish() {
@@ -47,8 +49,6 @@ public class UpdateAndOnboarding extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.updateOnBoardFragmentContainer, databaseUpdate)
                     .commit();
-
-            databaseUpdate.StartUpdate();
         } else {
             OnBoardMainFragment onBoardMainFragment = OnBoardMainFragment.newInstance();
 

@@ -156,6 +156,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
             }
 
+            if (mStop == -1) {
+                FavButton.setVisibility(View.GONE);
+            }
+
             FavButton.setOnClickListener(view12 -> {
                 if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
                     userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop));
@@ -320,11 +324,17 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         if (getView() != null && getContext() != null){
             ImageView FavButton = getView().findViewById(R.id.StopFavoriteButton);
 
-            UserDatabase userDatabase = new UserDatabase(getContext());
-            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
-                FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
+            if (mStop == -1) {
+                FavButton.setVisibility(View.GONE);
             } else {
-                FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+                FavButton.setVisibility(View.VISIBLE);
+
+                UserDatabase userDatabase = new UserDatabase(getContext());
+                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
+                    FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
+                } else {
+                    FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
+                }
             }
         }
 

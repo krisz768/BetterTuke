@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -147,7 +148,6 @@ public class OnBoardMainFragment extends Fragment {
     private void ScrollTo(int Position) {
         viewPager.setCurrentItem(Position, true);
         CurrentPage = Position;
-        OnPageChanged();
     }
 
     private class ScreenSlidePagerAdapter extends FragmentStateAdapter {

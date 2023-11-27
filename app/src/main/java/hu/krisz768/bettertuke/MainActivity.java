@@ -439,17 +439,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void ZoomToMarker() {
-        if (CurrentStop == -1)
+        if (CurrentStop == -1 && CurrentPlace == -1)
             return;
 
-        BusStops CurrentStopObject = busStops.get(CurrentStop);
+        if (CurrentStop == -1)  {
+            BusPlaces CurrentPlaceObject = busPlaces.get(CurrentPlace);
 
-        if (CurrentStopObject != null) {
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(CurrentStopObject.getGpsLatitude(), CurrentStopObject.getGpsLongitude())).zoom(17.5F).build();
+            if (CurrentPlaceObject != null) {
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(new LatLng(CurrentPlaceObject.getGpsLatitude(), CurrentPlaceObject.getGpsLongitude())).zoom(17.5F).build();
 
-            if (IsMapInitialized) {
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                if (IsMapInitialized) {
+                    googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                }
+            }
+        } else {
+            BusStops CurrentStopObject = busStops.get(CurrentStop);
+
+            if (CurrentStopObject != null) {
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(new LatLng(CurrentStopObject.getGpsLatitude(), CurrentStopObject.getGpsLongitude())).zoom(17.5F).build();
+
+                if (IsMapInitialized) {
+                    googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                }
             }
         }
     }
@@ -1184,7 +1197,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Mode DetermineMode() {
-        if (CurrentStop == -1) {
+        if (CurrentStop == -1 && CurrentPlace == -1) {
             return Mode.None;
         } else if (SelectedPlace != null) {
             return Mode.NearStops;
