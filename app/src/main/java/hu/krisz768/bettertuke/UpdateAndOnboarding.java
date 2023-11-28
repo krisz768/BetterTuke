@@ -11,6 +11,7 @@ import android.widget.Toast;
 import java.util.Date;
 
 import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusTimeFragment;
+import hu.krisz768.bettertuke.UpdateAndOnBoardScreen.AdDisableSetting;
 import hu.krisz768.bettertuke.UpdateAndOnBoardScreen.DatabaseUpdate;
 import hu.krisz768.bettertuke.UpdateAndOnBoardScreen.OnBoardMainFragment;
 
@@ -23,12 +24,14 @@ public class UpdateAndOnboarding extends AppCompatActivity {
 
         Bundle b = getIntent().getExtras();
 
+        boolean AdSettingScreen = false;
         boolean Update = false;
         int UpdateType = 3;
 
         if (b != null) {
             Update = b.getBoolean("Update");
             UpdateType = b.getInt("UpdateType");
+            AdSettingScreen = b.getBoolean("AdSettingScreen");
         }
 
         if (Update) {
@@ -49,7 +52,13 @@ public class UpdateAndOnboarding extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.updateOnBoardFragmentContainer, databaseUpdate)
                     .commit();
-        } else {
+        } else if (AdSettingScreen) {
+            AdDisableSetting adDisableSetting = new AdDisableSetting();
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.updateOnBoardFragmentContainer, adDisableSetting)
+                    .commit();
+        }else {
             OnBoardMainFragment onBoardMainFragment = OnBoardMainFragment.newInstance();
 
             getSupportFragmentManager().beginTransaction()

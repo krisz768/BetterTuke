@@ -4,6 +4,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.helper.widget.Flow;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -29,6 +31,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Property;
 import android.util.TypedValue;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -158,23 +161,16 @@ public class MainActivity extends AppCompatActivity {
 
         UserDatabase userDatabase = new UserDatabase(this);
 
-        userDatabase.SetPreference("AdEnabled", "false");
-
         String AdEnabled = userDatabase.GetPreference("AdEnabled");
         AdView mAdView = findViewById(R.id.adView);
         if (AdEnabled != null && AdEnabled.equals("true")){
-            MobileAds.initialize(this, new OnInitializationCompleteListener() {
-                @Override
-                public void onInitializationComplete(InitializationStatus initializationStatus) {
-                }
-            });
-
-
             AdRequest adRequest = new AdRequest.Builder().build();
             mAdView.loadAd(adRequest);
         } else {
             mAdView.setVisibility(View.GONE);
         }
+
+        ((Flow)findViewById(R.id.MainFlow)).setMaxElementsWrap(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 2 : 1);
 
         SetupGoogleMap();
     }
@@ -221,6 +217,8 @@ public class MainActivity extends AppCompatActivity {
         fragmentView.setLayoutParams(params);
 
         bottomSheetBehavior.setHideable(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+
+        ((Flow)findViewById(R.id.MainFlow)).setMaxElementsWrap(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 2 : 1);
     }
 
     public void ChangeStop(int Id) {
@@ -1244,6 +1242,25 @@ public class MainActivity extends AppCompatActivity {
         searchView = findViewById(R.id.search_view);
         SearchBar searchBar = findViewById(R.id.search_bar);
 
+        Activity activity = this;
+        searchBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.DisableAdButton:
+                        Intent updateIntent = new Intent(activity, UpdateAndOnboarding.class);
+                        updateIntent.putExtra("AdSettingScreen", true);
+                        startActivity(updateIntent);
+                        return true;
+                    case R.id.AboutUsButton:
+                        ShowAbout();
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        });
+
         searchView.setupWithSearchBar(searchBar);
 
         searchView.addTransitionListener(
@@ -1397,5 +1414,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void CollapseBottomSheet() {
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+    }
+
+    private void ShowAbout() {
+        MaterialAlertDialogBuilder welcomeAlert  = new MaterialAlertDialogBuilder(this);
+        welcomeAlert.setMessage(R.string.AboutText);
+        welcomeAlert.setTitle(R.string.AboutUsMenu);
+        welcomeAlert.setPositiveButton(R.string.Ok,null);
+        welcomeAlert.setCancelable(false);
+        welcomeAlert.create().show();
     }
 }

@@ -1,7 +1,9 @@
 package hu.krisz768.bettertuke.UpdateAndOnBoardScreen;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 
+import androidx.constraintlayout.helper.widget.Flow;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -16,6 +18,8 @@ import hu.krisz768.bettertuke.R;
  * create an instance of this fragment.
  */
 public class FinishOnBoard extends Fragment {
+    View view;
+
     public FinishOnBoard() {
         // Required empty public constructor
     }
@@ -32,6 +36,13 @@ public class FinishOnBoard extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_finish_on_board, container, false);
+        view = inflater.inflate(R.layout.fragment_finish_on_board, container, false);
+        return  view;
+    }
+
+    @Override
+    public void onConfigurationChanged (Configuration config) {
+        super.onConfigurationChanged(config);
+        ((Flow)view.findViewById(R.id.flow3)).setWrapMode(Flow.WRAP_CHAIN);
     }
 }

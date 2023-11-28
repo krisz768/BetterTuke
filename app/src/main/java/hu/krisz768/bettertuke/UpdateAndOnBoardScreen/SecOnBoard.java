@@ -1,12 +1,18 @@
 package hu.krisz768.bettertuke.UpdateAndOnBoardScreen;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 
+import androidx.constraintlayout.helper.widget.Flow;
+import androidx.core.content.OnConfigurationChangedProvider;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.google.android.material.internal.FlowLayout;
 
 import hu.krisz768.bettertuke.R;
 
@@ -16,6 +22,8 @@ import hu.krisz768.bettertuke.R;
  * create an instance of this fragment.
  */
 public class SecOnBoard extends Fragment {
+
+    View view;
 
     public SecOnBoard() {
         // Required empty public constructor
@@ -34,6 +42,13 @@ public class SecOnBoard extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_sec_on_board, container, false);
+        view = inflater.inflate(R.layout.fragment_sec_on_board, container, false);
+        return view;
+    }
+
+    @Override
+    public void onConfigurationChanged (Configuration config) {
+        super.onConfigurationChanged(config);
+        ((Flow)view.findViewById(R.id.flow2)).setWrapMode(Flow.WRAP_CHAIN);
     }
 }
