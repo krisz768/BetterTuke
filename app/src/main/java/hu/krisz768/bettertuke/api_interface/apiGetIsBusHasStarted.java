@@ -9,7 +9,6 @@ import java.util.Map;
 
 public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> implements Runnable{
     private final int LineId;
-
     public apiGetIsBusHasStarted(int LineId) {
         this.LineId = LineId;
     }
@@ -54,7 +53,7 @@ public class apiGetIsBusHasStarted extends TukeServerApiFunctions<Boolean> imple
             }
         } catch (Exception e) {
             ErrorFlag = true;
-            super.log("Error :(" + e);
+            super.log("Error: " + e);
         }
     }
 }

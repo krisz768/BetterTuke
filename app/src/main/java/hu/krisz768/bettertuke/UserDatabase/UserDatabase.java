@@ -20,7 +20,6 @@ import hu.krisz768.bettertuke.SplashActivity;
 
 public class UserDatabase {
     private static SQLiteDatabase Sld;
-
     private final Context Ctx;
 
     public UserDatabase (Context Ctx) {
@@ -60,7 +59,6 @@ public class UserDatabase {
     }
 
     public void AddFavorite(FavoriteType favoriteType, String Data, String HumanReadable) {
-
         Intent intent = new Intent(Ctx, SplashActivity.class);
         intent.setAction(Intent.ACTION_MAIN);
         intent.putExtra("ShortcutId", Data);
@@ -85,7 +83,6 @@ public class UserDatabase {
                     .setIcon(IconCompat.createWithBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected)))
                     .setIntent(intent)
                     .build();
-
 
             ShortcutManagerCompat.pushDynamicShortcut(Ctx, shortcut);
         }

@@ -2,18 +2,13 @@ package hu.krisz768.bettertuke.Gtfs;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URL;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -21,15 +16,12 @@ import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 
 public class GTFSDatabaseDownload implements Runnable {
     private final Context ctx;
-    private final String DATABASEFILE;
     public boolean RetCode;
-
-    private OnProgressChange onProgressChange;
+    private final OnProgressChange onProgressChange;
 
     public GTFSDatabaseDownload(Context ctx, OnProgressChange onProgressChange) {
         this.ctx = ctx;
         this.onProgressChange = onProgressChange;
-        DATABASEFILE = (new File(ctx.getFilesDir() + "/Database", "gtfs.db")).getAbsolutePath();
     }
 
     public interface OnProgressChange {
@@ -70,7 +62,7 @@ public class GTFSDatabaseDownload implements Runnable {
             ZipInputStream zin = new ZipInputStream(fin);
             ZipEntry ze = null;
             while ((ze = zin.getNextEntry()) != null) {
-                if (ze.getName().toString().equals("routes.txt")) {
+                if (ze.getName().equals("routes.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
                     byte[] buf = new byte[1024];
                     int count;
@@ -84,7 +76,7 @@ public class GTFSDatabaseDownload implements Runnable {
                         StepCounter++;
                     }
                 }
-                if (ze.getName().toString().equals("calendar.txt")) {
+                if (ze.getName().equals("calendar.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
                     byte[] buf = new byte[1024];
                     int count;
@@ -98,7 +90,7 @@ public class GTFSDatabaseDownload implements Runnable {
                         StepCounter++;
                     }
                 }
-                if (ze.getName().toString().equals("calendar_dates.txt")) {
+                if (ze.getName().equals("calendar_dates.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
                     byte[] buf = new byte[1024];
                     int count;
@@ -112,7 +104,7 @@ public class GTFSDatabaseDownload implements Runnable {
                         StepCounter++;
                     }
                 }
-                if (ze.getName().toString().equals("shapes.txt")) {
+                if (ze.getName().equals("shapes.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
                     byte[] buf = new byte[1024];
                     int count;
@@ -126,7 +118,7 @@ public class GTFSDatabaseDownload implements Runnable {
                         StepCounter++;
                     }
                 }
-                if (ze.getName().toString().equals("stop_times.txt")) {
+                if (ze.getName().equals("stop_times.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
                     byte[] buf = new byte[1024];
                     int count;
@@ -140,7 +132,7 @@ public class GTFSDatabaseDownload implements Runnable {
                         StepCounter++;
                     }
                 }
-                if (ze.getName().toString().equals("stops.txt")) {
+                if (ze.getName().equals("stops.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
                     byte[] buf = new byte[1024];
                     int count;
@@ -154,7 +146,7 @@ public class GTFSDatabaseDownload implements Runnable {
                         StepCounter++;
                     }
                 }
-                if (ze.getName().toString().equals("transfers.txt")) {
+                if (ze.getName().equals("transfers.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
                     byte[] buf = new byte[1024];
                     int count;
@@ -168,7 +160,7 @@ public class GTFSDatabaseDownload implements Runnable {
                         StepCounter++;
                     }
                 }
-                if (ze.getName().toString().equals("trips.txt")) {
+                if (ze.getName().equals("trips.txt")) {
                     ByteArrayOutputStream result = new ByteArrayOutputStream();
                     byte[] buf = new byte[1024];
                     int count;
@@ -187,12 +179,6 @@ public class GTFSDatabaseDownload implements Runnable {
                 zin.closeEntry();
             }
             zin.close();
-
-
-
-
-            //Process
-
 
             tempFile.delete();
 

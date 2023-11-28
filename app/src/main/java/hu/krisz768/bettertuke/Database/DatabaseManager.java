@@ -21,7 +21,7 @@ import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class DatabaseManager {
     private static SQLiteDatabase Sld;
-    private Context ctx;
+    private final Context ctx;
 
     public  DatabaseManager (Context Ctx) {
         this.ctx = Ctx;
@@ -183,7 +183,7 @@ public class DatabaseManager {
 
                 BusLine CTrip = null;
 
-                if (GetGTFS) {
+                if (GetGTFS && StartStop != null) {
                     String GTFSId = gtfsDatabase.ConvertTripId(Integer.toString(StartStop.getStopId()), String.format("%02d", DepartureHour) + ":" + String.format("%02d", DepartureMinute) + ":00", dateFormat.format(date), lineInfoRouteInfo.getLineNum());
                     
                     if (GTFSId == null) {
@@ -304,8 +304,7 @@ public class DatabaseManager {
             return ret;
         } catch (Exception e) {
             log(e.toString());
-            BusNum[] ret = new BusNum[0];
-            return ret;
+            return new BusNum[0];
         }
     }
 
@@ -324,8 +323,7 @@ public class DatabaseManager {
             return ret;
         } catch (Exception e) {
             log(e.toString());
-            BusScheduleTime[] ret = new BusScheduleTime[0];
-            return ret;
+            return new BusScheduleTime[0];
         }
     }
 
@@ -344,8 +342,7 @@ public class DatabaseManager {
             return ret;
         } catch (Exception e) {
             log(e.toString());
-            BusVariation[] ret = new BusVariation[0];
-            return ret;
+            return new BusVariation[0];
         }
     }
 
@@ -381,8 +378,7 @@ public class DatabaseManager {
             return ret;
         } catch (Exception e) {
             log(e.toString());
-            BusScheduleTime[] ret = new BusScheduleTime[0];
-            return ret;
+            return new BusScheduleTime[0];
         }
     }
 
@@ -401,8 +397,7 @@ public class DatabaseManager {
             return ret;
         } catch (Exception e) {
             log(e.toString());
-            BusVariation[] ret = new BusVariation[0];
-            return ret;
+            return new BusVariation[0];
         }
     }
 
@@ -421,8 +416,7 @@ public class DatabaseManager {
             return ret;
         } catch (Exception e) {
             log(e.toString());
-            BusNum[] ret = new BusNum[0];
-            return ret;
+            return new BusNum[0];
         }
     }
 
@@ -478,8 +472,7 @@ public class DatabaseManager {
             return ret;
         } catch (Exception e) {
             log(e.toString());
-            IncomingBusRespModel[] ret = new IncomingBusRespModel[0];
-            return ret;
+            return new IncomingBusRespModel[0];
         }
     }
 

@@ -1,9 +1,9 @@
 package hu.krisz768.bettertuke.Gtfs;
 
 public class GTFSBusLineData {
-    private String LineId;
-    private String DepartureTime;
-    private String StartStopId;
+    private final String LineId;
+    private final String DepartureTime;
+    private final String StartStopId;
 
     public GTFSBusLineData(String lineId, String departureTime, String startStopId) {
         LineId = lineId;

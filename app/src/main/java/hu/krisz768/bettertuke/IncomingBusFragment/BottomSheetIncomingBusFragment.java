@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -58,22 +57,17 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private static final String STARTMODE = "StartMode";
     private static final String PLACELIST = "PlaceList";
     private static final String STOPLIST = "StopList";
-
     private int mPlace;
     private volatile int mStop;
     private HashMap<Integer, BusPlaces> mPlaceList;
     private HashMap<Integer, BusStops> mStopList;
     private IncomBusBackStack mStartMode;
-
     private IncomingBusStopSelectorAdapter Ibssa;
     private IncomingBusListFragment InBusFragment;
-
     private ScheduledExecutorService UpdateLoop;
-
     private String SelectedDate;
     private String SelectedTime;
     private boolean DateTimeSelected = false;
-
     private BusStops[] SelectedPlaceStopsArray;
 
     public BottomSheetIncomingBusFragment() {
@@ -370,10 +364,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
     private void GetIncomingBuses(TukeServerApi serverApi) {
         try {
-            if (BuildConfig.DEBUG) {
-                Log.i("Update", "Updating List");
-            }
-
             final int SendStopId = mStop;
             final String SendDate = SelectedDate;
             final String SendTime = SelectedTime;
@@ -407,7 +397,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                     ArrayList<IncomingBusRespModel> list = new ArrayList<>();
 
                     for (BusStops element : SelectedPlaceStopsArray) {
-                        list.addAll(Arrays.asList(serverApi.getNextIncomingBuses(element.getId())));
+                        IncomingBusRespModel[] Data = serverApi.getNextIncomingBuses(element.getId());
+                        if (Data != null) {
+                            list.addAll(Arrays.asList(Data));
+                        }
                     }
 
                     Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
@@ -441,7 +434,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                     BusList = Dm.GetOfflineDepartureTimes(SendStopId, CurrentDate, CurrentTime);
                 }
             }
-
 
             SimpleDateFormat Sdf = new SimpleDateFormat("H", Locale.US);
             SimpleDateFormat Sdf2 = new SimpleDateFormat("m", Locale.US);

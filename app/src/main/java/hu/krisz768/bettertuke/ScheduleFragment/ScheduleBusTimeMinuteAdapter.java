@@ -24,19 +24,15 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
     private final int OnErrColor;
     private final Drawable Background;
     private final Drawable FullBackground;
-
     private final BusScheduleTime[] Started;
     private final BusScheduleTime[] ErrNotStarted;
-
     private final Drawable MinBackgroundStarted;
     private final Drawable MinFullBackgroundStarted;
     private final Drawable MinBackgroundErr;
     private final Drawable MinFullBackgroundErr;
-
     private final ScheduleBusTimeFragment Callback;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-
         private final TextView MinuteText;
         private final TextView BusCodeText;
 

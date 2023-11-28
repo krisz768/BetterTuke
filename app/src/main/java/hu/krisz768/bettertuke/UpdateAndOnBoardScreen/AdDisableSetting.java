@@ -1,11 +1,11 @@
 package hu.krisz768.bettertuke.UpdateAndOnBoardScreen;
 
-import android.content.DialogInterface;
+import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,21 +16,15 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link AdDisableSetting#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class AdDisableSetting extends Fragment {
     View view;
 
     public AdDisableSetting() {
-        // Required empty public constructor
+
     }
 
-    public static AdDisableSetting newInstance(String param1, String param2) {
-        AdDisableSetting fragment = new AdDisableSetting();
-        return fragment;
+    public static AdDisableSetting newInstance() {
+        return new AdDisableSetting();
     }
 
     @Override
@@ -44,13 +38,13 @@ public class AdDisableSetting extends Fragment {
 
         view = inflater.inflate(R.layout.fragment_ad_disable_setting, container, false);
 
-        UserDatabase userDatabase = new UserDatabase(getContext());
-        String AdEnabled = userDatabase.GetPreference("AdEnabled");
+        Context context = getContext();
 
-        if (AdEnabled == null || (AdEnabled != null && AdEnabled.equals("true"))) {
-            ((Switch)view.findViewById(R.id.AdSwitch)).setChecked(true);
-        }else {
-            ((Switch)view.findViewById(R.id.AdSwitch)).setChecked(false);
+        if (context != null) {
+            UserDatabase userDatabase = new UserDatabase(context);
+            String AdEnabled = userDatabase.GetPreference("AdEnabled");
+
+            ((Switch)view.findViewById(R.id.AdSwitch)).setChecked(AdEnabled == null || AdEnabled.equals("true"));
         }
 
         view.findViewById(R.id.SaveButton).setOnClickListener(v -> ConfirmWindow());
@@ -59,18 +53,26 @@ public class AdDisableSetting extends Fragment {
     }
 
     private void ConfirmWindow() {
-        MaterialAlertDialogBuilder ConfirmAlert  = new MaterialAlertDialogBuilder(getContext());
-        ConfirmAlert.setMessage(R.string.SaveWarningText);
-        ConfirmAlert.setTitle(R.string.SaveWarningTitle);
-        ConfirmAlert.setPositiveButton(R.string.Ok, (dialog, which) -> SaveDataAndExit());
-        ConfirmAlert.setCancelable(false);
-        ConfirmAlert.create().show();
+        Context context = getContext();
+
+        if (context != null) {
+            MaterialAlertDialogBuilder ConfirmAlert = new MaterialAlertDialogBuilder(context);
+            ConfirmAlert.setMessage(R.string.SaveWarningText);
+            ConfirmAlert.setTitle(R.string.SaveWarningTitle);
+            ConfirmAlert.setPositiveButton(R.string.Ok, (dialog, which) -> SaveDataAndExit());
+            ConfirmAlert.setCancelable(false);
+            ConfirmAlert.create().show();
+        }
     }
 
     private void SaveDataAndExit() {
-        UserDatabase userDatabase = new UserDatabase(getContext());
-        userDatabase.SetPreference("AdEnabled", Boolean.toString(((Switch)view.findViewById(R.id.AdSwitch)).isChecked()));
+        Activity activity = getActivity();
 
-        getActivity().finish();
+        if (activity != null) {
+            UserDatabase userDatabase = new UserDatabase(activity);
+            userDatabase.SetPreference("AdEnabled", Boolean.toString(((Switch)view.findViewById(R.id.AdSwitch)).isChecked()));
+
+            activity.finish();
+        }
     }
 }

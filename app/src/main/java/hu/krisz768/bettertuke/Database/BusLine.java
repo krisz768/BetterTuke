@@ -12,8 +12,7 @@ public class BusLine implements Serializable {
     private final LineInfoRoute[] Route;
     private final LineInfoRouteInfo RouteInfo;
     private String Date;
-
-    private BusLine CTrip;
+    private final BusLine CTrip;
 
     public LineInfoRouteInfo getRouteInfo() {
         return RouteInfo;

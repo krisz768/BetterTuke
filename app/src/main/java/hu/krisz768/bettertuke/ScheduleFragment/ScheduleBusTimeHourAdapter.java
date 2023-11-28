@@ -31,7 +31,6 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
     private final BusVariation[] Variations;
     private final Context ctx;
     private int MaxPerLine;
-
     private final int SecColor;
     private final int SecContainerColor;
     private final int OnSecContainerColor;
@@ -43,15 +42,11 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
     private final Drawable MinFullBackgroundStarted;
     private final Drawable MinBackgroundErr;
     private final Drawable MinFullBackgroundErr;
-
     private BusScheduleTime[] Started;
     private BusScheduleTime[] ErrNotStarted;
-
     private final ScheduleBusTimeFragment Callback;
 
-
     public static class ViewHolderHour extends RecyclerView.ViewHolder {
-
         private final TextView HourText;
         private final RecyclerView Recv;
 
@@ -78,7 +73,6 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
     }
 
     public static class ViewHolderLabel extends RecyclerView.ViewHolder {
-
         private final TextView Label;
 
         public ViewHolderLabel(View view) {
@@ -93,7 +87,6 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
     }
 
     public static class ViewHolderLegend extends RecyclerView.ViewHolder {
-
         private final TextView Legend;
         private final TextView Desc;
 
@@ -135,7 +128,6 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
                 stringWithImage.setSpan(new ImageSpan(arrow, DynamicDrawableSpan.ALIGN_BASELINE), variation.getName().length()+2, variation.getName().length()+3, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 Desc.setText(stringWithImage);
             }
-
         }
     }
 

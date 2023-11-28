@@ -28,10 +28,8 @@ import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 public class ScheduleBusListFragment extends Fragment {
     private static final String STOPID= "StopId";
     private static final String SCROLLPOSITION= "ScrollPosition";
-
     private int mStopId;
     private Parcelable mScrollPosition;
-
     private RecyclerView.LayoutManager mLayoutManager;
 
     public ScheduleBusListFragment() {

@@ -78,4 +78,6 @@
     <string name="DisableAdIllustration">Illustration zur Abschaltung der Werbung</string>
     <string name="SaveAdButton">Sicherung</string>
     <string name="AdEnableSwitch">Anzeigen einschalten</string>
+    <string name="OnBoardNextButtonDesc">Nächster Button</string>
+    <string name="OnBoardPrevButtonDesc">Vorheriger Button</string>
 </resources>

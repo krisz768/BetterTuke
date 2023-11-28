@@ -29,7 +29,7 @@
         android:layout_width="326dp"
         android:layout_height="381dp"
         android:contentDescription="@string/BusIllustrationImageDesc"
-        android:src="@drawable/_731086"
+        android:src="@drawable/bus_first_startup_illustration"
         tools:layout_editor_absoluteX="42dp"
         tools:layout_editor_absoluteY="259dp" />
 

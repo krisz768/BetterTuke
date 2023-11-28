@@ -26,7 +26,8 @@
         android:layout_margin="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/baseline_chevron_right_24" />
+        app:srcCompat="@drawable/baseline_chevron_right_24"
+        android:contentDescription="@string/OnBoardNextButtonDesc" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/prev_button"
@@ -37,14 +38,14 @@
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/baseline_chevron_left_24" />
+        app:srcCompat="@drawable/baseline_chevron_left_24"
+        android:contentDescription="@string/OnBoardPrevButtonDesc" />
 
     <TextView
         android:id="@+id/PageText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="100dp"
-        android:text="1/10"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/OnBoardViewPager"

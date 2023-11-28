@@ -24,7 +24,6 @@ import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.models.SearchResult;
 
 public class SearchViewFragment extends Fragment {
-
     private static final String ALLITEM = "AllItem";
     private SearchResult[] mAllItem;
     private SearchAdapter searchAdapter;

@@ -13,7 +13,6 @@ import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class apiGetNextIncomingBuses extends TukeServerApiFunctions<IncomingBusRespModel[]> implements Runnable{
     private final int StopId;
-
     public apiGetNextIncomingBuses(int StopId) {
         this.StopId = StopId;
     }
@@ -62,7 +61,7 @@ public class apiGetNextIncomingBuses extends TukeServerApiFunctions<IncomingBusR
                 urlConnection.disconnect();
             }
         } catch (Exception e) {
-            super.log("Error :(" + e);
+            super.log("Error: " + e);
             ErrorFlag = true;
         }
     }

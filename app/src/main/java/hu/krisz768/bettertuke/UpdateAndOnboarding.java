@@ -3,14 +3,8 @@ package hu.krisz768.bettertuke;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Debug;
 import android.widget.Toast;
-
-import java.util.Date;
-
-import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusTimeFragment;
 import hu.krisz768.bettertuke.UpdateAndOnBoardScreen.AdDisableSetting;
 import hu.krisz768.bettertuke.UpdateAndOnBoardScreen.DatabaseUpdate;
 import hu.krisz768.bettertuke.UpdateAndOnBoardScreen.OnBoardMainFragment;

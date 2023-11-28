@@ -18,7 +18,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BetterTuke"
         android:usesCleartextTraffic="true"
-        tools:targetApi="33">
+        tools:targetApi="34"
+        android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".UpdateAndOnboarding"
             android:exported="false"

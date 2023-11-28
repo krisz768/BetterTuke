@@ -1,14 +1,16 @@
 package hu.krisz768.bettertuke;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.helper.widget.Flow;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.os.BuildCompat;
 import androidx.fragment.app.FragmentContainerView;
 
 import android.Manifest;
@@ -31,16 +33,14 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Property;
 import android.util.TypedValue;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
@@ -91,41 +91,32 @@ import hu.krisz768.bettertuke.models.SearchResult;
 
 public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
-
     private BottomSheetBehavior<View> bottomSheetBehavior;
     private BottomSheetBehavior.BottomSheetCallback BottomSheetCallback;
-
     private SearchView searchView;
     private SearchViewFragment Svf;
-
     private Integer CurrentPlace = -1;
     private Integer CurrentStop = -1;
     private Integer CurrentBusTrack = -1;
     private BusLine busLine;
     private LatLng SelectedPlace;
     private IncomBusBackStack IncomBusMode = new IncomBusBackStack("", "", false);
-
     private GoogleMap googleMap;
-
     private HashMap<Integer, BusPlaces> busPlaces;
     private HashMap<Integer, BusStops> busStops;
-
     private final List<BackStack> backStack = new ArrayList<>();
-
     private boolean smallMarkerMode = false;
-
     private boolean IsBackButtonHalfExpanded = true;
-
     private Marker BusMarker;
     private boolean UserTouchedMap = false;
-
     private ObjectAnimator MarkerAnimator;
-
     private Integer ShortcutType;
     private String ShortcutData;
     private boolean OnStartFragmentError = false;
-
     private boolean IsMapInitialized = false;
+    private OnBackInvokedCallback onBackPressedCallback;
+    private OnBackPressedCallback onBackPressedCallbackOld;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -148,6 +139,8 @@ public class MainActivity extends AppCompatActivity {
 
         View bottomSheet = findViewById(R.id.standard_bottom_sheet);
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+
+        SetupBackButton();
 
         SetupBottomSheet();
 
@@ -335,7 +328,6 @@ public class MainActivity extends AppCompatActivity {
             googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
 
-
         bottomSheetBehavior.setHideable(true);
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
 
@@ -379,7 +371,6 @@ public class MainActivity extends AppCompatActivity {
         if (Stop != null) {
             CurrentPlace = Stop.getPlace();
         }
-
 
         ZoomToMarker();
 
@@ -577,7 +568,6 @@ public class MainActivity extends AppCompatActivity {
                 googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }
 
-
             fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, new CancellationToken() {
                 @NonNull
                 @Override
@@ -701,7 +691,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void SetupBottomSheet() {
-
         final FragmentContainerView fragmentView = findViewById(R.id.fragmentContainerView2);
         final FloatingActionButton ScheduleButton = findViewById(R.id.ShowScheduleButton);
 
@@ -738,8 +727,10 @@ public class MainActivity extends AppCompatActivity {
                             }
                             params2.bottomMargin = params.height + dp20;
                         }
+                        DisableBack();
                     } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                         params.height = bottomSheet.getHeight();
+                        EnableBack();
                     } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                             if(IsMapInitialized) {
@@ -752,6 +743,9 @@ public class MainActivity extends AppCompatActivity {
                             }
                             params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20;
                         }
+                        EnableBack();
+                    } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                        EnableBack();
                     }
 
                     fragmentView.setLayoutParams(params);
@@ -1119,8 +1113,18 @@ public class MainActivity extends AppCompatActivity {
         return bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED;
     }
 
-    @Override
-    public void onBackPressed() {
+    private void SetupBackButton() {
+            onBackPressedCallback = this::DoBack;
+
+            onBackPressedCallbackOld = new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    DoBack();
+                }
+            };
+    }
+
+    private void DoBack() {
         if (searchView.isShowing()) {
             searchView.hide();
             return;
@@ -1136,10 +1140,35 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        if (backStack.size() == 1) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(onBackPressedCallback);
+            }
+        }
+
         if (backStack.size() == 0) {
             finish();
+        }
+
+        RestorePrevState();
+    }
+
+    private void EnableBack() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                    onBackPressedCallback
+            );
         } else {
-            RestorePrevState();
+            getOnBackPressedDispatcher().addCallback(onBackPressedCallbackOld);
+        }
+    }
+
+    private void DisableBack() {
+        if (backStack.size() == 0) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(onBackPressedCallback);
+            }
         }
     }
 
@@ -1214,6 +1243,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void AddBackStack() {
         backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace, IncomBusMode));
+        EnableBack();
     }
 
     public void ShowSchedule(int StopId, String LineNum, String Direction, String Date, boolean PreSelected) {
@@ -1232,32 +1262,29 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     if (result.getData() != null) {
                         TrackBus(result.getData().getExtras().getInt("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
+                        backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getInt("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null));
                     }
-
-                    backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getInt("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null));
                 }
             });
 
+    @SuppressLint("NonConstantResourceId")
     private void SetupSearchView() {
         searchView = findViewById(R.id.search_view);
         SearchBar searchBar = findViewById(R.id.search_bar);
 
         Activity activity = this;
-        searchBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.DisableAdButton:
-                        Intent updateIntent = new Intent(activity, UpdateAndOnboarding.class);
-                        updateIntent.putExtra("AdSettingScreen", true);
-                        startActivity(updateIntent);
-                        return true;
-                    case R.id.AboutUsButton:
-                        ShowAbout();
-                        return true;
-                    default:
-                        return false;
-                }
+        searchBar.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.DisableAdButton:
+                    Intent updateIntent = new Intent(activity, UpdateAndOnboarding.class);
+                    updateIntent.putExtra("AdSettingScreen", true);
+                    startActivity(updateIntent);
+                    return true;
+                case R.id.AboutUsButton:
+                    ShowAbout();
+                    return true;
+                default:
+                    return false;
             }
         });
 
@@ -1351,7 +1378,7 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainerView2, NearStopFragment)
                     .commit();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
     }
@@ -1363,7 +1390,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             addresses = gcd.getFromLocation(latLng.latitude, latLng.longitude, 1);
 
-            if (addresses.size() > 0) {
+            if (addresses != null && addresses.size() > 0) {
                 return addresses.get(0).getAddressLine(0).split(",")[1];
             } else {
                 return latLng.latitude + ", " + latLng.longitude;

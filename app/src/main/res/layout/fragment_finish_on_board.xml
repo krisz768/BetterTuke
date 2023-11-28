@@ -30,7 +30,7 @@
         android:layout_height="381dp"
         android:contentDescription="@string/FinishIllustration"
         android:padding="40dp"
-        android:src="@drawable/_536300"
+        android:src="@drawable/launch_illustration"
         tools:layout_editor_absoluteX="42dp"
         tools:layout_editor_absoluteY="259dp" />
 

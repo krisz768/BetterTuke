@@ -27,7 +27,7 @@ public class apiGetDatabaseVersion extends TukeServerApiFunctions<String> implem
                 urlConnection.disconnect();
             }
         } catch (Exception e) {
-            super.log("Error :(" + e);
+            super.log("Error: " + e);
 
             ErrorFlag = true;
         }
