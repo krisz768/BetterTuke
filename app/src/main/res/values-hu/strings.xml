@@ -47,8 +47,7 @@
     <string name="SearchStopResultIcon">Keresés megálló találat</string>
     <string name="BusPositionIcon">Busz pozició ikon</string>
     <string name="BusText">%1$s jelzésű járat</string>
-    <string name="WelcomeText">A PécsLines egy nem hivatalos pécsi buszmenetrend alkalmazás, ami segítségével valós idejű\ninformációkat kaphat a helyi tömegközlekedésről.\nFőbb funkciók:\n- Virtuális megállótábla valós idejű adatokkal\n- Vonalak menetrendjei\n- Interaktív, térképes felhasználói felület\n- Buszok aktuális pozícióinak megjelenítése\n- Információ a buszokról (típus, alacsonypadlósság, klíma, stb.)\n- GPS pozíció alapján történő automatikus megálló kiválasztás\n- Kedvenc megállók, járatok beállításának lehetősége\n\nEz az alkalmazás egy egyéni, nyílt forráskodú fejlesztési projekt részeként jött létre, nem a Tüke Busz Zrt. megrendelésére.\n\nBármilyen jellegű kérdését, észrevételét várjuk az pecslines@gmail.com email címen.\n\nKellemes utazást kívánunk!\n\nhttps://github.com/krisz768/BetterTuke</string>
-    <string name="WelcomeTextTitle">Üdvözöljük a PécsLines-ban!</string>
+    <string name="AboutText">Email: pecslines@gmail.com\n\nA PécsLines egy nem hivatalos pécsi buszmenetrend alkalmazás, ami segítségével valós idejű\ninformációkat kaphat a helyi tömegközlekedésről.\nFőbb funkciók:\n- Virtuális megállótábla valós idejű adatokkal\n- Vonalak menetrendjei\n- Interaktív, térképes felhasználói felület\n- Buszok aktuális pozícióinak megjelenítése\n- Információ a buszokról (típus, alacsonypadlósság, klíma, stb.)\n- GPS pozíció alapján történő automatikus megálló kiválasztás\n- Kedvenc megállók, járatok beállításának lehetősége\n\nEz az alkalmazás egy egyéni, nyílt forráskodú fejlesztési projekt részeként jött létre, nem a Tüke Busz Zrt. megrendelésére.\n\nBármilyen jellegű kérdését, észrevételét várjuk az pecslines@gmail.com email címen.\n\nKellemes utazást kívánunk!\n\nGit: https://github.com/krisz768/BetterTuke\n\nIllusztrációk:\n- Image by rawpixel.com on Freepik\n- Image by storyset on Freepik\n- Image by storyset on Freepik\n- Image by rawpixel.com on Freepik\n- Image by vectorjuice on Freepik</string>
     <string name="TrackTimeStringOneMinute">%1$s (%2$d perc)</string>
     <string name="DelayStringWithPosSignOneMinute">%1$s%2$d perc</string>
     <string name="AllLines">Összes járat</string>
@@ -61,4 +60,21 @@
     <string name="AllStopButton">Összes</string>
     <string name="DisableAdMenu">Reklámok kikapcsolása</string>
     <string name="AboutUsMenu">Névjegy</string>
+    <string name="SaveWarningTitle">Figyelmeztetés</string>
+    <string name="SaveWarningText">A módosítás érvénybelépéséhez újra kell indítani az alkalmazást.</string>
+    <string name="OnBoardWelcomeTitle">Üdvözöllek a PécsLines-ban!</string>
+    <string name="OnBoardWelcomeDesc">Pécs nem hivatalos menetrend alkalmazása.</string>
+    <string name="BusIllustrationImageDesc">Busz illusztráció</string>
+    <string name="OnBoardSecTitle">Első lépésként az adatbázis letöltése szükséges!</string>
+    <string name="OnBoardSecDesc">Ez eltarthat pár másordpercig.</string>
+    <string name="DownloadIllustration">Letöltés illusztráció</string>
+    <string name="OnBoardFinTitle">Minden készen áll!</string>
+    <string name="OnBoardFinDesc">Jó utazást kívánunk!</string>
+    <string name="FinishIllustration">kész illusztráció</string>
+    <string name="OnBoardUpdateTitle">Adatbázis frissítése folyamatban!</string>
+    <string name="OnBoardUpdateDesc">Kérem várjon...</string>
+    <string name="DisableAdText">Ha tetszik az alkalmazás és szeretnéd támogatni, kérlek kapcsold be a reklámokat. Köszönjük!</string>
+    <string name="DisableAdIllustration">Reklám kikapcsolás illusztráció</string>
+    <string name="SaveAdButton">Mentés</string>
+    <string name="AdEnableSwitch">Reklámok engedélyezése</string>
 </resources>

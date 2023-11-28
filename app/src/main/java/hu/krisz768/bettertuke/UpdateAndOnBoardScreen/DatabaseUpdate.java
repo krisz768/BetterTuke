@@ -2,9 +2,11 @@ package hu.krisz768.bettertuke.UpdateAndOnBoardScreen;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.constraintlayout.helper.widget.Flow;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -162,6 +164,12 @@ public class DatabaseUpdate extends Fragment {
         } else {
             progressBar.setProgress(Percent);
         }
+    }
+
+    @Override
+    public void onConfigurationChanged (Configuration config) {
+        super.onConfigurationChanged(config);
+        ((Flow)view.findViewById(R.id.flow4)).setWrapMode(Flow.WRAP_CHAIN);
     }
 
     private void AddLog(String LogText) {

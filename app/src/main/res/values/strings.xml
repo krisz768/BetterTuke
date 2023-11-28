@@ -55,8 +55,7 @@
     <string name="StartingDataFromStop">Departures from: %1$s (%2$s)</string>
     <string name="StartingDataFromStartingPosition">Departures from the starting:</string>
     <string name="BusStopNameWithNum" translatable="false">%1$s (%2$s)</string>
-    <string name="WelcomeText">PécsLines is a non official bus timetable application for Pécs, which provides real-time information about the local public transport.\nMain features:\n- Virtual bus stop board with real-time data\n- Line timetables\n- Interactive, map based user interface\n- Display current bus positions\n- Information about buses (type, low floor, climate, etc.)\n\n- Automatic selection of stops based on GPS position\n- Possibility to set favourite stops and routes\n\nThis application is part of an individual open source development project, not commissioned by Tüke Busz Zrt.\n\nYour questions and comments are welcome at pecslines@gmail.com.\n\nWe wish you a pleasant journey!\n\nhttps://github.com/krisz768/BetterTuke</string>
-    <string name="WelcomeTextTitle">Welcome to PécsLines!</string>
+    <string name="AboutText">Email: pecslines@gmail.com\n\nPécsLines is a non official bus timetable application for Pécs, which provides real-time information about the local public transport.\nMain features:\n- Virtual bus stop board with real-time data\n- Line timetables\n- Interactive, map based user interface\n- Display current bus positions\n- Information about buses (type, low floor, climate, etc.)\n\n- Automatic selection of stops based on GPS position\n- Possibility to set favourite stops and routes\n\nThis application is part of an individual open source development project, not commissioned by Tüke Busz Zrt.\n\nYour questions and comments are welcome at pecslines@gmail.com.\n\nWe wish you a pleasant journey!\n\nGit: https://github.com/krisz768/BetterTuke\n\nIllustrations:\n- Image by rawpixel.com on Freepik\n- Image by storyset on Freepik\n- Image by storyset on Freepik\n- Image by rawpixel.com on Freepik\n- Image by vectorjuice on Freepik</string>
     <string name="TrackTimeStringOneMinute">%1$s (%2$d minute)</string>
     <string name="DelayStringWithPosSignOneMinute">%1$s%2$d minute</string>
     <string name="AllLines">All lines</string>
@@ -69,4 +68,21 @@
     <string name="AllStopButton">All</string>
     <string name="DisableAdMenu">Disable ads</string>
     <string name="AboutUsMenu">About</string>
+    <string name="SaveWarningTitle">Warning</string>
+    <string name="SaveWarningText">You need to restart the application for the change to take effect.</string>
+    <string name="OnBoardWelcomeTitle">Welcome to PécsLines!</string>
+    <string name="OnBoardWelcomeDesc">Pécs unofficial timetable application.</string>
+    <string name="BusIllustrationImageDesc">Bus illustration</string>
+    <string name="OnBoardSecTitle">The first step is to download the database!</string>
+    <string name="OnBoardSecDesc">This may take a few seconds.</string>
+    <string name="DownloadIllustration">Download illustration</string>
+    <string name="OnBoardFinTitle">Everything is ready!</string>
+    <string name="OnBoardFinDesc">Have a safe journey!</string>
+    <string name="FinishIllustration">Finish illustration</string>
+    <string name="OnBoardUpdateTitle">Database update in progress!</string>
+    <string name="OnBoardUpdateDesc">Please wait...</string>
+    <string name="DisableAdText">If you like the app and want to support it, please turn on the ads. Thank you!</string>
+    <string name="DisableAdIllustration">Disable ad illustration</string>
+    <string name="SaveAdButton">Save</string>
+    <string name="AdEnableSwitch">Enable advertisements</string>
 </resources>

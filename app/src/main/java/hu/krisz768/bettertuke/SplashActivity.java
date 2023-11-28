@@ -11,6 +11,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+
 import java.io.File;
 import java.util.Date;
 
@@ -36,6 +41,33 @@ public class SplashActivity extends AppCompatActivity {
         AddLog("init...");
 
         UserDatabase userDatabase = new UserDatabase(this);
+
+        String AdEnabled = userDatabase.GetPreference("AdEnabled");
+
+        String LaunchCounter = userDatabase.GetPreference("LaunchCounter");
+        if (LaunchCounter == null) {
+            userDatabase.SetPreference("LaunchCounter", "1");
+        } else {
+            try {
+                int Count = Integer.parseInt(LaunchCounter);
+                Count++;
+                userDatabase.SetPreference("LaunchCounter", Integer.toString(Count));
+
+                if (Count > 12 && AdEnabled == null) {
+                    userDatabase.SetPreference("AdEnabled", "true");
+                    AdEnabled = "true";
+                }
+            } catch (Exception e) {
+                userDatabase.SetPreference("LaunchCounter", "1");
+            }
+        }
+
+
+        if (AdEnabled != null && AdEnabled.equals("true")) {
+            MobileAds.initialize(this, initializationStatus -> {
+            });
+        }
+
         String FirstStart = userDatabase.GetPreference("FirstStartComplete");
         if (FirstStart != null && FirstStart.equals("true")){
             //StartMain(false,false);
@@ -69,7 +101,7 @@ public class SplashActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> Toast.makeText(ctx, R.string.DatabaseVersionCheckFail, Toast.LENGTH_LONG).show());
 
-                StartMain(false,false);
+                StartMain();
             } else {
                 if (Version.equals(OnlineVersion) && !OnlineVersion.equals("Err") && DatabaseManager.IsDatabaseValid(ctx)) {
                     AddLog("Database is up to date!");
@@ -78,7 +110,7 @@ public class SplashActivity extends AppCompatActivity {
                     if (gtfsDatabaseManager.CheckForUpdate(this)){
                         StartUpdate(false, true);
                     } else {
-                        StartMain(false,false);
+                        StartMain();
                     }
 
 
@@ -143,7 +175,7 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    private void StartMain(boolean Error, boolean FirstStart) {
+    private void StartMain() {
         Date FinishDate = new Date();
         if (FinishDate.getTime() - StartTime.getTime() < 500 && !(Build.VERSION.SDK_INT < 31)) {
             try {
@@ -154,8 +186,6 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         Intent mainIntent = new Intent(this, MainActivity.class);
-        mainIntent.putExtra("ERROR", Error);
-        mainIntent.putExtra("FirstStart", FirstStart);
 
         Bundle b = getIntent().getExtras();
 
@@ -168,6 +198,15 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void StartUpdate(boolean BaseDB, boolean GTFSDB) {
+        Date FinishDate = new Date();
+        if (FinishDate.getTime() - StartTime.getTime() < 500 && !(Build.VERSION.SDK_INT < 31)) {
+            try {
+                Thread.sleep(500 - (FinishDate.getTime() - StartTime.getTime()));
+            }catch (Exception ignored) {
+
+            }
+        }
+
         Intent updateIntent = new Intent(this, UpdateAndOnboarding.class);
 
         int Update = (BaseDB == true ? 1 : 0 ) + (GTFSDB == true ? 2 : 0 );
@@ -186,6 +225,15 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void ShowSetupScreen() {
+        Date FinishDate = new Date();
+        if (FinishDate.getTime() - StartTime.getTime() < 500 && !(Build.VERSION.SDK_INT < 31)) {
+            try {
+                Thread.sleep(500 - (FinishDate.getTime() - StartTime.getTime()));
+            }catch (Exception ignored) {
+
+            }
+        }
+
         Intent mainIntent = new Intent(this, UpdateAndOnboarding.class);
         startActivity(mainIntent);
     }
