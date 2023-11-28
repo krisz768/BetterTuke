@@ -10,7 +10,6 @@ public class IncomingBusRespModel implements Serializable {
     private final int LineId;
     private final int RemainingMin;
     private final boolean AtStop;
-
     private boolean Started;
     private boolean Miss;
 

@@ -28,7 +28,6 @@ public class BottomSheetNearStops extends Fragment {
     private static final String LONGITUDE = "Longitude";
     private static final String STOPS = "Stops";
     private static final String PLACES = "Places";
-
     private double mLatitude;
     private double mLongitude;
     private HashMap<Integer, BusStops> mStops;

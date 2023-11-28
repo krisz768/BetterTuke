@@ -4,7 +4,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class GTFSContentLength implements Runnable{
-
     String ContentLength = "";
     boolean Error = false;
 

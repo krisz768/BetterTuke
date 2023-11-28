@@ -11,10 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
 import java.io.File;
 import java.util.Date;
@@ -70,14 +67,10 @@ public class SplashActivity extends AppCompatActivity {
 
         String FirstStart = userDatabase.GetPreference("FirstStartComplete");
         if (FirstStart != null && FirstStart.equals("true")){
-            //StartMain(false,false);
             new Thread(this::CheckForUpdates).start();
         } else {
             ShowSetupScreen();
         }
-
-        //new Thread(this::InitTasks).start();
-
     }
 
     private void CheckForUpdates() {
@@ -104,74 +97,25 @@ public class SplashActivity extends AppCompatActivity {
                 StartMain();
             } else {
                 if (Version.equals(OnlineVersion) && !OnlineVersion.equals("Err") && DatabaseManager.IsDatabaseValid(ctx)) {
-                    AddLog("Database is up to date!");
-
                     GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
                     if (gtfsDatabaseManager.CheckForUpdate(this)){
+                        AddLog("Updating gtfs...");
                         StartUpdate(false, true);
                     } else {
+                        AddLog("Database is up to date!");
                         StartMain();
                     }
-
-
                 } else {
                     AddLog("Database version does not match! Updating....");
 
                     GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
-                    if (gtfsDatabaseManager.CheckForUpdate(this)){
-                        StartUpdate(true, true);
-                    } else {
-                        StartUpdate(true, false);
-                    }
-                    /*if (!DatabaseManager.DeleteDatabase(ctx)){
-                        AddLog("Database delete error. Continue anyway...");
-                    }
-
-                    if (serverApi.downloadDatabaseFile()) {
-                        AddLog("Database downloaded successfully");
-
-                        Version = DatabaseManager.GetDatabaseVersion(ctx);
-
-                        AddLog("Database version = " + Version);
-
-                        GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
-                        runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());
-                        //gtfsDatabaseManager.ForceUpdate();
-                        gtfsDatabaseManager.CheckForUpdate(this); //NEM VÉGLEGES
-                        runOnUiThread(() -> Toast.makeText(ctx, R.string.NewDatabaseWarning, Toast.LENGTH_LONG).show());
-
-                        StartMain(false,false);
-                    }else  {
-                        AddLog("Database download fail!");
-                        runOnUiThread(() -> Toast.makeText(ctx, R.string.DatabaseUpdateError, Toast.LENGTH_LONG).show());
-                        StartMain(false,false);
-                    }*/
+                    StartUpdate(true, gtfsDatabaseManager.CheckForUpdate(this));
                 }
             }
         } else  {
             AddLog("Database not found, attempt to download...");
-            /*if (serverApi.downloadDatabaseFile()) {
-                AddLog("Database downloaded successfully");
-                String Version = DatabaseManager.GetDatabaseVersion(ctx);
-
-                AddLog("Database version = " + Version);
-
-                GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
-                runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());
-                //gtfsDatabaseManager.ForceUpdate();
-
-                StartMain(false,true);
-            }else  {
-                AddLog("Database download fail!");
-                StartMain(true, true);
-            }*/
-
             GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
-            if (gtfsDatabaseManager.CheckForUpdate(this)){
-                StartUpdate(true, true);
-            } else {
-                StartUpdate(true, false);
-            }
+            StartUpdate(true, gtfsDatabaseManager.CheckForUpdate(this));
         }
     }
 
@@ -209,7 +153,7 @@ public class SplashActivity extends AppCompatActivity {
 
         Intent updateIntent = new Intent(this, UpdateAndOnboarding.class);
 
-        int Update = (BaseDB == true ? 1 : 0 ) + (GTFSDB == true ? 2 : 0 );
+        int Update = (BaseDB ? 1 : 0 ) + (GTFSDB ? 2 : 0 );
 
         updateIntent.putExtra("Update", true);
         updateIntent.putExtra("UpdateType", Update);

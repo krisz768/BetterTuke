@@ -35,18 +35,14 @@ import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class BottomSheetTrackBusFragment extends Fragment {
-
     private static final String STOP = "Stop";
     private static final String PLACELIST = "PlaceList";
     private static final String STOPLIST = "StopList";
     private static final String LINEOBJ = "LineObj";
-
     private int mStop;
-
     private HashMap<Integer, BusPlaces> mPlaceList;
     private HashMap<Integer, BusStops> mStopList;
     private BusLine mBusLine;
-
     private TrackBusListFragment TrackBusFragment;
     private TextView PlateNumber;
     private TextView BusType;
@@ -57,13 +53,9 @@ public class BottomSheetTrackBusFragment extends Fragment {
     private ImageView AirConditioner;
     private ImageView Wifi;
     private ImageView Usb;
-
     private boolean BusAttributesVisible = false;
-
     private ScheduledExecutorService UpdateLoop;
-
     private TrackBusRespModel RecentBusPosition;
-
     private boolean IsOldDataWarnDisplayed = false;
 
     public BottomSheetTrackBusFragment() {
@@ -148,11 +140,6 @@ public class BottomSheetTrackBusFragment extends Fragment {
     @SuppressLint("UseCompatLoadingForDrawables")
     private void GetBusPosition(TukeServerApi serverApi) {
         try {
-
-            if (BuildConfig.DEBUG) {
-                Log.i("BusPositionUpdate", "Bus Pos Update");
-            }
-
             if (mBusLine.getDate() != null) {
                 UpdateLoop.shutdown();
                 return;
@@ -204,9 +191,9 @@ public class BottomSheetTrackBusFragment extends Fragment {
                         int CurrentMinute = Now.get(Calendar.MINUTE);
 
                         if ((mBusLine.getDepartureHour() == CurrentHour && CurrentMinute > mBusLine.getDepartureMinute()) || mBusLine.getDepartureHour() < CurrentHour) {
-                            boolean IsCBusStarted = serverApi.getIsBusHasStarted(mBusLine.getCTrip().getLineId());
+                            Boolean IsCBusStarted = serverApi.getIsBusHasStarted(mBusLine.getCTrip().getLineId());
 
-                            if (IsCBusStarted) {
+                            if (IsCBusStarted != null && IsCBusStarted) {
                                 activity.runOnUiThread(() -> ((MainActivity)activity).TrackBus(mBusLine.getCTrip().getLineId(), mBusLine.getDate()));
                             }
                         }
@@ -302,7 +289,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
                 Wifi.setVisibility(View.VISIBLE);
             if(busAttributes.isUsb())
                 Usb.setVisibility(View.VISIBLE);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
     }

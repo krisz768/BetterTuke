@@ -14,15 +14,12 @@ public class TukeServerApiFunctions<T> {
     protected final String API_URL = "http://menobusz.tukebusz.hu/";
     protected volatile T value;
     protected volatile boolean ErrorFlag = false;
-
     protected void log (String msg) {
         Log.i(this.getClass().getName(), msg);
     }
-
     public T getValue (){
         return value;
     }
-
     public boolean getError (){
         return ErrorFlag;
     }
@@ -41,7 +38,7 @@ public class TukeServerApiFunctions<T> {
         try {
             result = postData.toString().getBytes(StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log("Encode Error :(" + e);
+            log("Encode Error: " + e);
         }
         return result;
     }
@@ -51,7 +48,7 @@ public class TukeServerApiFunctions<T> {
         try {
             result = URLEncoder.encode(data, "UTF-8");
         } catch (Exception e) {
-            log("Encode Error :(" + e);
+            log("Encode Error: " + e);
         }
         return result;
     }
@@ -62,7 +59,7 @@ public class TukeServerApiFunctions<T> {
         try {
             return Sdf.parse(DateString);
         } catch (ParseException e) {
-            log("Date parse Error :(" + e);
+            log("Date parse Error: " + e);
         }
 
         return null;

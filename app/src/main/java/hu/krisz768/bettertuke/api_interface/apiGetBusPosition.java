@@ -11,7 +11,6 @@ import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
 public class apiGetBusPosition extends TukeServerApiFunctions<TrackBusRespModel> implements Runnable{
     private final int LineId;
-
     public apiGetBusPosition(int LineId) {
         this.LineId = LineId;
     }
@@ -54,7 +53,7 @@ public class apiGetBusPosition extends TukeServerApiFunctions<TrackBusRespModel>
                 urlConnection.disconnect();
             }
         } catch (Exception e) {
-            super.log("Error :(" + e);
+            super.log("Error: " + e);
             ErrorFlag = true;
         }
     }

@@ -17,7 +17,6 @@ import hu.krisz768.bettertuke.R;
 public class NearBusStopListFragment extends Fragment {
     private static final String BUSPLACES = "BusPlaces";
     private static final String FAVCOUNT = "FavCount";
-
     private BusPlaces[] mBusPlaces;
     private int mFavCount;
 

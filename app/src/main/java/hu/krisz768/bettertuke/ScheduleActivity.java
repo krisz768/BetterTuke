@@ -1,5 +1,6 @@
 package hu.krisz768.bettertuke;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,9 +14,6 @@ import android.view.View;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,11 +27,8 @@ public class ScheduleActivity extends AppCompatActivity {
     private String SelectedLine;
     private String Date;
     private int StopId = -1;
-
     private ScheduleBusTimeFragment Sbtf;
-
     private boolean PreSelected = false;
-
     private Parcelable ScrollState;
 
     @Override
@@ -43,6 +38,8 @@ public class ScheduleActivity extends AppCompatActivity {
         setTheme();
         setContentView(R.layout.activity_schedule);
         Bundle b = getIntent().getExtras();
+
+        SetupBack();
 
         String LineNum = null;
         String Direction = null;
@@ -119,24 +116,30 @@ public class ScheduleActivity extends AppCompatActivity {
         finish();
     }
 
-    @Override
-    public void onBackPressed() {
-        if (SelectedLine == null || PreSelected) {
-            finish();
-        } else {
-            SelectedLine = null;
+    private void SetupBack() {
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (SelectedLine == null || PreSelected) {
+                    finish();
+                } else {
+                    SelectedLine = null;
 
-            ScheduleBusListFragment Sblf = ScheduleBusListFragment.newInstance(StopId,ScrollState);
+                    ScheduleBusListFragment Sblf = ScheduleBusListFragment.newInstance(StopId, ScrollState);
 
-            getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in,
-                    R.anim.slide_out,
-                    R.anim.slide_in,
-                    R.anim.fade_out)
-                    .replace(R.id.ScheduleFragmentContainer, Sblf)
-                    .commit();
+                    getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in,
+                                    R.anim.slide_out,
+                                    R.anim.slide_in,
+                                    R.anim.fade_out)
+                            .replace(R.id.ScheduleFragmentContainer, Sblf)
+                            .commit();
 
-            Sbtf = null;
-        }
+                    Sbtf = null;
+                }
+            }
+        };
+
+        getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
     }
 
     @Override

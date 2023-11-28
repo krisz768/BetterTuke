@@ -31,16 +31,12 @@ public class TrackBusListFragment extends Fragment {
     private static final String STOPLIST = "StopList";
     private static final String LINES = "LineInfo";
     private static final String POSITION = "BusPosition";
-
     private int mStop;
-
     private HashMap<Integer, BusPlaces> mPlaceList;
     private HashMap<Integer, BusStops> mStopList;
     private BusLine mLine;
     private TrackBusRespModel mBusPosition;
-
     private TrackBusListAdapter Tbla;
-
     private RecyclerView Recv;
 
     public TrackBusListFragment() {

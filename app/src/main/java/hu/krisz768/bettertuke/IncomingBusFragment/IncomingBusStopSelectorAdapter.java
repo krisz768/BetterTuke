@@ -22,7 +22,6 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
     private final BottomSheetIncomingBusFragment callback;
 
     public static class StopViewHolder extends RecyclerView.ViewHolder {
-
         private final Button button;
 
         public StopViewHolder(View view) {
@@ -42,7 +41,6 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
             } else {
                 button.setText(DirectionText);
             }
-
 
            button.setOnClickListener(view -> callback.OnStopClick(Data.getId()));
 

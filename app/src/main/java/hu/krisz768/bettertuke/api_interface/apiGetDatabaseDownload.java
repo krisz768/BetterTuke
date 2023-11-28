@@ -68,7 +68,7 @@ public class apiGetDatabaseDownload implements Runnable {
 
             RetCode = true;
         } catch (Exception e) {
-            log("Error :(" + e);
+            log("Error: " + e);
             RetCode = false;
         }
 

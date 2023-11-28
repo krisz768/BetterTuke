@@ -29,7 +29,7 @@
         android:layout_width="326dp"
         android:layout_height="381dp"
         android:contentDescription="@string/DownloadIllustration"
-        android:src="@drawable/_6642"
+        android:src="@drawable/download_illustration"
         tools:layout_editor_absoluteX="42dp"
         tools:layout_editor_absoluteY="259dp" />
 

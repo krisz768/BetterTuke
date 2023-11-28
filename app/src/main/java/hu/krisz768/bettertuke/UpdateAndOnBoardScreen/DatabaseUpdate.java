@@ -1,11 +1,13 @@
 package hu.krisz768.bettertuke.UpdateAndOnBoardScreen;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.constraintlayout.helper.widget.Flow;
 import androidx.fragment.app.Fragment;
 
@@ -15,36 +17,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.Set;
 
 import hu.krisz768.bettertuke.BuildConfig;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
-import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseDownload;
 import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseManager;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link DatabaseUpdate#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class DatabaseUpdate extends Fragment {
     private static final String UPDATEBASE= "UpdateBase";
     private static final String UPDATEGTFS= "UpdateGFTS";
     private static final String IMMEDIATESTART= "ImmediateStart";
-
     private boolean mUpdateBase;
     private boolean mUpdateGFTS;
     private boolean mImmediateStart;
-
     private static OnUpdateFinish onUpdateFinish;
     private static OnUpdateFail onUpdateFail;
-
     private View view;
-
     private ProgressBar progressBar;
     private TextView progressText;
 
@@ -157,6 +146,7 @@ public class DatabaseUpdate extends Fragment {
 
     }
 
+    @SuppressLint("SetTextI18n")
     private void SetPercentage(int Percent) {
         progressText.setText(Percent + "%");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -167,7 +157,7 @@ public class DatabaseUpdate extends Fragment {
     }
 
     @Override
-    public void onConfigurationChanged (Configuration config) {
+    public void onConfigurationChanged (@NonNull Configuration config) {
         super.onConfigurationChanged(config);
         ((Flow)view.findViewById(R.id.flow4)).setWrapMode(Flow.WRAP_CHAIN);
     }

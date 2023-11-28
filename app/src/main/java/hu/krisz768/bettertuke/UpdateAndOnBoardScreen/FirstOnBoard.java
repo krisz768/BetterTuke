@@ -3,6 +3,7 @@ package hu.krisz768.bettertuke.UpdateAndOnBoardScreen;
 import android.content.res.Configuration;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.constraintlayout.helper.widget.Flow;
 import androidx.fragment.app.Fragment;
 
@@ -12,11 +13,6 @@ import android.view.ViewGroup;
 
 import hu.krisz768.bettertuke.R;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link FirstOnBoard#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class FirstOnBoard extends Fragment {
     View view;
 
@@ -42,7 +38,7 @@ public class FirstOnBoard extends Fragment {
     }
 
     @Override
-    public void onConfigurationChanged (Configuration config) {
+    public void onConfigurationChanged (@NonNull Configuration config) {
         super.onConfigurationChanged(config);
         ((Flow)view.findViewById(R.id.flow)).setWrapMode(Flow.WRAP_CHAIN);
     }

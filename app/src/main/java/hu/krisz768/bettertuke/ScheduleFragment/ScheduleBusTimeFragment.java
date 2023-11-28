@@ -51,12 +51,10 @@ public class ScheduleBusTimeFragment extends Fragment {
     private static final String STOPID= "StopId";
     private static final String DIRECTION= "Direction";
     private static final String DATE= "Date";
-
     private String mLineNum;
     private int mStopId;
     private String mDirection;
     private String mDate;
-
     private String SelectedDate;
     private String SelectedWay;
     private boolean TwoWay = false;
@@ -65,7 +63,6 @@ public class ScheduleBusTimeFragment extends Fragment {
     private BusScheduleTime[] CurrentLines;
     private int[] CurrentHours;
     private int[][] CurrentMinutes;
-
     private int colorOnPrimary;
     private int colorPrimaryContainer;
     private int colorOnPrimaryContainer;
@@ -79,9 +76,7 @@ public class ScheduleBusTimeFragment extends Fragment {
     private Drawable MinuteBackgroundFullStarted;
     private Drawable MinuteBackgroundErr;
     private Drawable MinuteBackgroundFullErr;
-
     private ScheduleBusTimeHourAdapter Sbta;
-
     private BusVariation[] Variations;
 
     public ScheduleBusTimeFragment() {
@@ -448,7 +443,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                             fragmentContainerView.setVisibility(View.VISIBLE);
 
                             Sbta = null;
-                        } catch (Exception e) {
+                        } catch (Exception ignored) {
 
                         }
                     });
@@ -789,6 +784,5 @@ public class ScheduleBusTimeFragment extends Fragment {
             Sbta.updateMaxPerLine(MaxPerLine);
             Sbta.notifyDataSetChanged();
         }
-
     }
 }

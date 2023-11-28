@@ -85,4 +85,6 @@
     <string name="DisableAdIllustration">Disable ad illustration</string>
     <string name="SaveAdButton">Save</string>
     <string name="AdEnableSwitch">Enable advertisements</string>
+    <string name="OnBoardNextButtonDesc">Next button</string>
+    <string name="OnBoardPrevButtonDesc">Previous button</string>
 </resources>

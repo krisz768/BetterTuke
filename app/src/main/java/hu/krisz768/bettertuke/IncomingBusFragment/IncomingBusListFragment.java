@@ -19,12 +19,10 @@ public class IncomingBusListFragment extends Fragment {
     private static final String ARG_PARAM1 = "List";
     private static final String ARG_PARAM2 = "Date";
     private static final String ARG_PARAM3 = "Custom";
-
     private IncomingBusRespModel[] mList;
     private IncomingBusListAdapter Ibla;
     private String mDate;
     private boolean mCustom;
-
 
     public static IncomingBusListFragment newInstance(IncomingBusRespModel[] List, String Date, Boolean Custom) {
         IncomingBusListFragment fragment = new IncomingBusListFragment();

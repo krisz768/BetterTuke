@@ -33,7 +33,7 @@
         android:layout_width="326dp"
         android:layout_height="381dp"
         android:contentDescription="@string/DisableAdIllustration"
-        android:src="@drawable/_0943956"
+        android:src="@drawable/no_ad_illustration"
         tools:layout_editor_absoluteX="42dp"
         tools:layout_editor_absoluteY="259dp" />
 

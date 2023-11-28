@@ -14,8 +14,6 @@ public class TrackBusRespModel implements Serializable {
     private final int DelaySec;
     private final Date LastUpdate;
 
-
-
     public TrackBusRespModel(String licensePlateNumber, int stopNumber, int stopId, boolean atStop, float GpsLongitude, float GpsLatitude, int delayMin, int delaySec, Date lastUpdate) {
         LicensePlateNumber = licensePlateNumber;
         StopNumber = stopNumber;

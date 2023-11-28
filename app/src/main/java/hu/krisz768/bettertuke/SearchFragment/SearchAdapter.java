@@ -26,11 +26,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private boolean Fav;
 
     public static class ViewHolderStop extends RecyclerView.ViewHolder {
-
         private final ImageView icon;
         private final TextView StopName;
         private final View view;
-
         private String StopId;
 
         public ViewHolderStop(View view) {
@@ -90,7 +88,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     public static class ViewHolderLabel extends RecyclerView.ViewHolder {
-
         private final TextView Label;
 
         public ViewHolderLabel(View view) {

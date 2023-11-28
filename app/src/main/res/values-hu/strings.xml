@@ -77,4 +77,6 @@
     <string name="DisableAdIllustration">Reklám kikapcsolás illusztráció</string>
     <string name="SaveAdButton">Mentés</string>
     <string name="AdEnableSwitch">Reklámok engedélyezése</string>
+    <string name="OnBoardNextButtonDesc">Következő gomb</string>
+    <string name="OnBoardPrevButtonDesc">Előző gomb</string>
 </resources>

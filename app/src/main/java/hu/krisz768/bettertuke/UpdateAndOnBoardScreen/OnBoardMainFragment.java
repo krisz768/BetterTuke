@@ -1,53 +1,40 @@
 package hu.krisz768.bettertuke.UpdateAndOnBoardScreen;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.Date;
-
 import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link OnBoardMainFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class OnBoardMainFragment extends Fragment {
-
     private static final int NUM_PAGES = 4;
     private ViewPager2 viewPager;
-
-    private View view;
-    private FragmentStateAdapter pagerAdapter;
-
     private int CurrentPage = 0;
-
     private FloatingActionButton NextButton;
     private FloatingActionButton PrevButton;
     private TextView PageText;
     private ProgressBar PageProgress;
-
     private DatabaseUpdate databaseUpdate;
-
     private boolean IsDatabaseDownloaded = false;
 
     public OnBoardMainFragment() {
@@ -55,8 +42,7 @@ public class OnBoardMainFragment extends Fragment {
     }
 
     public static OnBoardMainFragment newInstance() {
-        OnBoardMainFragment fragment = new OnBoardMainFragment();
-        return fragment;
+        return new OnBoardMainFragment();
     }
 
     @Override
@@ -67,13 +53,13 @@ public class OnBoardMainFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_on_board_main, container, false);
+        View view = inflater.inflate(R.layout.fragment_on_board_main, container, false);
 
         PageText = view.findViewById(R.id.PageText);
         PageProgress = view.findViewById(R.id.PageBar);
 
         viewPager = view.findViewById(R.id.OnBoardViewPager);
-        pagerAdapter = new ScreenSlidePagerAdapter(getActivity());
+        FragmentStateAdapter pagerAdapter = new ScreenSlidePagerAdapter(getActivity());
         viewPager.setAdapter(pagerAdapter);
 
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -120,6 +106,7 @@ public class OnBoardMainFragment extends Fragment {
         return view;
     }
 
+    @SuppressLint("DefaultLocale")
     private void OnPageChanged() {
         if (CurrentPage == 0) {
             PrevButton.setVisibility(View.GONE);
@@ -132,7 +119,7 @@ public class OnBoardMainFragment extends Fragment {
             NextButton.setVisibility(View.VISIBLE);
         }
 
-        PageText.setText((CurrentPage+1) + "/" + NUM_PAGES);
+        PageText.setText(String.format("%d/%d", CurrentPage + 1, NUM_PAGES));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             PageProgress.setProgress((100/(NUM_PAGES-1))*(CurrentPage), true);
         } else {
@@ -155,6 +142,7 @@ public class OnBoardMainFragment extends Fragment {
             super(fa);
         }
 
+        @NonNull
         @Override
         public Fragment createFragment(int position) {
             switch (position) {
@@ -165,7 +153,7 @@ public class OnBoardMainFragment extends Fragment {
                         UnlockButtons();
                         IsDatabaseDownloaded = true;
                         ScrollTo(CurrentPage + 1);
-                    }, () -> OnUpdateFail());
+                    }, OnBoardMainFragment.this::OnUpdateFail);
                     return databaseUpdate;
                 case 3:
                     return new FinishOnBoard();
@@ -181,16 +169,24 @@ public class OnBoardMainFragment extends Fragment {
     }
 
     private void OnUpdateFail() {
-        MaterialAlertDialogBuilder dlgAlert  = new MaterialAlertDialogBuilder(getContext());
-        dlgAlert.setMessage(R.string.FirstLaunchInternetError);
-        dlgAlert.setTitle(R.string.Error);
-        dlgAlert.setPositiveButton(R.string.Ok, (dialogInterface, i) -> ExitApp());
-        dlgAlert.setCancelable(false);
-        dlgAlert.create().show();
+        Context context = getContext();
+
+        if (context != null) {
+            MaterialAlertDialogBuilder dlgAlert  = new MaterialAlertDialogBuilder(context);
+            dlgAlert.setMessage(R.string.FirstLaunchInternetError);
+            dlgAlert.setTitle(R.string.Error);
+            dlgAlert.setPositiveButton(R.string.Ok, (dialogInterface, i) -> ExitApp());
+            dlgAlert.setCancelable(false);
+            dlgAlert.create().show();
+        }
+
     }
 
     private void ExitApp() {
-        getActivity().finish();
+        Activity activity = getActivity();
+        if (activity != null) {
+            activity.finish();
+        }
     }
 
     private void LockButtons() {
@@ -206,10 +202,13 @@ public class OnBoardMainFragment extends Fragment {
     }
 
     private void StartMain() {
-        UserDatabase userDatabase = new UserDatabase(getContext());
-        userDatabase.SetPreference("FirstStartComplete", "true");
+        Context context = getContext();
+        if (context != null){
+            UserDatabase userDatabase = new UserDatabase(getContext());
+            userDatabase.SetPreference("FirstStartComplete", "true");
 
-        Intent mainIntent = new Intent(getContext(), MainActivity.class);
-        startActivity(mainIntent);
+            Intent mainIntent = new Intent(getContext(), MainActivity.class);
+            startActivity(mainIntent);
+        }
     }
 }
