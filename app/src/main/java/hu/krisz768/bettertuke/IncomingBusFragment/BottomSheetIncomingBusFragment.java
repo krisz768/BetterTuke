@@ -36,7 +36,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import hu.krisz768.bettertuke.BuildConfig;
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
@@ -152,6 +151,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
             if (mStop == -1) {
                 FavButton.setVisibility(View.GONE);
+                ScheduleButton.setVisibility(View.GONE);
             }
 
             FavButton.setOnClickListener(view12 -> {
@@ -198,10 +198,15 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         };
 
         int scrollPosition = 0;
-        for (int i = 0; i < SelectedPlaceStopsArray.length; i++) {
-            if (SelectedPlaceStopsArray[i].getId() == mStop) {
-                scrollPosition = i;
-                break;
+
+        if (mStop == -1) {
+            scrollPosition = SelectedPlaceStopsArray.length;
+        } else {
+            for (int i = 0; i < SelectedPlaceStopsArray.length; i++) {
+                if (SelectedPlaceStopsArray[i].getId() == mStop) {
+                    scrollPosition = i;
+                    break;
+                }
             }
         }
 
@@ -317,11 +322,14 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
         if (getView() != null && getContext() != null){
             ImageView FavButton = getView().findViewById(R.id.StopFavoriteButton);
+            ImageView ScheduleButton = getView().findViewById(R.id.StopScheduleButton);
 
             if (mStop == -1) {
                 FavButton.setVisibility(View.GONE);
+                ScheduleButton.setVisibility(View.GONE);
             } else {
                 FavButton.setVisibility(View.VISIBLE);
+                ScheduleButton.setVisibility(View.VISIBLE);
 
                 UserDatabase userDatabase = new UserDatabase(getContext());
                 if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {

@@ -1,7 +1,6 @@
 package hu.krisz768.bettertuke;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.activity.OnBackPressedDispatcher;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -10,7 +9,6 @@ import androidx.constraintlayout.helper.widget.Flow;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.os.BuildCompat;
 import androidx.fragment.app.FragmentContainerView;
 
 import android.Manifest;
@@ -580,7 +578,7 @@ public class MainActivity extends AppCompatActivity {
                     return false;
                 }
             }).addOnSuccessListener(location -> {
-                if (location != null) {
+                if (location != null && busLine == null && CurrentPlace == -1) {
                     GetStartupStop(location);
                 } else {
                     GPSErr();
@@ -656,7 +654,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             SelectStop(ClosestId,false);
-            if (ClosestStop != null) {
+            if (ClosestStop != null && Closest < 10000) {
                 ZoomClose(new LatLng(ClosestStop.getGpsLatitude(), ClosestStop.getGpsLongitude()), new LatLng(location.getLatitude(), location.getLongitude()));
             }
         }
