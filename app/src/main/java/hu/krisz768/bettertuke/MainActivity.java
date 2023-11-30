@@ -113,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean OnStartFragmentError = false;
     private boolean IsMapInitialized = false;
     private OnBackInvokedCallback onBackPressedCallback;
-    private OnBackPressedCallback onBackPressedCallbackOld;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -309,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
 
                     findViewById(R.id.PosButton).setVisibility(View.VISIBLE);
                     GetClosestStop();
-                } else {
+                } else if (busLine == null && CurrentPlace == -1) {
                     GPSErr();
                 }
             }
@@ -1112,14 +1111,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void SetupBackButton() {
-            onBackPressedCallback = this::DoBack;
+        onBackPressedCallback = this::DoBack;
 
-            onBackPressedCallbackOld = new OnBackPressedCallback(true) {
-                @Override
-                public void handleOnBackPressed() {
-                    DoBack();
-                }
-            };
+        OnBackPressedCallback onBackPressedCallbackOld = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                DoBack();
+            }
+        };
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            getOnBackPressedDispatcher().addCallback(onBackPressedCallbackOld);
+        }
     }
 
     private void DoBack() {
@@ -1157,8 +1160,6 @@ public class MainActivity extends AppCompatActivity {
                     OnBackInvokedDispatcher.PRIORITY_DEFAULT,
                     onBackPressedCallback
             );
-        } else {
-            getOnBackPressedDispatcher().addCallback(onBackPressedCallbackOld);
         }
     }
 

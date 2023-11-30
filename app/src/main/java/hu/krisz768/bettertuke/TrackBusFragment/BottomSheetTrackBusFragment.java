@@ -244,21 +244,25 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
     private void findBusAttributes(View view)
     {
-        PlateNumber = view.findViewById(R.id.PlateNumber);
-        BusType = view.findViewById(R.id.BusType);
-        Articulated = view.findViewById(R.id.Articulated);
-        Doors = view.findViewById(R.id.Doors);
-        Electric = view.findViewById(R.id.Electric);
-        LowFloor = view.findViewById(R.id.LowFloor);
-        AirConditioner = view.findViewById(R.id.AirConditioner);
-        Wifi = view.findViewById(R.id.Wifi);
-        Usb = view.findViewById(R.id.Usb);
+        try {
+            PlateNumber = view.findViewById(R.id.PlateNumber);
+            BusType = view.findViewById(R.id.BusType);
+            Articulated = view.findViewById(R.id.Articulated);
+            Doors = view.findViewById(R.id.Doors);
+            Electric = view.findViewById(R.id.Electric);
+            LowFloor = view.findViewById(R.id.LowFloor);
+            AirConditioner = view.findViewById(R.id.AirConditioner);
+            Wifi = view.findViewById(R.id.Wifi);
+            Usb = view.findViewById(R.id.Usb);
 
-        Electric.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Electric));
-        LowFloor.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.LowFloor));
-        AirConditioner.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.AirConditioner));
-        Wifi.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Wifi));
-        Usb.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Usb));
+            Electric.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Electric));
+            LowFloor.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.LowFloor));
+            AirConditioner.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.AirConditioner));
+            Wifi.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Wifi));
+            Usb.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.Usb));
+        } catch (Exception ignored) {
+
+        }
     }
 
     private void showBusAttributes(BusAttributes busAttributes)

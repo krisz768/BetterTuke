@@ -50,7 +50,7 @@ public class SplashActivity extends AppCompatActivity {
                 Count++;
                 userDatabase.SetPreference("LaunchCounter", Integer.toString(Count));
 
-                if (Count > 12 && AdEnabled == null) {
+                if (Count > 4 && AdEnabled == null) {
                     userDatabase.SetPreference("AdEnabled", "true");
                     AdEnabled = "true";
                 }
