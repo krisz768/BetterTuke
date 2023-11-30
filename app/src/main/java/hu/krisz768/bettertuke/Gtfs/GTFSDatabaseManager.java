@@ -3,20 +3,18 @@ package hu.krisz768.bettertuke.Gtfs;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
-import hu.krisz768.bettertuke.api_interface.apiGetDatabaseVersion;
 
 public class GTFSDatabaseManager {
 
-    private Context ctx;
+    private final Context ctx;
 
     public GTFSDatabaseManager (Context ctx) {
         this.ctx = ctx;
     }
 
-    public boolean CheckForUpdate(Activity UiThread) {
+    public boolean CheckForUpdate() {
         GTFSContentLength contentLength = new GTFSContentLength();
         try {
             Thread thread = new Thread(contentLength);
@@ -26,17 +24,9 @@ public class GTFSDatabaseManager {
             String Current = userDatabase.GetPreference("GTFS-cl");
             String Online = contentLength.ContentLength;
 
-            UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Current: " + Current, Toast.LENGTH_SHORT).show()); ///
-            UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Online: " + Online, Toast.LENGTH_SHORT).show()); ///
             if (Current == null) {
-                UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());///
                 return true;
-            } else if (!Current.equals(Online)) {
-                UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Adatbázis frissítése, kérem várjon...", Toast.LENGTH_LONG).show());///
-                return true;
-            }
-            UiThread.runOnUiThread(() -> Toast.makeText(ctx, "Nincs update", Toast.LENGTH_SHORT).show());///
-            return false;
+            } else return !Current.equals(Online);
         } catch (Exception e) {
             log(e.toString());
             return false;

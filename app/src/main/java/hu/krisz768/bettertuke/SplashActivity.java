@@ -98,7 +98,7 @@ public class SplashActivity extends AppCompatActivity {
             } else {
                 if (Version.equals(OnlineVersion) && !OnlineVersion.equals("Err") && DatabaseManager.IsDatabaseValid(ctx)) {
                     GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
-                    if (gtfsDatabaseManager.CheckForUpdate(this)){
+                    if (gtfsDatabaseManager.CheckForUpdate()){
                         AddLog("Updating gtfs...");
                         StartUpdate(false, true);
                     } else {
@@ -109,13 +109,13 @@ public class SplashActivity extends AppCompatActivity {
                     AddLog("Database version does not match! Updating....");
 
                     GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
-                    StartUpdate(true, gtfsDatabaseManager.CheckForUpdate(this));
+                    StartUpdate(true, gtfsDatabaseManager.CheckForUpdate());
                 }
             }
         } else  {
             AddLog("Database not found, attempt to download...");
             GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
-            StartUpdate(true, gtfsDatabaseManager.CheckForUpdate(this));
+            StartUpdate(true, gtfsDatabaseManager.CheckForUpdate());
         }
     }
 

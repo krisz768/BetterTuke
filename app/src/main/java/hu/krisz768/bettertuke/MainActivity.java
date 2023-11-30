@@ -891,10 +891,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (busLine.getCTrip() != null) {
-            Toast.makeText(this, "folytatódik: " + busLine.getCTrip().getRouteInfo().getLineNum(), Toast.LENGTH_LONG).show();
-        }
-
         if (SelectedPlace != null) {
             SelectedPlace = null;
         }
