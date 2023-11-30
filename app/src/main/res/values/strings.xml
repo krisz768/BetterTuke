@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">PécsLinesDEV</string>
+    <string name="app_name" translatable="false">PécsLines</string>
 
     <string name="Ok" translatable="false">OK</string>
     <string name="Gps" translatable="false">Gps</string>
