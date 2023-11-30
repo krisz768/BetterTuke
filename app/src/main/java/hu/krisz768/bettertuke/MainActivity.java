@@ -579,7 +579,7 @@ public class MainActivity extends AppCompatActivity {
             }).addOnSuccessListener(location -> {
                 if (location != null && busLine == null && CurrentPlace == -1) {
                     GetStartupStop(location);
-                } else {
+                } else if (busLine == null && CurrentPlace == -1) {
                     GPSErr();
                 }
             });
