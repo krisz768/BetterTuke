@@ -240,7 +240,7 @@ public class GTFSDatabase {
                 stmt.bindString(3, Data[2]);
                 stmt.bindLong(4, Long.parseLong(Data[3]));
                 stmt.bindLong(5, Long.parseLong(Data[4]));
-                stmt.bindString(6, Data[5].replaceAll("\"", ""));
+                stmt.bindString(6, "");
                 stmt.bindString(7, Data[6]);
                 stmt.bindString(8, Data[7]);
 
