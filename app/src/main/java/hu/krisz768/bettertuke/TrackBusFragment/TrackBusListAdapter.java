@@ -254,6 +254,9 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             Num = view.findViewById(R.id.CTrackBusNumber);
             Desc = view.findViewById(R.id.CTrackBusName);
+
+            int WhiteColor = Color.rgb(255,255,255);
+            Num.setTextColor(WhiteColor);
         }
 
         public void setData(BusLine busLine) {
