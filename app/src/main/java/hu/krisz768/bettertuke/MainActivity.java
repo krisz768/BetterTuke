@@ -1145,9 +1145,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (backStack.size() == 0) {
             finish();
+        } else {
+            RestorePrevState();
         }
-
-        RestorePrevState();
     }
 
     private void EnableBack() {
@@ -1168,6 +1168,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void RestorePrevState() {
+        if (backStack.size() - 1 == -1) {
+            return;
+        }
+
         BackStack PrevState = backStack.get(backStack.size() - 1);
 
         ScheduleBackStack scheduleBackStack = PrevState.getScheduleBackStack();
