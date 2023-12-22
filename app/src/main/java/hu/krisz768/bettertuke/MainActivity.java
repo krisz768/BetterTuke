@@ -5,7 +5,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.helper.widget.Flow;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -37,8 +36,7 @@ import android.widget.Toast;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
@@ -57,10 +55,15 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.OnTokenCanceledListener;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.color.utilities.DynamicColor;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.search.SearchBar;
 import com.google.android.material.search.SearchView;
+import com.google.android.ump.ConsentForm;
+import com.google.android.ump.ConsentInformation;
+import com.google.android.ump.ConsentRequestParameters;
+import com.google.android.ump.UserMessagingPlatform;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -68,6 +71,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusNum;
@@ -113,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean OnStartFragmentError = false;
     private boolean IsMapInitialized = false;
     private OnBackInvokedCallback onBackPressedCallback;
+    private ConsentInformation consentInformation;
+    private final AtomicBoolean isMobileAdsInitializeCalled = new AtomicBoolean(false);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,20 +155,51 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.PosButton).setVisibility(View.GONE);
 
+        InitializeConsentWindow();
+
+        SetupGoogleMap();
+    }
+
+    private void InitializeConsentWindow() {
         UserDatabase userDatabase = new UserDatabase(this);
 
         String AdEnabled = userDatabase.GetPreference("AdEnabled");
-        AdView mAdView = findViewById(R.id.adView);
         if (AdEnabled != null && AdEnabled.equals("true")){
-            AdRequest adRequest = new AdRequest.Builder().build();
-            mAdView.loadAd(adRequest);
-        } else {
-            mAdView.setVisibility(View.GONE);
+            ConsentRequestParameters params = new ConsentRequestParameters
+                .Builder()
+                .setTagForUnderAgeOfConsent(false)
+                .build();
+
+            consentInformation = UserMessagingPlatform.getConsentInformation(this);
+            consentInformation.requestConsentInfoUpdate(
+                this,
+                params,
+                (ConsentInformation.OnConsentInfoUpdateSuccessListener) () -> UserMessagingPlatform.loadAndShowConsentFormIfRequired(
+                        this,
+                        (ConsentForm.OnConsentFormDismissedListener) loadAndShowError -> {
+                            if (consentInformation.canRequestAds()) {
+                                InitializeAds();
+                            }
+                        }
+                ),
+                (ConsentInformation.OnConsentInfoUpdateFailureListener) requestConsentError -> {
+            });
+
+            if (consentInformation.canRequestAds()) {
+                InitializeAds();
+            }
+        }
+    }
+
+    private void InitializeAds() {
+        if (isMobileAdsInitializeCalled.getAndSet(true)) {
+            return;
         }
 
-        ((Flow)findViewById(R.id.MainFlow)).setMaxElementsWrap(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 2 : 1);
+        HelperProvider.AdConsentOk();
 
-        SetupGoogleMap();
+        MobileAds.initialize(this, initializationStatus -> {
+        });
     }
 
     private void setTheme() {
@@ -207,8 +244,6 @@ public class MainActivity extends AppCompatActivity {
         fragmentView.setLayoutParams(params);
 
         bottomSheetBehavior.setHideable(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
-
-        ((Flow)findViewById(R.id.MainFlow)).setMaxElementsWrap(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 2 : 1);
     }
 
     public void ChangeStop(int Id) {
@@ -799,9 +834,9 @@ public class MainActivity extends AppCompatActivity {
                     .replace(R.id.fragmentContainerView2, InBusFragment)
                     .commit();
         } else {
-            int height = displayMetrics.heightPixels / 3;
+            int height = (int) Math.floor(displayMetrics.heightPixels / 2.35);
 
-            float Ratio = 0.33F;
+            float Ratio = 0.425F;
 
             int MinHeight = Math.round(TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP,
@@ -885,7 +920,16 @@ public class MainActivity extends AppCompatActivity {
             AddBackStack();
         }
 
-        busLine = BusLine.BusLinesByLineId(Id, true, this);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        Date parsedDate = null;
+
+        try {
+            parsedDate = formatter.parse(Date);
+        } catch (Exception ignored) {
+
+        }
+
+        busLine = BusLine.BusLinesByLineId(Id, true, parsedDate, this);
         if (busLine == null) {
             Toast.makeText(this, R.string.DatabaseError, Toast.LENGTH_LONG).show();
             return;
@@ -897,7 +941,7 @@ public class MainActivity extends AppCompatActivity {
 
         CurrentBusTrack = Id;
         if (Date != null) {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+
             java.util.Date date = new Date();
             if (!Date.equals(formatter.format(date))) {
                 busLine.setDate(Date);
@@ -954,9 +998,9 @@ public class MainActivity extends AppCompatActivity {
                 displayMetrics
         ));
 
-        int height = displayMetrics.heightPixels / 3;
+        int height = (int) Math.floor(displayMetrics.heightPixels / 2.35);
 
-        float Ratio = 0.33F;
+        float Ratio = 0.425F;
 
         if (MinHeight > height) {
             height = MinHeight;
@@ -1012,6 +1056,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void BusPositionMarker(LatLng BusPosition) {
+        Log.e("TAG", "BusPositionMarker: " + (BusPosition==null));
         if (busLine != null) {
             if (BusPosition != null && IsMapInitialized) {
                 BitmapDescriptor BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapBus));
@@ -1137,7 +1182,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (backStack.size() == 1) {
+        if (backStack.size() == 1 && !backStack.get(0).isBackButtonCollapse()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(onBackPressedCallback);
             }
@@ -1271,16 +1316,13 @@ public class MainActivity extends AppCompatActivity {
         searchView = findViewById(R.id.search_view);
         SearchBar searchBar = findViewById(R.id.search_bar);
 
-        Activity activity = this;
         searchBar.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
-                case R.id.DisableAdButton:
-                    Intent updateIntent = new Intent(activity, UpdateAndOnboarding.class);
-                    updateIntent.putExtra("AdSettingScreen", true);
-                    startActivity(updateIntent);
-                    return true;
                 case R.id.AboutUsButton:
                     ShowAbout();
+                    return true;
+                case R.id.PrivacyButton:
+                    ShowPrivacySettings();
                     return true;
                 default:
                     return false;
@@ -1449,5 +1491,26 @@ public class MainActivity extends AppCompatActivity {
         welcomeAlert.setPositiveButton(R.string.Ok,null);
         welcomeAlert.setCancelable(false);
         welcomeAlert.create().show();
+    }
+
+    private boolean isPrivacyOptionsRequired() {
+        try {
+            return consentInformation.getPrivacyOptionsRequirementStatus()
+                    == ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void ShowPrivacySettings() {
+        if (isPrivacyOptionsRequired()) {
+            UserMessagingPlatform.showPrivacyOptionsForm(
+                    this,
+                    formError -> {
+                    }
+            );
+        } else {
+            Toast.makeText(this, R.string.PrivacySettingsNotAvailable, Toast.LENGTH_LONG).show();
+        }
     }
 }

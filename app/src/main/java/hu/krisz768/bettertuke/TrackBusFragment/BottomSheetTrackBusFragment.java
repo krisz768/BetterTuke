@@ -2,6 +2,7 @@ package hu.krisz768.bettertuke.TrackBusFragment;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -15,6 +16,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.Calendar;
@@ -23,13 +26,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import hu.krisz768.bettertuke.BuildConfig;
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
+import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 import hu.krisz768.bettertuke.models.BusAttributes;
@@ -103,11 +106,42 @@ public class BottomSheetTrackBusFragment extends Fragment {
         if (mBusLine.getDate() == null) {
             StartUpdateThread();
         } else {
+            new Thread(() -> {
+                try {
+                    Thread.sleep(600);
+                } catch (InterruptedException ignored) {
+
+                }
+                Activity activity = getActivity();
+                if  (activity != null) {
+                    activity.runOnUiThread(() -> ((MainActivity)activity).BusPositionMarker(null));
+
+                }
+            }).start();
+
+
             TrackBusFragment = TrackBusListFragment.newInstance(mBusLine, mStop, mPlaceList, mStopList, null);
             getChildFragmentManager().beginTransaction()
                     .replace(R.id.BusTrackFragmentView, TrackBusFragment)
                     .commit();
         }
+
+        Context ctx = getContext();
+
+        if (ctx != null) {
+            UserDatabase userDatabase = new UserDatabase(ctx);
+            String AdEnabled = userDatabase.GetPreference("AdEnabled");
+            AdView mAdView = view.findViewById(R.id.adView1_5);
+            if (AdEnabled != null && AdEnabled.equals("true") && HelperProvider.IsAdConsentOk()){
+
+                AdRequest adRequest = new AdRequest.Builder().build();
+                mAdView.loadAd(adRequest);
+            }else {
+                mAdView.setVisibility(View.GONE);
+            }
+        }
+
+
 
         return view;
     }

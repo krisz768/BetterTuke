@@ -11,8 +11,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.MobileAds;
-
 import java.io.File;
 import java.util.Date;
 
@@ -52,17 +50,14 @@ public class SplashActivity extends AppCompatActivity {
 
                 if (Count > 4 && AdEnabled == null) {
                     userDatabase.SetPreference("AdEnabled", "true");
-                    AdEnabled = "true";
                 }
             } catch (Exception e) {
                 userDatabase.SetPreference("LaunchCounter", "1");
             }
         }
 
-
-        if (AdEnabled != null && AdEnabled.equals("true")) {
-            MobileAds.initialize(this, initializationStatus -> {
-            });
+        if (AdEnabled != null && AdEnabled.equals("false")) {
+            userDatabase.SetPreference("AdEnabled", "true");
         }
 
         String FirstStart = userDatabase.GetPreference("FirstStartComplete");

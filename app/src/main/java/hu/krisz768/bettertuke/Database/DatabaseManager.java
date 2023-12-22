@@ -154,7 +154,7 @@ public class DatabaseManager {
         }
     }
 
-    public BusLine GetBusLineById(int Id, boolean GetGTFS) {
+    public BusLine GetBusLineById(int Id, boolean GetGTFS, Date date) {
         try
         {
             BusLine ret = null;
@@ -174,7 +174,10 @@ public class DatabaseManager {
 
                 DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
                 DateFormat dateFormat2 = new SimpleDateFormat("yyyy-MM-dd");
-                Date date = new Date();
+
+                if (date == null) {
+                    date = new Date();
+                }
 
                 LineInfoRouteInfo lineInfoRouteInfo = GetBusLineRouteInfoById(cursor.getInt(6));
 
@@ -204,7 +207,7 @@ public class DatabaseManager {
                                 int CTripId = ConvertTripId(gtfsBusLineData.getStartStopId(), GTFSDepartureHour,Integer.parseInt(gtfsBusLineData.getDepartureTime().split(":")[1]) , dateFormat2.format(date), gtfsBusLineData.getLineId());
                                 if (CTripId != -1)
                                 {
-                                    CTrip = GetBusLineById(CTripId, false);
+                                    CTrip = GetBusLineById(CTripId, false, null);
                                 }
                             }
                         }

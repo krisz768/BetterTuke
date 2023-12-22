@@ -12,7 +12,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import hu.krisz768.bettertuke.Database.BusStops;
-import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.R;
 
 public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
@@ -20,6 +19,7 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
     private final Context ctx;
     private int SelectedStop;
     private final BottomSheetIncomingBusFragment callback;
+    private final String[] BusStopNames;
 
     public static class StopViewHolder extends RecyclerView.ViewHolder {
         private final Button button;
@@ -29,8 +29,7 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
             button = view.findViewById(R.id.StopButton);
         }
 
-        public void setData(BusStops Data, int SelectedStop, BottomSheetIncomingBusFragment callback, Context ctx) {
-            String DirectionText =  HelperProvider.GetStopDirectionString(ctx,Data.getId());
+        public void setData(BusStops Data, int SelectedStop, BottomSheetIncomingBusFragment callback, String DirectionText, Context ctx) {
             if (DirectionText.equals("-") || DirectionText.equals("") || DirectionText.equals(" ")) {
                 if (Data.getId() == -1) {
                     button.setText(Data.getStopNum().trim());
@@ -57,11 +56,12 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
         }
     }
 
-    public IncomingBusStopSelectorAdapter(BusStops[] BusStopList, int SelectedStop, BottomSheetIncomingBusFragment callback, Context ctx) {
+    public IncomingBusStopSelectorAdapter(BusStops[] BusStopList, int SelectedStop, BottomSheetIncomingBusFragment callback, String[] busStopNames, Context ctx) {
         this.BusStopList = BusStopList;
         this.SelectedStop = SelectedStop;
         this.ctx = ctx;
         this.callback = callback;
+        this.BusStopNames = busStopNames;
     }
 
     public void setSelectedStop(int SelectedStop) {
@@ -80,9 +80,9 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, final int position) {
         if (position < BusStopList.length) {
-            ((StopViewHolder)viewHolder).setData(BusStopList[position],SelectedStop, callback, ctx);
+            ((StopViewHolder)viewHolder).setData(BusStopList[position],SelectedStop, callback, BusStopNames[position], ctx);
         } else {
-            ((StopViewHolder)viewHolder).setData(new BusStops(-1, "", 0, 0, ctx.getString(R.string.AllStopButton)),SelectedStop, callback, ctx);
+            ((StopViewHolder)viewHolder).setData(new BusStops(-1, "", 0, 0, ctx.getString(R.string.AllStopButton)),SelectedStop, callback, "", ctx);
         }
     }
 

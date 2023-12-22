@@ -52,10 +52,10 @@ public class BusLine implements Serializable {
         CTrip = cTrip;
     }
 
-    public static BusLine BusLinesByLineId(int Id, boolean GetGTFS, Context ctx) {
+    public static BusLine BusLinesByLineId(int Id, boolean GetGTFS, java.util.Date date, Context ctx) {
         DatabaseManager Dm = new DatabaseManager(ctx);
 
-        return Dm.GetBusLineById(Id, GetGTFS);
+        return Dm.GetBusLineById(Id, GetGTFS, date);
     }
 
     public String getDate() {

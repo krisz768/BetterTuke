@@ -40,6 +40,15 @@ public class HelperProvider {
     public static void setOfflineTextDisplayed() {
         IsOfflineTextDisplayed = true;
     }
+    private static boolean IsAdConsentOk = false;
+
+    public static boolean IsAdConsentOk() {
+        return IsAdConsentOk;
+    }
+
+    public static void AdConsentOk() {
+        IsAdConsentOk = true;
+    }
 
     public static void RenderAllBitmap(Context ctx) {
         BitmapContainer[0] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus_stop1, com.google.android.material.R.attr.colorOnPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bus_stop, com.google.android.material.R.attr.colorPrimary, ctx, true));

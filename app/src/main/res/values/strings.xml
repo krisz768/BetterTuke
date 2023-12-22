@@ -87,4 +87,6 @@
     <string name="AdEnableSwitch">Enable advertisements</string>
     <string name="OnBoardNextButtonDesc">Next button</string>
     <string name="OnBoardPrevButtonDesc">Previous button</string>
+    <string name="PrivacyButton">Privacy options</string>
+    <string name="PrivacySettingsNotAvailable">Not available</string>
 </resources>

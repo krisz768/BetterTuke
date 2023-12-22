@@ -2,6 +2,7 @@ package hu.krisz768.bettertuke.IncomingBusFragment;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -18,6 +19,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
@@ -149,6 +152,16 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
             }
 
+            String AdEnabled = userDatabase.GetPreference("AdEnabled");
+            AdView mAdView = view.findViewById(R.id.adView1);
+            if (AdEnabled != null && AdEnabled.equals("true") && HelperProvider.IsAdConsentOk()){
+
+                AdRequest adRequest = new AdRequest.Builder().build();
+                mAdView.loadAd(adRequest);
+            }else {
+                mAdView.setVisibility(View.GONE);
+            }
+
             if (mStop == -1) {
                 FavButton.setVisibility(View.GONE);
                 ScheduleButton.setVisibility(View.GONE);
@@ -173,49 +186,9 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             });
         }
 
-        Ibssa = new IncomingBusStopSelectorAdapter(SelectedPlaceStopsArray,mStop, this,getContext());
-
-        RecyclerView StopSelectorRec = view.findViewById(R.id.BusStopListRecView);
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-        mLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-
-        StopSelectorRec.setLayoutManager(mLayoutManager);
-        StopSelectorRec.setAdapter(Ibssa);
-        StopSelectorRec.setItemAnimator(null);
+        new Thread(this::SetupStopList).start();
 
         UpdateDateTimeOnSelector(view);
-
-        RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
-            @Override
-            protected int getVerticalSnapPreference() {
-                return LinearSmoothScroller.SNAP_TO_START;
-            }
-
-            @Override
-            protected float calculateSpeedPerPixel(DisplayMetrics displayMetrics) {
-                return super.calculateSpeedPerPixel(displayMetrics) *4;
-            }
-        };
-
-        int scrollPosition = 0;
-
-        if (mStop == -1) {
-            scrollPosition = SelectedPlaceStopsArray.length;
-        } else {
-            for (int i = 0; i < SelectedPlaceStopsArray.length; i++) {
-                if (SelectedPlaceStopsArray[i].getId() == mStop) {
-                    scrollPosition = i;
-                    break;
-                }
-            }
-        }
-
-        smoothScroller.setTargetPosition(scrollPosition);
-        if (StopSelectorRec.getLayoutManager() != null) {
-            StopSelectorRec.getLayoutManager().startSmoothScroll(smoothScroller);
-        }
-
-        StopSelectorRec.setNestedScrollingEnabled(false);
 
         StartNewUpdateThread();
 
@@ -370,6 +343,75 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         }
     }
 
+    private void SetupStopList () {
+        Context ctx = getContext();
+        View view = getView();
+        Activity activity = getActivity();
+        BottomSheetIncomingBusFragment bottomSheetIncomingBusFragment = this;
+
+        if (ctx != null && view != null && activity != null) {
+            String[] StopNames = new String[SelectedPlaceStopsArray.length];
+
+            for (int i = 0; i < SelectedPlaceStopsArray.length; i++) {
+                StopNames[i] = HelperProvider.GetStopDirectionString(ctx,SelectedPlaceStopsArray[i].getId());
+            }
+
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Ibssa = new IncomingBusStopSelectorAdapter(SelectedPlaceStopsArray,mStop, bottomSheetIncomingBusFragment, StopNames, ctx);
+
+                    RecyclerView StopSelectorRec = view.findViewById(R.id.BusStopListRecView);
+                    LinearLayoutManager mLayoutManager = new LinearLayoutManager(ctx);
+                    mLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+
+                    StopSelectorRec.setLayoutManager(mLayoutManager);
+                    StopSelectorRec.setAdapter(Ibssa);
+                    StopSelectorRec.setItemAnimator(null);
+
+                    RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(ctx) {
+                        @Override
+                        protected int getVerticalSnapPreference() {
+                            return LinearSmoothScroller.SNAP_TO_START;
+                        }
+
+                        @Override
+                        protected float calculateSpeedPerPixel(DisplayMetrics displayMetrics) {
+                            return super.calculateSpeedPerPixel(displayMetrics) *4;
+                        }
+                    };
+
+                    int scrollPosition = 0;
+
+                    if (mStop == -1) {
+                        scrollPosition = SelectedPlaceStopsArray.length;
+                    } else {
+                        for (int i = 0; i < SelectedPlaceStopsArray.length; i++) {
+                            if (SelectedPlaceStopsArray[i].getId() == mStop) {
+                                scrollPosition = i;
+                                break;
+                            }
+                        }
+                    }
+
+                    smoothScroller.setTargetPosition(scrollPosition);
+                    if (StopSelectorRec.getLayoutManager() != null) {
+                        StopSelectorRec.getLayoutManager().startSmoothScroll(smoothScroller);
+                    }
+
+                    StopSelectorRec.setNestedScrollingEnabled(false);
+                }
+            });
+        } else {
+            try {
+                Thread.sleep(1000);
+                SetupStopList();
+            } catch (Exception ignored) {
+
+            }
+        }
+    }
+
     private void GetIncomingBuses(TukeServerApi serverApi) {
         try {
             final int SendStopId = mStop;
@@ -454,7 +496,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                     for (IncomingBusRespModel incomingBusRespModel : BusList) {
                         incomingBusRespModel.setMiss(false);
 
-                        BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), false,mainActivity);
+                        BusLine Bj = BusLine.BusLinesByLineId(incomingBusRespModel.getLineId(), false, null, mainActivity);
 
                         if (Bj != null) {
                             if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {

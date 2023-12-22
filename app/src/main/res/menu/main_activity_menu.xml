@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/DisableAdButton"
-        android:icon="@drawable/baseline_settings_24"
-        android:title="@string/DisableAdMenu" />
-    <item
         android:id="@+id/AboutUsButton"
         android:icon="@drawable/baseline_info_24"
         android:title="@string/AboutUsMenu" />
+    <item
+        android:id="@+id/PrivacyButton"
+        android:icon="@drawable/baseline_info_24"
+        android:title="@string/PrivacyButton" />
 </menu>

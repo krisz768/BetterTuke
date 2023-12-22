@@ -45,6 +45,9 @@
              "YOUR_API_KEY" string in this file with "${MAPS_API_KEY}".
         -->
         <meta-data
+            android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
+            android:value="true"/>
+        <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="" />
 

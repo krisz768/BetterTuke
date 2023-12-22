@@ -80,4 +80,6 @@
     <string name="AdEnableSwitch">Anzeigen einschalten</string>
     <string name="OnBoardNextButtonDesc">Nächster Button</string>
     <string name="OnBoardPrevButtonDesc">Vorheriger Button</string>
+    <string name="PrivacyButton">Datenschutz-Optionen</string>
+    <string name="PrivacySettingsNotAvailable">Nicht verfügbar</string>
 </resources>

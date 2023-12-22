@@ -79,4 +79,6 @@
     <string name="AdEnableSwitch">Reklámok engedélyezése</string>
     <string name="OnBoardNextButtonDesc">Következő gomb</string>
     <string name="OnBoardPrevButtonDesc">Előző gomb</string>
+    <string name="PrivacyButton">Adatvédelmi beállítások</string>
+    <string name="PrivacySettingsNotAvailable">Nem elérhető</string>
 </resources>

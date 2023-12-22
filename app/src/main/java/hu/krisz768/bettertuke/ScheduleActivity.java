@@ -47,7 +47,7 @@ public class ScheduleActivity extends AppCompatActivity {
         UserDatabase userDatabase = new UserDatabase(this);
         String AdEnabled = userDatabase.GetPreference("AdEnabled");
         AdView mAdView = findViewById(R.id.adView2);
-        if (AdEnabled != null && AdEnabled.equals("true")){
+        if (AdEnabled != null && AdEnabled.equals("true") && HelperProvider.IsAdConsentOk()){
 
             AdRequest adRequest = new AdRequest.Builder().build();
             mAdView.loadAd(adRequest);
