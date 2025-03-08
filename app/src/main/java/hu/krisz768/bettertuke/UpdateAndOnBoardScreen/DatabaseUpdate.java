@@ -21,6 +21,7 @@ import android.widget.TextView;
 import hu.krisz768.bettertuke.BuildConfig;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseManager;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabaseManager;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
@@ -97,7 +98,7 @@ public class DatabaseUpdate extends Fragment {
         }
 
         if (mUpdateBase) {
-            TukeServerApi serverApi = new TukeServerApi(getContext());
+            /*TukeServerApi serverApi = new TukeServerApi(getContext());
 
             if (!DatabaseManager.DeleteDatabase(context)){
                 AddLog("Database delete error. Continue anyway...");
@@ -114,10 +115,25 @@ public class DatabaseUpdate extends Fragment {
                     SetPercentage(0);
                 });
                 return;
+            }*/
+            NewGTFSDatabaseManager gtfsDatabaseManager = new NewGTFSDatabaseManager(context);
+
+            if (gtfsDatabaseManager.ForceUpdate(Step -> activity.runOnUiThread(() -> SetPercentage(33+((66/9)*Step))))) {
+                AddLog("NewGTFS Database downloaded successfully");
+            } else {
+                AddLog("NewGTFS Database download fail");
+                activity.runOnUiThread(() -> {
+                    if (onUpdateFail != null) {
+                        onUpdateFail.onFail();
+                    }
+                    SetPercentage(0);
+                });
+                return;
             }
+
         }
 
-        activity.runOnUiThread(() -> SetPercentage(33));
+        //activity.runOnUiThread(() -> SetPercentage(33));
 
         if (mUpdateGFTS) {
             GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(context);

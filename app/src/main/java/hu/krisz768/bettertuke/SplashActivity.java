@@ -16,6 +16,8 @@ import java.util.Date;
 
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseManager;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabaseManager;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
@@ -71,7 +73,7 @@ public class SplashActivity extends AppCompatActivity {
     private void CheckForUpdates() {
         AddLog("Check is database exist...\n(" + (new File(getFilesDir() + "/Database", "track.db")).getAbsolutePath() + ")");
 
-        TukeServerApi serverApi = new TukeServerApi(this);
+        /*TukeServerApi serverApi = new TukeServerApi(this);
         Context ctx = getApplicationContext();
 
         if (DatabaseManager.IsDatabaseExist(this)) {
@@ -111,7 +113,20 @@ public class SplashActivity extends AppCompatActivity {
             AddLog("Database not found, attempt to download...");
             GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
             StartUpdate(true, gtfsDatabaseManager.CheckForUpdate());
+        }*/
+
+        Context ctx = getApplicationContext();
+
+        NewGTFSDatabaseManager gtfsDatabaseManager = new NewGTFSDatabaseManager(ctx);
+        if (gtfsDatabaseManager.CheckForUpdate()){
+            AddLog("Updating gtfs...");
+            StartUpdate(true, false);
+        } else {
+            AddLog("Database is up to date!");
+            StartMain();
         }
+
+        //StartUpdate(true, false);
     }
 
     private void StartMain() {
