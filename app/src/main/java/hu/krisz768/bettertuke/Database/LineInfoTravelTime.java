@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class LineInfoTravelTime implements Serializable {
     private final int Id;
     private final int Order;
-    private final int StopId;
+    private final String StopId;
     private final int SumTravelTime;
 
     public int getId() {
@@ -16,7 +16,7 @@ public class LineInfoTravelTime implements Serializable {
         return Order;
     }
 
-    public int getStopId() {
+    public String getStopId() {
         return StopId;
     }
 
@@ -24,7 +24,7 @@ public class LineInfoTravelTime implements Serializable {
         return SumTravelTime;
     }
 
-    public LineInfoTravelTime(int id, int order, int stopId, int sumTravelTime) {
+    public LineInfoTravelTime(int id, int order, String stopId, int sumTravelTime) {
         Id = id;
         Order = order;
         StopId = stopId;

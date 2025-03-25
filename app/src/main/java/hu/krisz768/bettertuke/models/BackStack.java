@@ -6,7 +6,7 @@ import hu.krisz768.bettertuke.Database.BusLine;
 
 public class BackStack {
     private final Integer CurrentPlace;
-    private final Integer CurrentStop;
+    private final String CurrentStop;
     private final Integer CurrentBusTrack;
     private final ScheduleBackStack scheduleBackStack;
     private final boolean IsBackButtonCollapse;
@@ -14,7 +14,7 @@ public class BackStack {
     private final BusLine busLine;
     private final IncomBusBackStack IncomBusMode;
 
-    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace, IncomBusBackStack IncomBusMode) {
+    public BackStack(Integer currentPlace, String currentStop, Integer currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace, IncomBusBackStack IncomBusMode) {
         CurrentPlace = currentPlace;
         CurrentStop = currentStop;
         CurrentBusTrack = currentBusTrack;
@@ -29,7 +29,7 @@ public class BackStack {
         return CurrentPlace;
     }
 
-    public Integer getCurrentStop() {
+    public String getCurrentStop() {
         return CurrentStop;
     }
 

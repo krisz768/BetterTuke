@@ -17,7 +17,7 @@ import hu.krisz768.bettertuke.R;
 public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     private final BusStops[] BusStopList;
     private final Context ctx;
-    private int SelectedStop;
+    private String SelectedStop;
     private final BottomSheetIncomingBusFragment callback;
     private final String[] BusStopNames;
 
@@ -29,9 +29,9 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
             button = view.findViewById(R.id.StopButton);
         }
 
-        public void setData(BusStops Data, int SelectedStop, BottomSheetIncomingBusFragment callback, String DirectionText, Context ctx) {
-            if (DirectionText.equals("-") || DirectionText.equals("") || DirectionText.equals(" ")) {
-                if (Data.getId() == -1) {
+        public void setData(BusStops Data, String SelectedStop, BottomSheetIncomingBusFragment callback, String DirectionText, Context ctx) {
+            if (DirectionText.equals("-") || DirectionText.isEmpty() || DirectionText.equals(" ")) {
+                if (Data.getId().equals("-1")) {
                     button.setText(Data.getStopNum().trim());
                 } else {
                     button.setText(ctx.getString(R.string.TrackBusStopSelect, Data.getStopNum().trim()));
@@ -44,7 +44,7 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
            button.setOnClickListener(view -> callback.OnStopClick(Data.getId()));
 
             TypedValue typedValue = new TypedValue();
-            if (Data.getId() != SelectedStop) {
+            if (!Data.getId().equals(SelectedStop)) {
                 ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOutline, typedValue, true);
                int color = ContextCompat.getColor(ctx, typedValue.resourceId);
                button.setBackgroundColor(color);
@@ -56,7 +56,7 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
         }
     }
 
-    public IncomingBusStopSelectorAdapter(BusStops[] BusStopList, int SelectedStop, BottomSheetIncomingBusFragment callback, String[] busStopNames, Context ctx) {
+    public IncomingBusStopSelectorAdapter(BusStops[] BusStopList, String SelectedStop, BottomSheetIncomingBusFragment callback, String[] busStopNames, Context ctx) {
         this.BusStopList = BusStopList;
         this.SelectedStop = SelectedStop;
         this.ctx = ctx;
@@ -64,7 +64,7 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
         this.BusStopNames = busStopNames;
     }
 
-    public void setSelectedStop(int SelectedStop) {
+    public void setSelectedStop(String SelectedStop) {
         this.SelectedStop = SelectedStop;
     }
 
@@ -82,13 +82,8 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
         if (position < BusStopList.length) {
             ((StopViewHolder)viewHolder).setData(BusStopList[position],SelectedStop, callback, BusStopNames[position], ctx);
         } else {
-            ((StopViewHolder)viewHolder).setData(new BusStops(-1, "", 0, 0, ctx.getString(R.string.AllStopButton)),SelectedStop, callback, "", ctx);
+            ((StopViewHolder)viewHolder).setData(new BusStops("-1", "", 0, 0, ctx.getString(R.string.AllStopButton)),SelectedStop, callback, "", ctx);
         }
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return 0;
     }
 
     @Override

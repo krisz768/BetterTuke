@@ -32,12 +32,12 @@ import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     private final LineInfoTravelTime[] BusStopList;
     private final HashMap<Integer, BusPlaces> BusPlaceList;
-    private final HashMap<Integer, BusStops> AllBusStopList;
+    private final HashMap<String, BusStops> AllBusStopList;
     private final Context ctx;
     private final Calendar StartTime;
     private TrackBusRespModel BusPosition;
     private final TrackBusListFragment Callback;
-    private final int CurrentStop;
+    private final String CurrentStop;
     private final String Date;
     private final BusLine CTrip;
     private boolean IsViewLongClicked = false;
@@ -60,8 +60,8 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             this.view = view;
         }
 
-        public void setData(LineInfoTravelTime Data, int Pos, int max, int PrevStopId, Context ctx, Calendar StartTime, HashMap<Integer, BusPlaces> BusPlaceList, HashMap<Integer, BusStops> AllBusStopList, TrackBusRespModel BusPosition, TrackBusListFragment Callback, int CurrentStop, String Date, TrackBusListAdapter trackBusListAdapter) {
-            int StopId = Data.getStopId();
+        public void setData(LineInfoTravelTime Data, int Pos, int max, int PrevStopId, Context ctx, Calendar StartTime, HashMap<Integer, BusPlaces> BusPlaceList, HashMap<String, BusStops> AllBusStopList, TrackBusRespModel BusPosition, TrackBusListFragment Callback, String CurrentStop, String Date, TrackBusListAdapter trackBusListAdapter) {
+            String StopId = Data.getStopId();
 
             BusPlaces BusPlace;
 
@@ -93,7 +93,7 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
 
             TypedValue typedValue = new TypedValue();
-            if (Data.getStopId() == CurrentStop) {
+            if (Data.getStopId().equals(CurrentStop)) {
                 ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
                 Name.setTextColor(ContextCompat.getColor(ctx, typedValue.resourceId));
             } else {
@@ -111,7 +111,7 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 boolean ShowDelay = false;
 
                 if (Pos == 0) {
-                    if (BusPosition.getStopId() == Data.getStopId()) {
+                    if (BusPosition.getStopId().equals(Data.getStopId())) {
                         if (BusPosition.isAtStop()) {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackStartHalf));
                         } else {
@@ -125,7 +125,7 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                         ShowDelay = true;
                     }
                 } else if(Pos+1 == max) {
-                    if (BusPosition.getStopId() == Data.getStopId()) {
+                    if (BusPosition.getStopId().equals(Data.getStopId())) {
                         trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackEndHalf));
                     } else if (BusPosition.getStopNumber() < Data.getOrder()) {
                         if (PrevStopId == BusPosition.getStopNumber() && !BusPosition.isAtStop()) {
@@ -139,7 +139,7 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                         trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackEndFull));
                     }
                 } else {
-                    if (BusPosition.getStopId() == Data.getStopId()) {
+                    if (BusPosition.getStopId().equals(Data.getStopId())) {
                         if (BusPosition.isAtStop()) {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackNormalHalf));
                         } else {
@@ -269,7 +269,7 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         this.BusPosition = TrackData;
     }
 
-    public TrackBusListAdapter(LineInfoTravelTime[] BusStopList, HashMap<Integer, BusPlaces> BusPlaceList, HashMap<Integer, BusStops> AllBusStopList, Calendar StartTime, TrackBusRespModel BusPosition, int CurrentStop, TrackBusListFragment Callback, Context ctx, String Date, BusLine cTrip) {
+    public TrackBusListAdapter(LineInfoTravelTime[] BusStopList, HashMap<Integer, BusPlaces> BusPlaceList, HashMap<String, BusStops> AllBusStopList, Calendar StartTime, TrackBusRespModel BusPosition, String CurrentStop, TrackBusListFragment Callback, Context ctx, String Date, BusLine cTrip) {
         this.BusStopList = BusStopList;
         this.BusPlaceList = BusPlaceList;
         this.AllBusStopList = AllBusStopList;

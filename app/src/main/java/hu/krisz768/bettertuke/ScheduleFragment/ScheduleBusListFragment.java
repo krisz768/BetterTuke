@@ -20,6 +20,7 @@ import java.util.List;
 import hu.krisz768.bettertuke.Database.BusNum;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.ScheduleActivity;
 import hu.krisz768.bettertuke.UserDatabase.Favorite;
@@ -28,7 +29,7 @@ import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 public class ScheduleBusListFragment extends Fragment {
     private static final String STOPID= "StopId";
     private static final String SCROLLPOSITION= "ScrollPosition";
-    private int mStopId;
+    private String mStopId;
     private Parcelable mScrollPosition;
     private RecyclerView.LayoutManager mLayoutManager;
 
@@ -36,10 +37,10 @@ public class ScheduleBusListFragment extends Fragment {
 
     }
 
-    public static ScheduleBusListFragment newInstance(int StopId, Parcelable ScrollPosition) {
+    public static ScheduleBusListFragment newInstance(String StopId, Parcelable ScrollPosition) {
         ScheduleBusListFragment fragment = new ScheduleBusListFragment();
         Bundle args = new Bundle();
-        args.putInt(STOPID, StopId);
+        args.putString(STOPID, StopId);
         args.putParcelable(SCROLLPOSITION, ScrollPosition);
         fragment.setArguments(args);
         return fragment;
@@ -49,7 +50,7 @@ public class ScheduleBusListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mStopId = getArguments().getInt(STOPID);
+            mStopId = getArguments().getString(STOPID);
             mScrollPosition = getArguments().getParcelable(SCROLLPOSITION);
         }
     }
@@ -64,12 +65,13 @@ public class ScheduleBusListFragment extends Fragment {
         }
 
         DatabaseManager Dm = new DatabaseManager(getContext());
+        NewGTFSDatabase NDm = new NewGTFSDatabase(getContext());
         BusNum[] busNums;
-        if (mStopId == -1) {
-            busNums = Dm.GetActiveBusLines();
+        if (mStopId.equals("-1")) {
+            busNums = NDm.GetActiveBusLines();
         } else{
             busNums = Dm.GetActiveBusLinesFromStop(mStopId);
-            String StopName = Dm.GetStopName(mStopId);
+            String StopName = NDm.GetStopName(mStopId);
             String StopNum = HelperProvider.GetStopDirectionString(getContext(), mStopId);
 
             ((TextView)view.findViewById(R.id.ScheduleTargetText)).setText(getString(R.string.BusStopNameWithNum, StopName.trim(), StopNum));

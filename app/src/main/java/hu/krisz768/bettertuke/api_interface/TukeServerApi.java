@@ -29,7 +29,7 @@ public class TukeServerApi {
     }
 
     @Nullable
-    public IncomingBusRespModel[] getNextIncomingBuses(int StopId) {
+    public IncomingBusRespModel[] getNextIncomingBuses(String StopId) {
         try {
             apiGetNextIncomingBuses data = new apiGetNextIncomingBuses(StopId);
             Thread thread = new Thread(data);

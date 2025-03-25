@@ -12,8 +12,8 @@ import java.util.Map;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class apiGetNextIncomingBuses extends TukeServerApiFunctions<IncomingBusRespModel[]> implements Runnable{
-    private final int StopId;
-    public apiGetNextIncomingBuses(int StopId) {
+    private final String StopId;
+    public apiGetNextIncomingBuses(String StopId) {
         this.StopId = StopId;
     }
 

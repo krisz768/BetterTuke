@@ -60,9 +60,9 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private static final String PLACELIST = "PlaceList";
     private static final String STOPLIST = "StopList";
     private int mPlace;
-    private volatile int mStop;
+    private volatile String mStop;
     private HashMap<Integer, BusPlaces> mPlaceList;
-    private HashMap<Integer, BusStops> mStopList;
+    private HashMap<String, BusStops> mStopList;
     private IncomBusBackStack mStartMode;
     private IncomingBusStopSelectorAdapter Ibssa;
     private IncomingBusListFragment InBusFragment;
@@ -75,11 +75,11 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     public BottomSheetIncomingBusFragment() {
 
     }
-    public static BottomSheetIncomingBusFragment newInstance(int Place, int Stop, IncomBusBackStack StartMode, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList) {
+    public static BottomSheetIncomingBusFragment newInstance(int Place, String Stop, IncomBusBackStack StartMode, HashMap<Integer, BusPlaces> PlaceList, HashMap<String, BusStops> StopList) {
         BottomSheetIncomingBusFragment fragment = new BottomSheetIncomingBusFragment();
         Bundle args = new Bundle();
         args.putInt(PLACE, Place);
-        args.putInt(STOP, Stop);
+        args.putString(STOP, Stop);
         args.putSerializable(PLACELIST, PlaceList);
         args.putSerializable(STOPLIST, StopList);
         args.putSerializable(STARTMODE, StartMode);
@@ -93,9 +93,9 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mPlace = getArguments().getInt(PLACE);
-            mStop = getArguments().getInt(STOP);
+            mStop = getArguments().getString(STOP);
             mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
-            mStopList = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPLIST);
+            mStopList = (HashMap<String, BusStops>) getArguments().getSerializable(STOPLIST);
             mStartMode = (IncomBusBackStack) getArguments().getSerializable(STARTMODE);
         }
     }
@@ -146,7 +146,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         if (getContext() != null){
             UserDatabase userDatabase = new UserDatabase(getContext());
 
-            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
+            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, mStop)) {
                 FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
             } else {
                 FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
@@ -162,25 +162,25 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 mAdView.setVisibility(View.GONE);
             }
 
-            if (mStop == -1) {
+            if (mStop.equals("-1")) {
                 FavButton.setVisibility(View.GONE);
                 ScheduleButton.setVisibility(View.GONE);
             }
 
             FavButton.setOnClickListener(view12 -> {
-                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
-                    userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop));
+                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, mStop)) {
+                    userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Stop, mStop);
                     FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
                 } else {
                     String StopNum = "1";
                     for (BusStops busStops : SelectedPlaceStopsArray) {
-                        if (busStops.getId() == mStop) {
+                        if (busStops.getId().equals(mStop)) {
                             StopNum = busStops.getStopNum();
                             break;
                         }
                     }
 
-                    userDatabase.AddFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop),  getString(R.string.BusStopNameWithNum, BusStopName.getText().toString().trim(), StopNum.trim()));
+                    userDatabase.AddFavorite(UserDatabase.FavoriteType.Stop, mStop,  getString(R.string.BusStopNameWithNum, BusStopName.getText().toString().trim(), StopNum.trim()));
                     FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
                 }
             });
@@ -282,7 +282,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void OnStopClick(int Id) {
+    public void OnStopClick(String Id) {
         if (getActivity() != null){
             ((MainActivity)getActivity()).ChangeStop(Id);
         }
@@ -297,7 +297,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             ImageView FavButton = getView().findViewById(R.id.StopFavoriteButton);
             ImageView ScheduleButton = getView().findViewById(R.id.StopScheduleButton);
 
-            if (mStop == -1) {
+            if (mStop.equals("-1")) {
                 FavButton.setVisibility(View.GONE);
                 ScheduleButton.setVisibility(View.GONE);
             } else {
@@ -305,7 +305,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 ScheduleButton.setVisibility(View.VISIBLE);
 
                 UserDatabase userDatabase = new UserDatabase(getContext());
-                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
+                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, mStop)) {
                     FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
                 } else {
                     FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
@@ -383,11 +383,11 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
                     int scrollPosition = 0;
 
-                    if (mStop == -1) {
+                    if (mStop.equals("-1")) {
                         scrollPosition = SelectedPlaceStopsArray.length;
                     } else {
                         for (int i = 0; i < SelectedPlaceStopsArray.length; i++) {
-                            if (SelectedPlaceStopsArray[i].getId() == mStop) {
+                            if (SelectedPlaceStopsArray[i].getId().equals(mStop)) {
                                 scrollPosition = i;
                                 break;
                             }
@@ -414,7 +414,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
     private void GetIncomingBuses(TukeServerApi serverApi) {
         try {
-            final int SendStopId = mStop;
+            final String SendStopId = mStop;
             final String SendDate = SelectedDate;
             final String SendTime = SelectedTime;
             final boolean SendCustom = DateTimeSelected;
@@ -425,7 +425,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
             if (DateTimeSelected) {
                 if (mainActivity != null) {
-                    if (mStop == -1) {
+                    if (mStop.equals("-1")) {
                         ArrayList<IncomingBusRespModel> list = new ArrayList<>();
                         DatabaseManager Dm = new DatabaseManager(mainActivity);
 
@@ -443,7 +443,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                     }
                 }
             } else {
-                if (mStop == -1) {
+                if (mStop.equals("-1")) {
                     ArrayList<IncomingBusRespModel> list = new ArrayList<>();
 
                     for (BusStops element : SelectedPlaceStopsArray) {
@@ -524,7 +524,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 }
             }
 
-            if(SendStopId != mStop || !SendDate.equals(SelectedDate) || !SendTime.equals(SelectedTime) || SendCustom != DateTimeSelected) {
+            if(SendStopId.equals(mStop) || !SendDate.equals(SelectedDate) || !SendTime.equals(SelectedTime) || SendCustom != DateTimeSelected) {
                 return;
             }
 

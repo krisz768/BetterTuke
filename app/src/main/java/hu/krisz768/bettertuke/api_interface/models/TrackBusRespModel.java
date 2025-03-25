@@ -6,7 +6,7 @@ import java.util.Date;
 public class TrackBusRespModel implements Serializable {
     private final String LicensePlateNumber;
     private final int StopNumber;
-    private final int StopId;
+    private final String StopId;
     private final boolean AtStop;
     private final float GpsLongitude;
     private final float GpsLatitude;
@@ -14,7 +14,7 @@ public class TrackBusRespModel implements Serializable {
     private final int DelaySec;
     private final Date LastUpdate;
 
-    public TrackBusRespModel(String licensePlateNumber, int stopNumber, int stopId, boolean atStop, float GpsLongitude, float GpsLatitude, int delayMin, int delaySec, Date lastUpdate) {
+    public TrackBusRespModel(String licensePlateNumber, int stopNumber, String stopId, boolean atStop, float GpsLongitude, float GpsLatitude, int delayMin, int delaySec, Date lastUpdate) {
         LicensePlateNumber = licensePlateNumber;
         StopNumber = stopNumber;
         StopId = stopId;
@@ -34,7 +34,7 @@ public class TrackBusRespModel implements Serializable {
         return StopNumber;
     }
 
-    public int getStopId() {
+    public String getStopId() {
         return StopId;
     }
 

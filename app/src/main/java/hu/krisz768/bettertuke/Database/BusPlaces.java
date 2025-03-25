@@ -5,6 +5,8 @@ import android.content.Context;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
+
 public class BusPlaces implements Serializable {
     private final int Id;
     private final String Name;
@@ -35,7 +37,7 @@ public class BusPlaces implements Serializable {
     }
 
     public static HashMap<Integer, BusPlaces> getAllBusPlaces(Context ctx) {
-        DatabaseManager Dm = new DatabaseManager(ctx);
+        NewGTFSDatabase Dm = new NewGTFSDatabase(ctx);
 
         return Dm.GetAllBusPlaces();
     }

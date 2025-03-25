@@ -42,7 +42,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
     private static final String PLACELIST = "PlaceList";
     private static final String STOPLIST = "StopList";
     private static final String LINEOBJ = "LineObj";
-    private int mStop;
+    private String mStop;
     private HashMap<Integer, BusPlaces> mPlaceList;
     private HashMap<Integer, BusStops> mStopList;
     private BusLine mBusLine;
@@ -65,10 +65,10 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
     }
 
-    public static BottomSheetTrackBusFragment newInstance(int Stop, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList, BusLine LineObj) {
+    public static BottomSheetTrackBusFragment newInstance(String Stop, HashMap<Integer, BusPlaces> PlaceList, HashMap<String, BusStops> StopList, BusLine LineObj) {
         BottomSheetTrackBusFragment fragment = new BottomSheetTrackBusFragment();
         Bundle args = new Bundle();
-        args.putInt(STOP, Stop);
+        args.putString(STOP, Stop);
         args.putSerializable(PLACELIST, PlaceList);
         args.putSerializable(STOPLIST, StopList);
         args.putSerializable(LINEOBJ, LineObj);
@@ -81,7 +81,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mStop = getArguments().getInt(STOP);
+            mStop = getArguments().getString(STOP);
             mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
             mStopList = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPLIST);
             mBusLine = (BusLine) getArguments().getSerializable(LINEOBJ);

@@ -41,6 +41,7 @@ import hu.krisz768.bettertuke.Database.BusVariation;
 import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.InfoFragment;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.ScheduleActivity;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
@@ -52,7 +53,7 @@ public class ScheduleBusTimeFragment extends Fragment {
     private static final String DIRECTION= "Direction";
     private static final String DATE= "Date";
     private String mLineNum;
-    private int mStopId;
+    private String mStopId;
     private String mDirection;
     private String mDate;
     private String SelectedDate;
@@ -83,11 +84,11 @@ public class ScheduleBusTimeFragment extends Fragment {
 
     }
 
-    public static ScheduleBusTimeFragment newInstance(String lineNum, int StopId, String Direction, String Date) {
+    public static ScheduleBusTimeFragment newInstance(String lineNum, String StopId, String Direction, String Date) {
         ScheduleBusTimeFragment fragment = new ScheduleBusTimeFragment();
         Bundle args = new Bundle();
         args.putString(LINENUM, lineNum);
-        args.putInt(STOPID, StopId);
+        args.putString(STOPID, StopId);
         args.putString(DIRECTION, Direction);
         args.putString(DATE, Date);
         fragment.setArguments(args);
@@ -99,7 +100,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mLineNum = getArguments().getString(LINENUM);
-            mStopId = getArguments().getInt(STOPID);
+            mStopId = getArguments().getString(STOPID);
             mDirection = getArguments().getString(DIRECTION);
             mDate = getArguments().getString(DATE);
         }
@@ -125,12 +126,13 @@ public class ScheduleBusTimeFragment extends Fragment {
         }
 
         DatabaseManager Dm = new DatabaseManager(getContext());
+        NewGTFSDatabase NDm = new NewGTFSDatabase(getContext());
 
         TextView StartPosText = view.findViewById(R.id.StartPosText);
-        if (mStopId == -1) {
+        if (mStopId.equals("-1")) {
             StartPosText.setText(getString(R.string.StartingDataFromStartingPosition));
         } else {
-            String StopName = Dm.GetStopName(mStopId);
+            String StopName = NDm.GetStopName(mStopId);
             String StopNum = HelperProvider.GetStopDirectionString(getContext(), mStopId);
             StartPosText.setText(getString(R.string.StartingDataFromStop, StopName.trim(), StopNum));
         }
@@ -140,7 +142,7 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
 
-        if (mStopId == -1) {
+        if (mStopId.equals("-1")) {
             Variations = Dm.GetBusVariations(mLineNum);
         } else {
             Variations = Dm.GetBusVariationsFromStop(mLineNum, mStopId);
@@ -174,7 +176,7 @@ public class ScheduleBusTimeFragment extends Fragment {
             SelectedWay = "V";
         }
 
-        if (mStopId != -1 && !TwoWay) {
+        if (!mStopId.equals("-1") && !TwoWay) {
             BusLineTimeDirectionIcon.setVisibility(View.GONE);
         }
 
@@ -406,7 +408,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                 }
             });
 
-            if (mStopId == -1) {
+            if (mStopId.equals("-1")) {
                 CurrentLines = Dm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
             } else {
                 CurrentLines = Dm.GetBusScheduleTimeFromStop(mLineNum, SelectedDate, SelectedWay, mStopId);
@@ -617,7 +619,7 @@ public class ScheduleBusTimeFragment extends Fragment {
             List<BusScheduleTime> ErrNotStartedList = new ArrayList<>();
 
             for (BusScheduleTime busScheduleTime : Lines) {
-                if (mStopId == -1) {
+                if (mStopId.equals("-1")) {
                     if ((busScheduleTime.getHour() == CurrentHour && CurrentMinute >= busScheduleTime.getMinute()) || busScheduleTime.getHour() + 1 == CurrentHour || busScheduleTime.getHour() + 2 == CurrentHour) {
                         TukeServerApi tukeServerApi = new TukeServerApi(ctx);
                         Boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());

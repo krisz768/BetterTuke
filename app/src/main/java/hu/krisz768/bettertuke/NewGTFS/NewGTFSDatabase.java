@@ -9,17 +9,107 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-import hu.krisz768.bettertuke.Database.TukeDatabaseHelper;
-import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseHelper;
+import hu.krisz768.bettertuke.Database.BusNum;
+import hu.krisz768.bettertuke.Database.BusPlaces;
+import hu.krisz768.bettertuke.Database.BusStops;
 
 public class NewGTFSDatabase {
     private static SQLiteDatabase Sld;
 
+    public HashMap<String, BusStops> GetAllBusStops () {
+        try
+        {
+            Cursor cursor = Sld.rawQuery("SELECT * FROM stops WHERE 1", null);
+            HashMap<String, BusStops> AllStops = new HashMap<>();
+            while(cursor.moveToNext()) {
+                AllStops.put(cursor.getString(0),new BusStops(cursor.getString(0), cursor.getString(1), cursor.getFloat(5), cursor.getFloat(4), cursor.getString(3)));
+            }
+            cursor.close();
+
+            return AllStops;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return new HashMap<>(0);
+        }
+    }
+
+    public HashMap<Integer, BusPlaces> GetAllBusPlaces () {
+        try
+        {
+            Cursor cursor = Sld.rawQuery("SELECT stop_code, stop_name, avg(stop_lat), avg(stop_lon) from stops GROUP BY stop_code;", null);
+            HashMap<Integer, BusPlaces> AllPlaces = new HashMap<>();
+            while(cursor.moveToNext()) {
+                AllPlaces.put(cursor.getInt(0), new BusPlaces(cursor.getInt(0), cursor.getString(1), cursor.getFloat(3), cursor.getFloat(2)));
+            }
+            cursor.close();
+
+            return AllPlaces;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return new HashMap<>(0);
+
+        }
+    }
+
+    public String GetStopName (String StopId) {
+        try
+        {
+            Cursor cursor = Sld.rawQuery("SELECT stop_name FROM stops WHERE stop_id = " + StopId +";", null);
+            String Name = "";
+            while(cursor.moveToNext()) {
+                Name = cursor.getString(0);
+            }
+            cursor.close();
+            return Name;
+        } catch (Exception e) {
+            log(e.toString());
+            return "Err";
+        }
+    }
+
+    public String GetDirectionName (String StopId) {
+        try
+        {
+            Cursor cursor = Sld.rawQuery("SELECT stop_desc FROM stops WHERE stop_id = '" + StopId +"';", null);
+            String Name = null;
+            while(cursor.moveToNext()) {
+                Name = cursor.getString(0);
+            }
+            cursor.close();
+            return Name;
+        } catch (Exception e) {
+            log(e.toString());
+            return "Err";
+        }
+    }
+
+    public BusNum[] GetActiveBusLines() {
+        try {
+            List<BusNum> Lines = new ArrayList<>();
+
+            Cursor cursor = Sld.rawQuery("SELECT DISTINCT route_id, route_long_name FROM routes ORDER BY '0' + route_id;", null);
+            while (cursor.moveToNext()) {
+                Lines.add(new BusNum(cursor.getString(0), cursor.getString(1)));
+            }
+            cursor.close();
+
+            BusNum[] ret = new BusNum[Lines.size()];
+            Lines.toArray(ret);
+            return ret;
+        } catch (Exception e) {
+            log(e.toString());
+            return new BusNum[0];
+        }
+    }
 
     public static String GetDatabaseVersion(Context Ctx) {
         try

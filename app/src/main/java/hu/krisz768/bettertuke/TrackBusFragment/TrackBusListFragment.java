@@ -31,9 +31,9 @@ public class TrackBusListFragment extends Fragment {
     private static final String STOPLIST = "StopList";
     private static final String LINES = "LineInfo";
     private static final String POSITION = "BusPosition";
-    private int mStop;
+    private String mStop;
     private HashMap<Integer, BusPlaces> mPlaceList;
-    private HashMap<Integer, BusStops> mStopList;
+    private HashMap<String, BusStops> mStopList;
     private BusLine mLine;
     private TrackBusRespModel mBusPosition;
     private TrackBusListAdapter Tbla;
@@ -43,11 +43,11 @@ public class TrackBusListFragment extends Fragment {
 
     }
 
-    public static TrackBusListFragment newInstance(BusLine LineInfo, int Stop, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList, TrackBusRespModel BusPosition) {
+    public static TrackBusListFragment newInstance(BusLine LineInfo, String Stop, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList, TrackBusRespModel BusPosition) {
         TrackBusListFragment fragment = new TrackBusListFragment();
         Bundle args = new Bundle();
         args.putSerializable(LINES, LineInfo);
-        args.putInt(STOP, Stop);
+        args.putString(STOP, Stop);
         args.putSerializable(PLACELIST, PlaceList);
         args.putSerializable(STOPLIST, StopList);
         args.putSerializable(POSITION, BusPosition);
@@ -61,9 +61,9 @@ public class TrackBusListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mLine = (BusLine) getArguments().getSerializable(LINES);
-            mStop = getArguments().getInt(STOP);
+            mStop = getArguments().getString(STOP);
             mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
-            mStopList = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPLIST);
+            mStopList = (HashMap<String, BusStops>) getArguments().getSerializable(STOPLIST);
             mBusPosition = (TrackBusRespModel) getArguments().getSerializable(POSITION);
         }
     }
@@ -140,7 +140,7 @@ public class TrackBusListFragment extends Fragment {
         }
     }
 
-    public void OnStopClick(int Id) {
+    public void OnStopClick(String Id) {
         BusStops busStops = mStopList.get(Id);
 
         if(getActivity() != null && busStops != null){
@@ -152,7 +152,7 @@ public class TrackBusListFragment extends Fragment {
         if (mBusPosition != null) {
             for (int i = 0; i < mLine.getStops().length; i++) {
                 if (mLine.getStops()[i].getOrder() == mBusPosition.getStopNumber()) {
-                    if (mLine.getStops()[i].getStopId() == Id){
+                    if (mLine.getStops()[i].getStopId().equals(Id)){
                         if(getActivity() != null){
                             ((MainActivity) getActivity()).SetUserTouchedMap(false);
                         }

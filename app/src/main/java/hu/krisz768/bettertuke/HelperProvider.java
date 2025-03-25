@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.util.Objects;
 
 import hu.krisz768.bettertuke.Gtfs.GTFSDatabase;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class HelperProvider {
@@ -547,9 +548,10 @@ public class HelperProvider {
         return oneBusAttributes;
     }
 
-    public static String GetStopDirectionString(Context ctx, int id) {
-        GTFSDatabase gtfsDatabase = new GTFSDatabase(ctx);
-        String name = gtfsDatabase.GetStopName(id);
+    public static String GetStopDirectionString(Context ctx, String id) {
+        NewGTFSDatabase gtfsDatabase = new NewGTFSDatabase(ctx);
+        String name = gtfsDatabase.GetDirectionName(id);
+
         if (name == null) {
             return "-";
         }

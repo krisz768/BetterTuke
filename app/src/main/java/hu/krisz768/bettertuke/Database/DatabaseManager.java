@@ -34,126 +34,6 @@ public class DatabaseManager {
 
     }
 
-    public static boolean IsDatabaseExist (Context Ctx) {
-        File Database = new File(Ctx.getFilesDir() + "/Database", "track.db");
-        return Database.exists();
-    }
-
-    public static boolean DeleteDatabase(Context Ctx) {
-        File Database = new File(Ctx.getFilesDir() + "/Database", "track.db");
-        try {
-            return Database.delete();
-        } catch (Exception e) {
-            Log.e("DatabaseManager", e.toString());
-            return false;
-        }
-    }
-
-    public static String GetDatabaseVersion(Context Ctx) {
-        try
-        {
-            TukeDatabaseHelper Dbh = new TukeDatabaseHelper(Ctx, new File(Ctx.getFilesDir() + "/Database", "track.db").getAbsolutePath());
-            SQLiteDatabase Sld = Dbh.getReadableDatabase();
-
-            Cursor cursor = Sld.rawQuery("SELECT lastupdate FROM syncron WHERE 1", null);
-            String version = "Err";
-            while(cursor.moveToNext()) {
-                version = cursor.getString(0);
-            }
-            cursor.close();
-
-            Sld.close();
-            Dbh.close();
-            return version;
-        } catch (Exception e) {
-            Log.e("DatabaseManager", e.toString());
-            return "Err";
-        }
-    }
-
-    public static boolean IsDatabaseValid(Context Ctx) {
-        try
-        {
-            TukeDatabaseHelper Dbh = new TukeDatabaseHelper(Ctx, new File(Ctx.getFilesDir() + "/Database", "track.db").getAbsolutePath());
-            SQLiteDatabase Sld = Dbh.getReadableDatabase();
-
-            Cursor cursor = Sld.rawQuery("SELECT DISTINCT v.vonal_nev FROM vonalak v WHERE 1", null);
-
-            int Count = 0;
-            while(cursor.moveToNext()) {
-                Count++;
-            }
-            cursor.close();
-
-            Sld.close();
-            Dbh.close();
-            return Count>0;
-        } catch (Exception e) {
-            Log.e("DatabaseManager", e.toString());
-            return false;
-        }
-    }
-
-    public String GetStopName (int StopId) {
-        try
-        {
-            Cursor cursor = Sld.rawQuery("SELECT f.foldhely_nev FROM foldhelyek f INNER JOIN kocsiallasok AS k ON f.id_foldhelyek = k.id_foldhely WHERE k.id_kocsiallas = " + StopId +";", null);
-            String Name = "";
-            while(cursor.moveToNext()) {
-                Name = cursor.getString(0);
-            }
-            cursor.close();
-            return Name;
-        } catch (Exception e) {
-            log(e.toString());
-            return "Err";
-        }
-    }
-
-    public HashMap<Integer, BusStops> GetAllBusStops () {
-        try
-        {
-            Cursor cursor = Sld.rawQuery("SELECT * FROM kocsiallasok WHERE 1", null);
-            HashMap<Integer, BusStops> AllStops = new HashMap<>();
-            while(cursor.moveToNext()) {
-                int id = cursor.getInt(0);
-                if (id != 24901) {
-                    AllStops.put(id,new BusStops(id, cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3), cursor.getString(5)));
-                }
-
-            }
-            cursor.close();
-
-            return AllStops;
-
-        } catch (Exception e) {
-            log(e.toString());
-            return new HashMap<>(0);
-        }
-    }
-
-    public HashMap<Integer, BusPlaces> GetAllBusPlaces () {
-        try
-        {
-            Cursor cursor = Sld.rawQuery("SELECT * FROM foldhelyek WHERE 1", null);
-            HashMap<Integer, BusPlaces> AllPlaces = new HashMap<>();
-            while(cursor.moveToNext()) {
-                String PlaceName = cursor.getString(1);
-                if (!PlaceName.contains("KEDPLASMA plazma központ")) {
-                    AllPlaces.put(cursor.getInt(0), new BusPlaces(cursor.getInt(0), cursor.getString(1), cursor.getFloat(2), cursor.getFloat(3)));
-                }
-            }
-            cursor.close();
-
-            return AllPlaces;
-
-        } catch (Exception e) {
-            log(e.toString());
-            return new HashMap<>(0);
-
-        }
-    }
-
     public BusLine GetBusLineById(int Id, boolean GetGTFS, Date date) {
         try
         {
@@ -187,10 +67,10 @@ public class DatabaseManager {
                 BusLine CTrip = null;
 
                 if (GetGTFS && StartStop != null) {
-                    String GTFSId = gtfsDatabase.ConvertTripId(Integer.toString(StartStop.getStopId()), String.format("%02d", DepartureHour) + ":" + String.format("%02d", DepartureMinute) + ":00", dateFormat.format(date), lineInfoRouteInfo.getLineNum());
+                    String GTFSId = gtfsDatabase.ConvertTripId(StartStop.getStopId(), String.format("%02d", DepartureHour) + ":" + String.format("%02d", DepartureMinute) + ":00", dateFormat.format(date), lineInfoRouteInfo.getLineNum());
                     
                     if (GTFSId == null) {
-                        GTFSId = gtfsDatabase.ConvertTripId(Integer.toString(StartStop.getStopId()), String.format("%02d", DepartureHour+24) + ":" + String.format("%02d", DepartureMinute) + ":00", dateFormat.format(date), lineInfoRouteInfo.getLineNum());
+                        GTFSId = gtfsDatabase.ConvertTripId(StartStop.getStopId(), String.format("%02d", DepartureHour+24) + ":" + String.format("%02d", DepartureMinute) + ":00", dateFormat.format(date), lineInfoRouteInfo.getLineNum());
                     }
 
                     if (GTFSId != null) {
@@ -238,7 +118,7 @@ public class DatabaseManager {
             List<LineInfoTravelTime> TravelTime = new ArrayList<>();
             Cursor cursor = Sld.rawQuery("SELECT * FROM nyomvonal_tetelek WHERE id_menetido = " + Id + " ORDER BY sorrend ASC;", null);
             while(cursor.moveToNext()) {
-                TravelTime.add(new LineInfoTravelTime(cursor.getInt(0), cursor.getInt(1), cursor.getInt(2),cursor.getInt(6)));
+                TravelTime.add(new LineInfoTravelTime(cursor.getInt(0), cursor.getInt(1), cursor.getString(2),cursor.getInt(6)));
             }
             cursor.close();
 
@@ -289,25 +169,6 @@ public class DatabaseManager {
         } catch (Exception e) {
             log(e.toString());
             return null;
-        }
-    }
-
-    public BusNum[] GetActiveBusLines() {
-        try {
-            List<BusNum> Lines = new ArrayList<>();
-
-            Cursor cursor = Sld.rawQuery("SELECT DISTINCT v.vonal_nev, v.vonal_leiras FROM vonalak v INNER JOIN nyomvonalak AS n ON n.vonal_nev = v.vonal_nev INNER JOIN jaratok AS j ON j.id_nyomvonal = n.id_nyomvonal ORDER BY '0' + v.vonal_nev;", null);
-            while (cursor.moveToNext()) {
-                Lines.add(new BusNum(cursor.getString(0), cursor.getString(1)));
-            }
-            cursor.close();
-
-            BusNum[] ret = new BusNum[Lines.size()];
-            Lines.toArray(ret);
-            return ret;
-        } catch (Exception e) {
-            log(e.toString());
-            return new BusNum[0];
         }
     }
 
@@ -366,7 +227,7 @@ public class DatabaseManager {
         }
     }
 
-    public BusScheduleTime[] GetBusScheduleTimeFromStop(String LineNum, String date, String Direction, int StopId) {
+    public BusScheduleTime[] GetBusScheduleTimeFromStop(String LineNum, String date, String Direction, String StopId) {
         try {
             List<BusScheduleTime> Lines = new ArrayList<>();
 
@@ -385,7 +246,7 @@ public class DatabaseManager {
         }
     }
 
-    public BusVariation[] GetBusVariationsFromStop(String LineNum, int StopId) {
+    public BusVariation[] GetBusVariationsFromStop(String LineNum, String StopId) {
         try {
             List<BusVariation> Lines = new ArrayList<>();
 
@@ -404,7 +265,7 @@ public class DatabaseManager {
         }
     }
 
-    public BusNum[] GetActiveBusLinesFromStop(int StopId) {
+    public BusNum[] GetActiveBusLinesFromStop(String StopId) {
         try {
             List<BusNum> Lines = new ArrayList<>();
 
@@ -423,7 +284,7 @@ public class DatabaseManager {
         }
     }
 
-    public int GetBusLineStopTravelTimeById(String LineId, int StopId) {
+    public int GetBusLineStopTravelTimeById(String LineId, String StopId) {
         try {
             int TravelTime = 0;
 
@@ -440,7 +301,7 @@ public class DatabaseManager {
         }
     }
 
-    public IncomingBusRespModel[] GetOfflineDepartureTimes(int StopId, String Date, String Time) {
+    public IncomingBusRespModel[] GetOfflineDepartureTimes(String StopId, String Date, String Time) {
         try {
             List<IncomingBusRespModel> Lines = new ArrayList<>();
             Calendar GetTime = Calendar.getInstance();

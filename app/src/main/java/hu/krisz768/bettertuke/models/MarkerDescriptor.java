@@ -2,9 +2,9 @@ package hu.krisz768.bettertuke.models;
 
 public class MarkerDescriptor {
     private final Types Type;
-    private final int Id;
+    private final String Id;
 
-    public MarkerDescriptor(Types type, int id) {
+    public MarkerDescriptor(Types type, String id) {
         Type = type;
         Id = id;
     }
@@ -13,7 +13,7 @@ public class MarkerDescriptor {
         return Type;
     }
 
-    public int getId() {
+    public String getId() {
         return Id;
     }
 

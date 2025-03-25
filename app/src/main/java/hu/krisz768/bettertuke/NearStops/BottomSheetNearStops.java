@@ -30,14 +30,14 @@ public class BottomSheetNearStops extends Fragment {
     private static final String PLACES = "Places";
     private double mLatitude;
     private double mLongitude;
-    private HashMap<Integer, BusStops> mStops;
+    private HashMap<String, BusStops> mStops;
     private HashMap<Integer, BusPlaces> mPlaces;
 
     public BottomSheetNearStops() {
 
     }
 
-    public static BottomSheetNearStops newInstance(double Latitude, double Longitude, HashMap<Integer, BusStops> Stops, HashMap<Integer, BusPlaces> Places) {
+    public static BottomSheetNearStops newInstance(double Latitude, double Longitude, HashMap<String, BusStops> Stops, HashMap<Integer, BusPlaces> Places) {
         BottomSheetNearStops fragment = new BottomSheetNearStops();
         Bundle args = new Bundle();
 
@@ -54,7 +54,7 @@ public class BottomSheetNearStops extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mStops = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPS);
+            mStops = (HashMap<String, BusStops>) getArguments().getSerializable(STOPS);
             mPlaces = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACES);
             mLatitude = getArguments().getDouble(LATITUDE);
             mLongitude = getArguments().getDouble(LONGITUDE);
@@ -118,7 +118,7 @@ public class BottomSheetNearStops extends Fragment {
                 for (int i = 0; i < NearBusPlacesList.size(); i++) {
                     for (BusStops mStop : mStops.values()) {
                         if (NearBusPlacesList.get(i).getId() == mStop.getPlace()) {
-                            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop.getId()))) {
+                            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, mStop.getId())) {
                                 FavNearBusPlacesList.add(NearBusPlacesList.get(i));
                                 NearBusPlacesList.remove(i);
                                 i--;

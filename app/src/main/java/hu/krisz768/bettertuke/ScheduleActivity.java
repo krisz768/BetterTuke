@@ -26,7 +26,7 @@ import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 public class ScheduleActivity extends AppCompatActivity {
     private String SelectedLine;
     private String Date;
-    private int StopId = -1;
+    private String StopId = "-1";
     private ScheduleBusTimeFragment Sbtf;
     private boolean PreSelected = false;
     private Parcelable ScrollState;
@@ -56,7 +56,7 @@ public class ScheduleActivity extends AppCompatActivity {
         }
 
         if (b != null) {
-            StopId = b.getInt("StopId");
+            StopId = b.getString("StopId");
             LineNum = b.getString("LineNum");
             Direction = b.getString("Direction");
             Date = b.getString("Date");
