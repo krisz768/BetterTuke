@@ -917,7 +917,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void TrackBus(String Id, String Date) {
-        if (!(busLine != null && busLine.getCTrip() != null && busLine.getCTrip().getLineId() == Id)) {
+        if (!(busLine != null && busLine.getCTrip() != null && busLine.getCTrip().getLineId().equals(Id))) {
             AddBackStack();
         }
 
