@@ -10,8 +10,8 @@ import java.util.Map;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
 public class apiGetBusPosition extends TukeServerApiFunctions<TrackBusRespModel> implements Runnable{
-    private final int LineId;
-    public apiGetBusPosition(int LineId) {
+    private final String LineId;
+    public apiGetBusPosition(String LineId) {
         this.LineId = LineId;
     }
 

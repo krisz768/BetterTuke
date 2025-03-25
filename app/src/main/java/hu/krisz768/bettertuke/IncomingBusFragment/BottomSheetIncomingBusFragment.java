@@ -500,7 +500,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
                         if (Bj != null) {
                             if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
-                                Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId());
+                                Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId() + "");
                                 if (IsBusStarted == null) {
                                     IsBusStarted = false;
                                 } else {

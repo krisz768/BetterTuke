@@ -72,7 +72,7 @@ public class IncomingBusListFragment extends Fragment {
         }
     }
 
-    public void OnBusClick(int Id, String Date) {
+    public void OnBusClick(String Id, String Date) {
         if (getActivity() != null) {
             ((MainActivity)getActivity()).TrackBus(Id, Date);
         }

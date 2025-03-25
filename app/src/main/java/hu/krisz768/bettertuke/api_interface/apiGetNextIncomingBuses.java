@@ -48,7 +48,7 @@ public class apiGetNextIncomingBuses extends TukeServerApiFunctions<IncomingBusR
                     if (line != null ) {
                         String[] parts = line.split("\\|");
 
-                        BusList.add(new IncomingBusRespModel(parts[0], parts[1], DateParser(parts[2]), Integer.parseInt(parts[5]), Integer.parseInt(parts[7]), parts[8].equals("1")));
+                        BusList.add(new IncomingBusRespModel(parts[0], parts[1], DateParser(parts[2]), parts[5], Integer.parseInt(parts[7]), parts[8].equals("1")));
                     } else {
                         break;
                     }

@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     private SearchViewFragment Svf;
     private Integer CurrentPlace = -1;
     private String CurrentStop = "-1";
-    private Integer CurrentBusTrack = -1;
+    private String CurrentBusTrack = "-1";
     private BusLine busLine;
     private LatLng SelectedPlace;
     private IncomBusBackStack IncomBusMode = new IncomBusBackStack("", "", false);
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (ShortcutType != null && ShortcutData != null) {
                 if (ShortcutType == 0) {
-                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
                     Date date = new Date();
 
                     ShowSchedule("-1", ShortcutData, "O", formatter.format(date),true);
@@ -389,8 +389,8 @@ public class MainActivity extends AppCompatActivity {
             AddBackStack();
         }
 
-        if (CurrentBusTrack != -1) {
-            CurrentBusTrack = -1;
+        if (!CurrentBusTrack.equals("-1")) {
+            CurrentBusTrack = "-1";
             busLine = null;
         }
 
@@ -415,8 +415,8 @@ public class MainActivity extends AppCompatActivity {
     public void SelectPlace(int PlaceId) {
         AddBackStack();
 
-        if (CurrentBusTrack != -1) {
-            CurrentBusTrack = -1;
+        if (!CurrentBusTrack.equals("-1")) {
+            CurrentBusTrack = "-1";
             busLine = null;
         }
 
@@ -512,7 +512,7 @@ public class MainActivity extends AppCompatActivity {
             Place = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapPlace));
         }
 
-        if (CurrentBusTrack == -1) {
+        if (CurrentBusTrack.equals("-1")) {
             if (SelectedPlace != null) {
                 BitmapDescriptor PlaceSelected = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.LocationPin));
 
@@ -916,7 +916,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void TrackBus(int Id, String Date) {
+    public void TrackBus(String Id, String Date) {
         if (!(busLine != null && busLine.getCTrip() != null && busLine.getCTrip().getLineId() == Id)) {
             AddBackStack();
         }
@@ -1273,7 +1273,7 @@ public class MainActivity extends AppCompatActivity {
             return Mode.None;
         } else if (SelectedPlace != null) {
             return Mode.NearStops;
-        } else if (CurrentBusTrack != -1) {
+        } else if (!CurrentBusTrack.equals("-1")) {
             return Mode.TrackBus;
         } else {
             return Mode.IncBus;
@@ -1307,7 +1307,7 @@ public class MainActivity extends AppCompatActivity {
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     if (result.getData() != null) {
-                        TrackBus(result.getData().getExtras().getInt("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
+                        TrackBus(result.getData().getExtras().getString("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
                         backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null));
                     }
                 }
@@ -1386,7 +1386,7 @@ public class MainActivity extends AppCompatActivity {
         searchView.hide();
 
         if (searchResult.getType() == SearchResult.SearchType.Line) {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
             Date date = new Date();
             ShowSchedule("-1", ((BusNum) searchResult.getData()).getLineName(), "O", formatter.format(date), true);
         } else if (searchResult.getType() == SearchResult.SearchType.FavStop) {
@@ -1399,8 +1399,8 @@ public class MainActivity extends AppCompatActivity {
     private void OnMapLongClickListener(LatLng latLng) {
         AddBackStack();
 
-        if (CurrentBusTrack != -1) {
-            CurrentBusTrack = -1;
+        if (!CurrentBusTrack.equals("-1")) {
+            CurrentBusTrack = "-1";
             busLine = null;
         }
 

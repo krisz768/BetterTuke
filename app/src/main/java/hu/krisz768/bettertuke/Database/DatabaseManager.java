@@ -34,7 +34,7 @@ public class DatabaseManager {
 
     }
 
-    public BusLine GetBusLineById(int Id, boolean GetGTFS, Date date) {
+    public BusLine GetBusLineById(String Id, boolean GetGTFS, Date date) {
         try
         {
             BusLine ret = null;
@@ -84,8 +84,8 @@ public class DatabaseManager {
                                     GTFSDepartureHour-=24;
                                 }
 
-                                int CTripId = ConvertTripId(gtfsBusLineData.getStartStopId(), GTFSDepartureHour,Integer.parseInt(gtfsBusLineData.getDepartureTime().split(":")[1]) , dateFormat2.format(date), gtfsBusLineData.getLineId());
-                                if (CTripId != -1)
+                                String CTripId = ConvertTripId(gtfsBusLineData.getStartStopId(), GTFSDepartureHour,Integer.parseInt(gtfsBusLineData.getDepartureTime().split(":")[1]) , dateFormat2.format(date), gtfsBusLineData.getLineId());
+                                if (!CTripId.equals("-1"))
                                 {
                                     CTrip = GetBusLineById(CTripId, false, null);
                                 }
@@ -99,7 +99,7 @@ public class DatabaseManager {
                 }
 
 
-                ret = new BusLine(cursor.getInt(0), DepartureHour,DepartureMinute, lineInfoTravelTimes, lineInfoRoute, lineInfoRouteInfo, CTrip);
+                ret = new BusLine(cursor.getString(0), DepartureHour,DepartureMinute, lineInfoTravelTimes, lineInfoRoute, lineInfoRouteInfo, CTrip);
             }
             cursor.close();
 
@@ -172,44 +172,6 @@ public class DatabaseManager {
         }
     }
 
-    public BusScheduleTime[] GetBusScheduleTimeFromStart(String LineNum, String date, String Direction) {
-        try {
-            List<BusScheduleTime> Lines = new ArrayList<>();
-
-            Cursor cursor = Sld.rawQuery("SELECT j.indulas_ora, j.indulas_perc, ny.nyomvonal_kod, j.id_jarat FROM jaratok j INNER JOIN nyomvonalak as ny ON j.id_nyomvonal = ny.id_nyomvonal INNER JOIN naptar AS n ON j.id_jarat = n.id_jarat WHERE ny.vonal_nev = \"" + LineNum + "\" AND ny.irany = \"" + Direction + "\" AND n.datum = \"" + date + "\" ORDER BY j.indulas_ora,j.indulas_perc;", null);
-            while (cursor.moveToNext()) {
-                Lines.add(new BusScheduleTime(cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getInt(3)));
-            }
-            cursor.close();
-
-            BusScheduleTime[] ret = new BusScheduleTime[Lines.size()];
-            Lines.toArray(ret);
-            return ret;
-        } catch (Exception e) {
-            log(e.toString());
-            return new BusScheduleTime[0];
-        }
-    }
-
-    public BusVariation[] GetBusVariations(String LineNum) {
-        try {
-            List<BusVariation> Lines = new ArrayList<>();
-
-            Cursor cursor = Sld.rawQuery("SELECT DISTINCT ny.nyomvonal_nev, ny.irany, ny.nyomvonal_kod FROM nyomvonalak ny INNER JOIN jaratok AS j ON ny.id_nyomvonal = j.id_nyomvonal WHERE ny.vonal_nev = \"" + LineNum + "\" ORDER BY ny.nyomvonal_kod, ny.irany;", null);
-            while (cursor.moveToNext()) {
-                Lines.add(new BusVariation(cursor.getString(0), cursor.getString(1), cursor.getString(2)));
-            }
-            cursor.close();
-
-            BusVariation[] ret = new BusVariation[Lines.size()];
-            Lines.toArray(ret);
-            return ret;
-        } catch (Exception e) {
-            log(e.toString());
-            return new BusVariation[0];
-        }
-    }
-
     public int GetBusLineSumTravelTimeById(String LineId) {
         try {
             int TravelTime = 0;
@@ -233,7 +195,7 @@ public class DatabaseManager {
 
             Cursor cursor = Sld.rawQuery("SELECT j.indulas_ora, j.indulas_perc, ny.nyomvonal_kod, j.id_jarat FROM jaratok j INNER JOIN nyomvonalak as ny ON j.id_nyomvonal = ny.id_nyomvonal INNER JOIN naptar AS n ON j.id_jarat = n.id_jarat INNER JOIN nyomvonal_tetelek AS nyt ON nyt.id_menetido = j.id_menetido WHERE nyt.id_kocsiallas = " + StopId + " AND ny.vonal_nev = \"" + LineNum + "\" AND ny.irany = \"" + Direction + "\" AND n.datum = \"" + date + "\" ORDER BY j.indulas_ora,j.indulas_perc;", null);
             while (cursor.moveToNext()) {
-                Lines.add(new BusScheduleTime(cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getInt(3)));
+                Lines.add(new BusScheduleTime(cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3)));
             }
             cursor.close();
 
@@ -243,44 +205,6 @@ public class DatabaseManager {
         } catch (Exception e) {
             log(e.toString());
             return new BusScheduleTime[0];
-        }
-    }
-
-    public BusVariation[] GetBusVariationsFromStop(String LineNum, String StopId) {
-        try {
-            List<BusVariation> Lines = new ArrayList<>();
-
-            Cursor cursor = Sld.rawQuery("SELECT DISTINCT ny.nyomvonal_nev, ny.irany, ny.nyomvonal_kod FROM nyomvonalak ny INNER JOIN jaratok AS j ON ny.id_nyomvonal = j.id_nyomvonal INNER JOIN nyomvonal_tetelek AS nyt ON nyt.id_menetido = j.id_menetido WHERE ny.vonal_nev = \"" + LineNum + "\" AND nyt.id_kocsiallas = " + StopId + " ORDER BY ny.nyomvonal_kod, ny.irany;", null);
-            while (cursor.moveToNext()) {
-                Lines.add(new BusVariation(cursor.getString(0), cursor.getString(1), cursor.getString(2)));
-            }
-            cursor.close();
-
-            BusVariation[] ret = new BusVariation[Lines.size()];
-            Lines.toArray(ret);
-            return ret;
-        } catch (Exception e) {
-            log(e.toString());
-            return new BusVariation[0];
-        }
-    }
-
-    public BusNum[] GetActiveBusLinesFromStop(String StopId) {
-        try {
-            List<BusNum> Lines = new ArrayList<>();
-
-            Cursor cursor = Sld.rawQuery("SELECT DISTINCT v.vonal_nev, v.vonal_leiras FROM vonalak v INNER JOIN nyomvonalak AS n ON n.vonal_nev = v.vonal_nev INNER JOIN jaratok j ON j.id_nyomvonal = n.id_nyomvonal INNER JOIN nyomvonal_tetelek nyt ON nyt.id_menetido = j.id_menetido WHERE nyt.id_kocsiallas = " + StopId + " ORDER BY '0' + v.vonal_nev;", null);
-            while (cursor.moveToNext()) {
-                Lines.add(new BusNum(cursor.getString(0), cursor.getString(1)));
-            }
-            cursor.close();
-
-            BusNum[] ret = new BusNum[Lines.size()];
-            Lines.toArray(ret);
-            return ret;
-        } catch (Exception e) {
-            log(e.toString());
-            return new BusNum[0];
         }
     }
 
@@ -324,7 +248,7 @@ public class DatabaseManager {
                     long diff = calendar.getTime().getTime() - GetTime.getTime().getTime();
                     int RemainingMinute = (int) (diff / 1000) / 60;
 
-                    Lines.add(new IncomingBusRespModel(cursor.getString(2), cursor.getString(3), calendar.getTime(), cursor.getInt(0), RemainingMinute, false));
+                    Lines.add(new IncomingBusRespModel(cursor.getString(2), cursor.getString(3), calendar.getTime(), cursor.getString(0), RemainingMinute, false));
                 }
             }
             cursor.close();
@@ -340,20 +264,20 @@ public class DatabaseManager {
         }
     }
 
-    public int ConvertTripId (String StartingStopId, int DepartureTimeHour, int DepartureTimeMinute, String Date, String TripName) {
+    public String ConvertTripId (String StartingStopId, int DepartureTimeHour, int DepartureTimeMinute, String Date, String TripName) {
         try {
-            int TripId = -1;
+            String TripId = "-1";
 
             Cursor cursor = Sld.rawQuery("SELECT j.id_jarat FROM nyomvonalak as ny INNER JOIN jaratok AS j ON j.id_nyomvonal = ny.id_nyomvonal INNER JOIN nyomvonal_tetelek AS nyt ON nyt.id_menetido = j.id_menetido INNER JOIN naptar AS n ON n.id_jarat = j.id_jarat WHERE nyt.sorrend = 1 AND nyt.id_kocsiallas = " + StartingStopId + " AND j.indulas_ora = " + DepartureTimeHour + " AND j.indulas_perc = " + DepartureTimeMinute + " AND n.datum = \"" + Date + "\" AND ny.vonal_nev = \"" + TripName + "\";", null);
             while (cursor.moveToNext()) {
-                TripId = cursor.getInt(0);
+                TripId = cursor.getString(0);
             }
             cursor.close();
 
             return TripId;
         } catch (Exception e) {
             log(e.toString());
-            return -1;
+            return "-1";
         }
     }
 

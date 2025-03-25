@@ -64,13 +64,12 @@ public class ScheduleBusListFragment extends Fragment {
             return view;
         }
 
-        DatabaseManager Dm = new DatabaseManager(getContext());
         NewGTFSDatabase NDm = new NewGTFSDatabase(getContext());
         BusNum[] busNums;
         if (mStopId.equals("-1")) {
             busNums = NDm.GetActiveBusLines();
         } else{
-            busNums = Dm.GetActiveBusLinesFromStop(mStopId);
+            busNums = NDm.GetActiveBusLinesFromStop(mStopId);
             String StopName = NDm.GetStopName(mStopId);
             String StopNum = HelperProvider.GetStopDirectionString(getContext(), mStopId);
 

@@ -90,7 +90,7 @@ public class ScheduleActivity extends AppCompatActivity {
         this.SelectedLine = LineNum;
         this.ScrollState = ScrollState;
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
         Date date = new Date();
         Sbtf = ScheduleBusTimeFragment.newInstance(LineNum, StopId, "O", formatter.format(date));
 
@@ -102,7 +102,7 @@ public class ScheduleActivity extends AppCompatActivity {
                 .commit();
     }
 
-    public void OnSelectedSchedule(int ScheduleId, String Date, String Direction) {
+    public void OnSelectedSchedule(String ScheduleId, String Date, String Direction) {
         Intent returnIntent = new Intent();
         returnIntent.putExtra("ScheduleId",ScheduleId);
         returnIntent.putExtra("ScheduleDate",Date);

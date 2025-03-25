@@ -46,7 +46,7 @@ public class TukeServerApi {
         return null;
     }
 
-    public TrackBusRespModel getBusLocation(int LineId) {
+    public TrackBusRespModel getBusLocation(String LineId) {
         try {
             apiGetBusPosition data = new apiGetBusPosition(LineId);
             Thread thread = new Thread(data);
@@ -61,9 +61,9 @@ public class TukeServerApi {
     }
 
     @Nullable
-    public Boolean getIsBusHasStarted(int LineId) {
+    public Boolean getIsBusHasStarted(String LineId) {
         try {
-            apiGetIsBusHasStarted data = new apiGetIsBusHasStarted(LineId);
+            apiGetIsBusHasStarted data = new apiGetIsBusHasStarted(2);
             Thread thread = new Thread(data);
             thread.start();
             thread.join();

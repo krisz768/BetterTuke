@@ -225,7 +225,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
                         int CurrentMinute = Now.get(Calendar.MINUTE);
 
                         if ((mBusLine.getDepartureHour() == CurrentHour && CurrentMinute > mBusLine.getDepartureMinute()) || mBusLine.getDepartureHour() < CurrentHour) {
-                            Boolean IsCBusStarted = serverApi.getIsBusHasStarted(mBusLine.getCTrip().getLineId());
+                            Boolean IsCBusStarted = serverApi.getIsBusHasStarted(mBusLine.getCTrip().getLineId() + "");
 
                             if (IsCBusStarted != null && IsCBusStarted) {
                                 activity.runOnUiThread(() -> ((MainActivity)activity).TrackBus(mBusLine.getCTrip().getLineId(), mBusLine.getDate()));

@@ -143,22 +143,22 @@ public class ScheduleBusTimeFragment extends Fragment {
         ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
 
         if (mStopId.equals("-1")) {
-            Variations = Dm.GetBusVariations(mLineNum);
+            Variations = NDm.GetBusVariations(mLineNum);
         } else {
-            Variations = Dm.GetBusVariationsFromStop(mLineNum, mStopId);
+            Variations = NDm.GetBusVariationsFromStop(mLineNum, mStopId);
         }
 
         boolean IsForwardWayDescTextSet = false;
         boolean IsBackWayDescTextSet = false;
         for (BusVariation variation : Variations) {
-            if (!IsForwardWayDescTextSet && variation.getDirection().equals("O")) {
+            if (!IsForwardWayDescTextSet && variation.getDirection().equals("0")) {
                 IsForwardWayDescTextSet = true;
                 WayDescStringForward = variation.getName();
                 if (SelectedWay.equals("O")) {
                     DescText.setText(variation.getName());
                 }
             }
-            if (!IsBackWayDescTextSet && !variation.getDirection().equals("O")) {
+            if (!IsBackWayDescTextSet && !variation.getDirection().equals("0")) {
                 IsBackWayDescTextSet = true;
                 WayDescStringBackwards = variation.getName();
                 if (!SelectedWay.equals("O")) {
@@ -201,7 +201,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         });
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd.", Locale.US);
-        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyyMMdd", Locale.US);
         Date date = new Date();
         try {
             date = formatter2.parse(SelectedDate);
@@ -354,7 +354,7 @@ public class ScheduleBusTimeFragment extends Fragment {
     }
 
     private void ShowDatePicker() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date date = new Date();
         try {
@@ -366,7 +366,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         assert date != null;
         MaterialDatePicker<Long> DatePicker = MaterialDatePicker.Builder.datePicker().setTitleText(getString(R.string.SelectDate)).setSelection(date.getTime()).build();
         DatePicker.addOnPositiveButtonClickListener(selection -> {
-            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd", Locale.US);
             sdf1.setTimeZone(TimeZone.getTimeZone("UTC"));
             SelectedDate = sdf1.format(new Date(selection));
 
@@ -391,6 +391,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                 return;
             }
             DatabaseManager Dm = new DatabaseManager(getContext());
+            NewGTFSDatabase NDm = new NewGTFSDatabase(getContext());
 
             ScheduleActivity scheduleActivity = (ScheduleActivity) getActivity();
             if (scheduleActivity == null) {
@@ -409,12 +410,12 @@ public class ScheduleBusTimeFragment extends Fragment {
             });
 
             if (mStopId.equals("-1")) {
-                CurrentLines = Dm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
+                CurrentLines = NDm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
             } else {
                 CurrentLines = Dm.GetBusScheduleTimeFromStop(mLineNum, SelectedDate, SelectedWay, mStopId);
 
                 for (BusScheduleTime busScheduleTime : CurrentLines) {
-                    int StopDelta = Dm.GetBusLineStopTravelTimeById(Integer.toString(busScheduleTime.getLineId()), mStopId);
+                    int StopDelta = Dm.GetBusLineStopTravelTimeById(busScheduleTime.getLineId(), mStopId);
                     busScheduleTime.AdjustToStop(StopDelta);
                 }
             }
@@ -549,7 +550,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                     new Thread(() -> scheduleActivity.runOnUiThread(() -> ScrollToCurrentHour(view))).start();
                 }
 
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
                 Date date = new Date();
                 if (SelectedDate.equals(formatter.format(date))) {
                     GetLiveData(CurrentLines);
@@ -563,7 +564,7 @@ public class ScheduleBusTimeFragment extends Fragment {
     private void ScrollToCurrentHour(View view) {
         Calendar Now = Calendar.getInstance();
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
         Date date = new Date();
 
         if (getContext() == null) {
@@ -638,7 +639,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                             StartedList.add(busScheduleTime);
                         } else {
                             DatabaseManager Dm = new DatabaseManager(ctx);
-                            int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(Integer.toString(busScheduleTime.getLineId()));
+                            int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(busScheduleTime.getLineId());
 
                             Calendar calendar = Calendar.getInstance();
                             calendar.setTime(new Date());
@@ -673,7 +674,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                         calendar.set(Calendar.MINUTE, busScheduleTime.getMinute());
 
                         DatabaseManager Dm = new DatabaseManager(ctx);
-                        int StopDelta = Dm.GetBusLineStopTravelTimeById(Integer.toString(busScheduleTime.getLineId()), mStopId);
+                        int StopDelta = Dm.GetBusLineStopTravelTimeById(busScheduleTime.getLineId(), mStopId);
                         calendar.add(Calendar.MINUTE, StopDelta * -1);
 
                         if (IsStarted) {
@@ -682,7 +683,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                             }
                         } else {
 
-                            int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(Integer.toString(busScheduleTime.getLineId()));
+                            int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(busScheduleTime.getLineId());
                             Calendar calendar1 = (Calendar) calendar.clone();
                             calendar1.add(Calendar.MINUTE, TravelTimeMin - 2);
 
