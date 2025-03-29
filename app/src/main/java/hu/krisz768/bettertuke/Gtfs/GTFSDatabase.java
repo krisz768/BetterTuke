@@ -34,6 +34,7 @@ public class GTFSDatabase {
     public String ConvertTripId (String StartingStopId, String DepartureTime, String Date, String TripName) {
         try
         {
+            StartingStopId = StartingStopId.substring(2);
             Cursor cursor = Sld.rawQuery("SELECT st.trip_id FROM stop_times as st INNER JOIN trips as t ON st.trip_id = t.trip_id INNER JOIN calendar_dates as cd ON t.service_id = cd.service_id INNER JOIN routes as r ON t.route_id = r.route_id WHERE r.route_short_name = \"" + TripName + "\" AND st.stop_sequence = 0 AND st.stop_id = " + StartingStopId + " AND st.departure_time = \"" + DepartureTime + "\" AND cd.date = \"" + Date + "\" AND cd.exception_type = 1;", null);
             String TripId = null;
             while(cursor.moveToNext()) {
@@ -136,11 +137,11 @@ public class GTFSDatabase {
 
            try {
                stmt.bindLong(1, Long.parseLong(Data[0]));
-               stmt.bindString(2, Data[1]);
-               stmt.bindString(3, Data[2].replaceAll("\"", ""));
-               stmt.bindString(4, Data[3]);
-               stmt.bindString(5, Data[4]);
-               stmt.bindString(6, Data[5]);
+               stmt.bindString(2, Data[2]);
+               stmt.bindString(3, Data[3].replaceAll("\"", ""));
+               stmt.bindString(4, Data[4]);
+               stmt.bindString(5, Data[5]);
+               stmt.bindString(6, Data[6]);
 
                stmt.executeInsert();
                stmt.clearBindings();

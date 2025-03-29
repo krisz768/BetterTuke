@@ -12,18 +12,41 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusNum;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusScheduleTime;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.Database.BusVariation;
+import hu.krisz768.bettertuke.Database.LineInfoRoute;
+import hu.krisz768.bettertuke.Database.LineInfoRouteInfo;
+import hu.krisz768.bettertuke.Database.LineInfoTravelTime;
+import hu.krisz768.bettertuke.Gtfs.GTFSBusLineData;
+import hu.krisz768.bettertuke.Gtfs.GTFSDatabase;
+import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class NewGTFSDatabase {
     private static SQLiteDatabase Sld;
+    private final Context ctx;
+
+    public NewGTFSDatabase (Context Ctx) {
+        this.ctx = Ctx;
+        String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "NewGTFS.db")).getAbsolutePath();
+
+        if (Sld == null) {
+            NewGTFSDatabaseHelper Dbh = new NewGTFSDatabaseHelper(Ctx, DATABASEFILE);
+            Sld = Dbh.getWritableDatabase();
+        }
+    }
 
     public HashMap<String, BusStops> GetAllBusStops () {
         try
@@ -136,7 +159,8 @@ public class NewGTFSDatabase {
         try {
             List<BusVariation> Lines = new ArrayList<>();
 
-            Cursor cursor = Sld.rawQuery("SELECT GROUP_CONCAT(trip_headsign), direction_id FROM (SELECT DISTINCT substr(t.trip_headsign , " + (LineNum.length()+1) + ") as trip_headsign, t.direction_id FROM trips t INNER JOIN routes AS r ON t.route_id = r.route_id WHERE r.route_short_name = '" + LineNum + "' ORDER BY r.route_short_name, t.direction_id LIMIT 7) GROUP BY direction_id;", null);
+            //SELECT GROUP_CONCAT(trip_headsign), direction_id FROM (SELECT DISTINCT substr(t.trip_headsign , " + (LineNum.length()+1) + ") as trip_headsign, t.direction_id FROM trips t INNER JOIN routes AS r ON t.route_id = r.route_id WHERE r.route_short_name = '" + LineNum + "' ORDER BY r.route_short_name, t.direction_id LIMIT 7) GROUP BY direction_id;
+            Cursor cursor = Sld.rawQuery("SELECT GROUP_CONCAT(trip_headsign), direction_id FROM (SELECT DISTINCT substr(t.trip_headsign , " + (LineNum.length()+2) + ") as trip_headsign, t.direction_id FROM trips t INNER JOIN routes AS r ON t.route_id = r.route_id WHERE r.route_short_name = '" + LineNum + "' ORDER BY r.route_short_name, t.direction_id LIMIT 7) GROUP BY direction_id;", null);
             while (cursor.moveToNext()) {
                 Lines.add(new BusVariation(cursor.getString(0), cursor.getString(1), ""));
             }
@@ -178,8 +202,6 @@ public class NewGTFSDatabase {
 
             Cursor cursor = Sld.rawQuery("SELECT st.arrival_time, st.trip_id FROM stop_times AS st INNER JOIN trips AS t ON t.trip_id = st.trip_id INNER JOIN routes AS r ON r.route_id = t.route_id INNER JOIN calendar_dates AS cd ON cd.service_id = t.service_id WHERE st.stop_sequence = 1 AND r.route_short_name = '" + LineNum + "' AND t.direction_id = '" + (Direction.equals("O") ? "0" : "1") + "' AND cd.date = '" + date + "' ORDER BY st.arrival_time;", null);
 
-            log("SELECT st.arrival_time, st.trip_id FROM stop_times AS st INNER JOIN trips AS t ON t.trip_id = st.trip_id INNER JOIN routes AS r ON r.route_id = t.route_id INNER JOIN calendar_dates AS cd ON cd.service_id = t.service_id WHERE r.route_short_name = '" + LineNum + "' AND t.direction_id = '" + Direction + "' AND cd.date = '" + date + "';");
-
             while (cursor.moveToNext()) {
                 String[] TimeParts = (cursor.getString(0)).split(":");
 
@@ -195,6 +217,315 @@ public class NewGTFSDatabase {
         } catch (Exception e) {
             log(e.toString());
             return new BusScheduleTime[0];
+        }
+    }
+
+    public BusScheduleTime[] GetBusScheduleTimeFromStop(String LineNum, String date, String Direction, String StopId) {
+        try {
+            List<BusScheduleTime> Lines = new ArrayList<>();
+
+            Cursor cursor = Sld.rawQuery("SELECT st2.arrival_time, st.trip_id FROM stop_times AS st INNER JOIN trips AS t ON t.trip_id = st.trip_id INNER JOIN routes AS r ON r.route_id = t.route_id INNER JOIN calendar_dates AS cd ON cd.service_id = t.service_id INNER JOIN stop_times AS st2 ON t.trip_id = st2.trip_id WHERE st.stop_id = '" + StopId + "' AND st2.stop_sequence = 1 AND r.route_short_name = '" + LineNum + "' AND t.direction_id = '" + (Direction.equals("O") ? "0" : "1") + "' AND cd.date = '" + date + "' ORDER BY st.arrival_time;", null);
+            while (cursor.moveToNext()) {
+                String[] TimeParts = (cursor.getString(0)).split(":");
+
+                Lines.add(new BusScheduleTime(Integer.parseInt(TimeParts[0]), Integer.parseInt(TimeParts[1]), "", cursor.getString(1)));
+            }
+            cursor.close();
+
+            BusScheduleTime[] ret = new BusScheduleTime[Lines.size()];
+            Lines.toArray(ret);
+            return ret;
+        } catch (Exception e) {
+            log(e.toString());
+            return new BusScheduleTime[0];
+        }
+    }
+
+    public IncomingBusRespModel[] GetOfflineDepartureTimes(String StopId, String Date, String Time) {
+
+        try {
+            List<IncomingBusRespModel> Lines = new ArrayList<>();
+            Calendar GetTime = Calendar.getInstance();
+            GetTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(Time.split(":")[0]));
+            GetTime.set(Calendar.MINUTE, Integer.parseInt(Time.split(":")[1]));
+
+
+            Cursor cursor = Sld.rawQuery("SELECT t.trip_id, t.shape_id, r.route_short_name, substr(t.trip_headsign, length(r.route_short_name)+2) as trip_headsign, st.arrival_time, st2.arrival_time AS start_time FROM trips AS t INNER JOIN routes AS r ON t.route_id = r.route_id INNER JOIN stop_times AS st ON st.trip_id = t.trip_id INNER JOIN stop_times AS st2 ON st2.trip_id = t.trip_id INNER JOIN calendar_dates AS cd ON cd.service_id = t.service_id WHERE st.stop_id = '" + StopId + "' AND cd.date = '" + Date + "' AND st2.stop_sequence = 1 ORDER BY st.arrival_time;", null);
+
+            //log("SELECT t.route_id, t.shape_id, r.route_short_name, t.trip_headsign, st.arrival_time, st2.arrival_time AS start_time FROM trips AS t INNER JOIN routes AS r ON t.route_id = r.route_id INNER JOIN stop_times AS st ON st.trip_id = t.trip_id INNER JOIN stop_times AS st2 ON st2.trip_id = t.trip_id INNER JOIN calendar_dates AS cd ON cd.service_id = t.service_id WHERE st.stop_id = '" + StopId + "' AND cd.date = '" + Date + "' AND st2.stop_sequence = 1 ORDER BY st.arrival_time;");
+            while (cursor.moveToNext()) {
+
+                Calendar calendar = Calendar.getInstance();
+
+                String[] TimeParts = cursor.getString(4).split(":");
+
+                calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(TimeParts[0]));
+                calendar.set(Calendar.MINUTE, Integer.parseInt(TimeParts[1]));
+
+                //calendar.add(Calendar.MINUTE, cursor.getInt(4));
+
+                Calendar MaxLimit = (Calendar) GetTime.clone();
+                MaxLimit.add(Calendar.MINUTE, 90);
+
+                if (calendar.after(GetTime) && calendar.before(MaxLimit)) {
+                    long diff = calendar.getTime().getTime() - GetTime.getTime().getTime();
+                    int RemainingMinute = (int) (diff / 1000) / 60;
+
+                    Lines.add(new IncomingBusRespModel(cursor.getString(2), cursor.getString(3), calendar.getTime(), cursor.getString(0), RemainingMinute, false));
+                }
+            }
+            cursor.close();
+
+            Collections.sort(Lines, (incomingBusRespModel, t1) -> incomingBusRespModel.getRemainingMin() - t1.getRemainingMin());
+
+            IncomingBusRespModel[] ret = new IncomingBusRespModel[Lines.size()];
+
+            Lines.toArray(ret);
+            return ret;
+        } catch (Exception e) {
+            log(e.toString());
+            return new IncomingBusRespModel[0];
+        }
+    }
+
+    public BusLine GetBusLineById(String Id, boolean GetGTFS, Date date) {
+        try
+        {
+            BusLine ret = null;
+            Cursor cursor = Sld.rawQuery("SELECT t.*, st.arrival_time FROM trips AS t INNER JOIN stop_times AS st ON st.trip_id = t.trip_id WHERE t.trip_id = '" + Id + "' AND st.stop_sequence = 1;", null);
+            while(cursor.moveToNext()) {
+                LineInfoTravelTime[] lineInfoTravelTimes = GetBusLineTravelTimeById(Id);
+                LineInfoTravelTime StartStop = null;
+
+                for (LineInfoTravelTime lineInfoTravelTime : lineInfoTravelTimes) {
+                    if (StartStop == null || StartStop.getOrder() > lineInfoTravelTime.getOrder()) {
+                        StartStop = lineInfoTravelTime;
+                    }
+                }
+
+                String[] TimeParts = cursor.getString(7).split(":");
+                int DepartureHour = Integer.parseInt(TimeParts[0]);
+                int DepartureMinute = Integer.parseInt(TimeParts[1]);
+
+                DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+
+                if (date == null) {
+                    date = new Date();
+                }
+
+                LineInfoRouteInfo lineInfoRouteInfo = GetBusLineRouteInfoById(Id);
+
+                GTFSDatabase gtfsDatabase = new GTFSDatabase(this.ctx);
+                LineInfoRoute[] lineInfoRoute = null;
+
+                BusLine CTrip = null;
+
+                if (GetGTFS && StartStop != null) {
+                    String GTFSId = gtfsDatabase.ConvertTripId(StartStop.getStopId(), String.format("%02d", DepartureHour) + ":" + String.format("%02d", DepartureMinute) + ":00", dateFormat.format(date), lineInfoRouteInfo.getLineNum());
+
+                    if (GTFSId == null) {
+                        GTFSId = gtfsDatabase.ConvertTripId(StartStop.getStopId(), String.format("%02d", DepartureHour+24) + ":" + String.format("%02d", DepartureMinute) + ":00", dateFormat.format(date), lineInfoRouteInfo.getLineNum());
+                    }
+
+                    if (GTFSId != null) {
+                        lineInfoRoute = gtfsDatabase.GetGTFSGPSRoute(GTFSId);
+                        String CTripIdGTFS = gtfsDatabase.GetContinueTrip(GTFSId, String.format("%02d", DepartureHour) + ":" + String.format("%02d", DepartureMinute) + ":00");
+                        if (CTripIdGTFS != null) {
+                            GTFSBusLineData gtfsBusLineData = gtfsDatabase.GetLineData(CTripIdGTFS);
+                            if (gtfsBusLineData != null) {
+                                int GTFSDepartureHour = Integer.parseInt(gtfsBusLineData.getDepartureTime().split(":")[0]);
+
+                                String CTripId = ConvertTripId(gtfsBusLineData.getStartStopId(), GTFSDepartureHour + ":" + Integer.parseInt(gtfsBusLineData.getDepartureTime().split(":")[1]) + ":00" , dateFormat.format(date), gtfsBusLineData.getLineId());
+                                if (!CTripId.equals("-1"))
+                                {
+                                    CTrip = GetBusLineById(CTripId, false, null);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (lineInfoRoute == null) {
+                    lineInfoRoute = GetBusLineRouteById(cursor.getInt(6));
+                }
+
+
+                ret = new BusLine(cursor.getString(0), DepartureHour,DepartureMinute, lineInfoTravelTimes, lineInfoRoute, lineInfoRouteInfo, CTrip);
+            }
+            cursor.close();
+
+            return ret;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+
+        }
+    }
+
+    public LineInfoTravelTime[] GetBusLineTravelTimeById(String Id) {
+        try
+        {
+            List<LineInfoTravelTime> TravelTime = new ArrayList<>();
+            Cursor cursor = Sld.rawQuery("SELECT * FROM stop_times WHERE trip_id = '" + Id + "' ORDER BY stop_sequence ASC;", null);
+            while(cursor.moveToNext()) {
+                TravelTime.add(new LineInfoTravelTime(cursor.getInt(4), cursor.getInt(4), cursor.getString(3),cursor.getString(1)));
+            }
+            cursor.close();
+
+            LineInfoTravelTime[] ret  = new LineInfoTravelTime[TravelTime.size()];
+            TravelTime.toArray(ret);
+            return ret;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+
+        }
+    }
+
+    public LineInfoRouteInfo GetBusLineRouteInfoById(String Id) {
+        try
+        {
+            LineInfoRouteInfo ret = null;
+            Cursor cursor = Sld.rawQuery("SELECT r.route_short_name, substr(t.trip_headsign, length(r.route_short_name)+2) FROM trips AS t INNER JOIN routes AS r ON r.route_id = t.route_id WHERE t.trip_id = '" + Id + "';", null);
+            while(cursor.moveToNext()) {
+                ret = new LineInfoRouteInfo(Id, cursor.getString(0), cursor.getString(1));
+            }
+            cursor.close();
+
+            return ret;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+        }
+    }
+
+    public LineInfoRoute[] GetBusLineRouteById(int Id) {
+        try
+        {
+            List<LineInfoRoute> Route = new ArrayList<>();
+            Cursor cursor = Sld.rawQuery("SELECT * FROM shapes WHERE shape_id = " + Id + " ORDER BY shape_pt_sequence ASC;", null);
+            while(cursor.moveToNext()) {
+                Route.add(new LineInfoRoute(cursor.getInt(3), cursor.getFloat(2), cursor.getFloat(1)));
+            }
+            cursor.close();
+
+            LineInfoRoute[] ret  = new LineInfoRoute[Route.size()];
+            Route.toArray(ret);
+            return ret;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+
+        }
+    }
+
+    public String ConvertTripId (String StartingStopId, String DepartureTime, String Date, String TripName) {
+        try
+        {
+
+            Cursor cursor = Sld.rawQuery("SELECT st.trip_id FROM stop_times as st INNER JOIN trips as t ON st.trip_id = t.trip_id INNER JOIN calendar_dates as cd ON t.service_id = cd.service_id INNER JOIN routes as r ON t.route_id = r.route_id WHERE r.route_short_name = \"" + TripName + "\" AND st.stop_sequence = 1 AND st.stop_id = 'SP" + StartingStopId + "' AND st.departure_time = \"" + DepartureTime + "\" AND cd.date = \"" + Date + "\" AND cd.exception_type = 1;", null);
+            String TripId = "-1";
+            while(cursor.moveToNext()) {
+                TripId = cursor.getString(0);
+            }
+            cursor.close();
+            return TripId;
+        } catch (Exception e) {
+            log(e.toString());
+            return "-1";
+        }
+    }
+
+    public int GetBusLineSumTravelTimeById(String LineId) {
+        try {
+
+            Calendar StartTime = Calendar.getInstance();
+            StartTime.setTime(new Date());
+
+            Calendar EndTime = Calendar.getInstance();
+            EndTime.setTime(new Date());
+
+            Cursor cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = \"" + LineId + "\" ORDER BY stop_sequence DESC LIMIT 1;", null);
+            while (cursor.moveToNext()) {
+                String[] TimeParts = cursor.getString(0).split(":");
+
+                EndTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(TimeParts[0]));
+                EndTime.set(Calendar.MINUTE, Integer.parseInt(TimeParts[1]));
+            }
+            cursor.close();
+
+            cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = \"" + LineId + "\" ORDER BY stop_sequence ASC LIMIT 1;", null);
+            while (cursor.moveToNext()) {
+                String[] TimeParts = cursor.getString(0).split(":");
+
+                StartTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(TimeParts[0]));
+                StartTime.set(Calendar.MINUTE, Integer.parseInt(TimeParts[1]));
+            }
+            cursor.close();
+
+            long difference_In_Time = EndTime.getTime().getTime() - StartTime.getTime().getTime();
+
+            return (int)((difference_In_Time / (1000 * 60)) % 60);
+        } catch (Exception e) {
+            log(e.toString());
+            return 0;
+        }
+    }
+
+    public int GetBusLineStopTravelTimeById(String LineId, String StopId) {
+        try {
+
+            Calendar StartTime = Calendar.getInstance();
+            StartTime.setTime(new Date());
+
+            Calendar EndTime = Calendar.getInstance();
+            EndTime.setTime(new Date());
+
+            Cursor cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = \"" + LineId + "\" AND stop_id = \"" + StopId + "\" ORDER BY stop_sequence DESC LIMIT 1;", null);
+            while (cursor.moveToNext()) {
+                String[] TimeParts = cursor.getString(0).split(":");
+
+                EndTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(TimeParts[0]));
+                EndTime.set(Calendar.MINUTE, Integer.parseInt(TimeParts[1]));
+            }
+            cursor.close();
+
+            cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = \"" + LineId + "\" ORDER BY stop_sequence ASC LIMIT 1;", null);
+            while (cursor.moveToNext()) {
+                String[] TimeParts = cursor.getString(0).split(":");
+
+                StartTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(TimeParts[0]));
+                StartTime.set(Calendar.MINUTE, Integer.parseInt(TimeParts[1]));
+            }
+            cursor.close();
+
+            long difference_In_Time = EndTime.getTime().getTime() - StartTime.getTime().getTime();
+
+            return (int)((difference_In_Time / (1000 * 60)) % 60);
+        } catch (Exception e) {
+            log(e.toString());
+            return 0;
+        }
+    }
+
+    public boolean GetBusDatabaseValidDate(String Date) {
+        try {
+            int BusCount = 0;
+
+            Cursor cursor = Sld.rawQuery("SELECT count(date) FROM calendar_dates WHERE date = \"" + Date + "\";", null);
+            while (cursor.moveToNext()) {
+                BusCount = cursor.getInt(0);
+            }
+            cursor.close();
+
+            return BusCount > 0;
+        } catch (Exception e) {
+            log(e.toString());
+            return false;
         }
     }
 
@@ -221,9 +552,9 @@ public class NewGTFSDatabase {
         }
     }
 
-    public static void DeleteDatabase(Context Ctx) throws IOException {
+    public static void DeleteDatabase(Context Ctx) {
         File Database = new File(Ctx.getFilesDir() + "/Database", "NewGTFS.db");
-        if (Database.exists()) {
+        /*if (Database.exists()) {
             File out = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/test.sql");
             int bytesum = 0;
             int byteread = 0;
@@ -237,7 +568,7 @@ public class NewGTFSDatabase {
             }
             inStream.close();
             fs.close();
-        }
+        }*/
 
 
 
@@ -245,15 +576,6 @@ public class NewGTFSDatabase {
             Database.delete();
         } catch (Exception e) {
             Log.e("DatabaseManager", e.toString());
-        }
-    }
-
-    public NewGTFSDatabase (Context Ctx) {
-        String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "NewGTFS.db")).getAbsolutePath();
-
-        if (Sld == null) {
-            NewGTFSDatabaseHelper Dbh = new NewGTFSDatabaseHelper(Ctx, DATABASEFILE);
-            Sld = Dbh.getWritableDatabase();
         }
     }
 

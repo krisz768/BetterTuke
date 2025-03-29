@@ -53,7 +53,7 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
             desc.setText(Data.getLineName());
             Date Arrtime = Data.getArriveTime();
             SimpleDateFormat Sdf = new SimpleDateFormat("HH:mm", Locale.US);
-            SimpleDateFormat Sdf2 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat Sdf2 = new SimpleDateFormat("yyyyMMdd", Locale.US);
             if (Data.isAtStop()) {
                 arrtime.setText(R.string.BusInStop);
             } else if (Data.getRemainingMin()==1 && !Custom){
@@ -61,7 +61,13 @@ public class IncomingBusListAdapter extends RecyclerView.Adapter<IncomingBusList
             } else if (!Custom){
                 arrtime.setText(ctx.getString(R.string.TrackTimeString, Sdf.format(Arrtime), Data.getRemainingMin()));
             } else if (!Date.equals(Sdf2.format(new Date()))) {
-                arrtime.setText(ctx.getString(R.string.IncBusAnotherDay, Date.replace("-", ". ") + ". " + Sdf.format(Arrtime)));
+
+                StringBuilder str = new StringBuilder(Date);
+
+                str.insert(6, ". ");
+                str.insert(4, ". ");
+
+                arrtime.setText(ctx.getString(R.string.IncBusAnotherDay, str + ". " + Sdf.format(Arrtime)));
             } else {
                 arrtime.setText(Sdf.format(Arrtime));
             }

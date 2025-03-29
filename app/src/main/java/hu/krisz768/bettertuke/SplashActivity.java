@@ -8,13 +8,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Date;
 
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseManager;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabaseManager;
@@ -73,6 +75,29 @@ public class SplashActivity extends AppCompatActivity {
     private void CheckForUpdates() {
         AddLog("Check is database exist...\n(" + (new File(getFilesDir() + "/Database", "track.db")).getAbsolutePath() + ")");
 
+        /*File root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
+
+        try {
+            root = new File(root , "newgtfs.sql");
+
+            FileOutputStream fout = new FileOutputStream(root);
+
+            File in = new File(getFilesDir() + "/Database", "NewGTFS.db");
+            FileInputStream fin = new FileInputStream(in);
+
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = fin.read(buf)) > 0) {
+                fout.write(buf, 0, len);
+            }
+
+            fin.close();
+            fout.close();
+        } catch (Exception e) {
+
+        }*/
+
         /*TukeServerApi serverApi = new TukeServerApi(this);
         Context ctx = getApplicationContext();
 
@@ -115,15 +140,34 @@ public class SplashActivity extends AppCompatActivity {
             StartUpdate(true, gtfsDatabaseManager.CheckForUpdate());
         }*/
 
+        /*StartUpdate(false, true);
+
+        if (true) {
+            return;
+        }*/
+
         Context ctx = getApplicationContext();
 
-        NewGTFSDatabaseManager gtfsDatabaseManager = new NewGTFSDatabaseManager(ctx);
+        Boolean UpdateGTFS = false;
+
+        GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
         if (gtfsDatabaseManager.CheckForUpdate()){
             AddLog("Updating gtfs...");
-            StartUpdate(true, false);
+            UpdateGTFS = true;
+        }
+
+        NewGTFSDatabaseManager NgtfsDatabaseManager = new NewGTFSDatabaseManager(ctx);
+        if (NgtfsDatabaseManager.CheckForUpdate()){
+            AddLog("Updating new gtfs...");
+            StartUpdate(true, UpdateGTFS);
         } else {
-            AddLog("Database is up to date!");
-            StartMain();
+            if (UpdateGTFS) {
+                StartUpdate(false, true);
+            } else {
+                AddLog("Database is up to date!");
+                StartMain();
+            }
+
         }
 
         //StartUpdate(true, false);

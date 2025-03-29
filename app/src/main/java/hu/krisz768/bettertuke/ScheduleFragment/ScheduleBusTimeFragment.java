@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,7 +39,6 @@ import java.util.TimeZone;
 
 import hu.krisz768.bettertuke.Database.BusScheduleTime;
 import hu.krisz768.bettertuke.Database.BusVariation;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.InfoFragment;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
@@ -125,7 +125,6 @@ public class ScheduleBusTimeFragment extends Fragment {
             return view;
         }
 
-        DatabaseManager Dm = new DatabaseManager(getContext());
         NewGTFSDatabase NDm = new NewGTFSDatabase(getContext());
 
         TextView StartPosText = view.findViewById(R.id.StartPosText);
@@ -390,7 +389,6 @@ public class ScheduleBusTimeFragment extends Fragment {
             if (getContext() == null) {
                 return;
             }
-            DatabaseManager Dm = new DatabaseManager(getContext());
             NewGTFSDatabase NDm = new NewGTFSDatabase(getContext());
 
             ScheduleActivity scheduleActivity = (ScheduleActivity) getActivity();
@@ -412,10 +410,10 @@ public class ScheduleBusTimeFragment extends Fragment {
             if (mStopId.equals("-1")) {
                 CurrentLines = NDm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
             } else {
-                CurrentLines = Dm.GetBusScheduleTimeFromStop(mLineNum, SelectedDate, SelectedWay, mStopId);
+                CurrentLines = NDm.GetBusScheduleTimeFromStop(mLineNum, SelectedDate, SelectedWay, mStopId);
 
                 for (BusScheduleTime busScheduleTime : CurrentLines) {
-                    int StopDelta = Dm.GetBusLineStopTravelTimeById(busScheduleTime.getLineId(), mStopId);
+                    int StopDelta = NDm.GetBusLineStopTravelTimeById(busScheduleTime.getLineId(), mStopId);
                     busScheduleTime.AdjustToStop(StopDelta);
                 }
             }
@@ -425,7 +423,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
                         try {
-                            if (Dm.GetBusDatabaseValidDate(SelectedDate)) {
+                            if (NDm.GetBusDatabaseValidDate(SelectedDate)) {
                                 InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptySchedule), -1);
 
                                 getChildFragmentManager().beginTransaction()
@@ -632,14 +630,13 @@ public class ScheduleBusTimeFragment extends Fragment {
                                 }
                                 HelperProvider.setOfflineTextDisplayed();
                             }
-                            continue;
                         }
 
-                        if (IsStarted) {
+                        if (IsStarted != null && IsStarted) {
                             StartedList.add(busScheduleTime);
                         } else {
-                            DatabaseManager Dm = new DatabaseManager(ctx);
-                            int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(busScheduleTime.getLineId());
+                            NewGTFSDatabase NDm = new NewGTFSDatabase(ctx);
+                            int TravelTimeMin = NDm.GetBusLineSumTravelTimeById(busScheduleTime.getLineId());
 
                             Calendar calendar = Calendar.getInstance();
                             calendar.setTime(new Date());
@@ -665,7 +662,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                                 }
                                 HelperProvider.setOfflineTextDisplayed();
                             }
-                            continue;
                         }
 
                         Calendar calendar = Calendar.getInstance();
@@ -673,17 +669,17 @@ public class ScheduleBusTimeFragment extends Fragment {
                         calendar.set(Calendar.HOUR_OF_DAY, busScheduleTime.getHour());
                         calendar.set(Calendar.MINUTE, busScheduleTime.getMinute());
 
-                        DatabaseManager Dm = new DatabaseManager(ctx);
-                        int StopDelta = Dm.GetBusLineStopTravelTimeById(busScheduleTime.getLineId(), mStopId);
+                        NewGTFSDatabase NDm = new NewGTFSDatabase(ctx);
+
+                        int StopDelta = NDm.GetBusLineStopTravelTimeById(busScheduleTime.getLineId(), mStopId);
                         calendar.add(Calendar.MINUTE, StopDelta * -1);
 
-                        if (IsStarted) {
+                        if (IsStarted != null && IsStarted) {
                             if (((calendar.get(Calendar.HOUR_OF_DAY) == CurrentHour && CurrentMinute >= calendar.get(Calendar.MINUTE) || calendar.get(Calendar.HOUR_OF_DAY) + 1 == CurrentHour || calendar.get(Calendar.HOUR_OF_DAY) + 2 == CurrentHour))) {
                                 StartedList.add(busScheduleTime);
                             }
                         } else {
-
-                            int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(busScheduleTime.getLineId());
+                            int TravelTimeMin = NDm.GetBusLineSumTravelTimeById(busScheduleTime.getLineId());
                             Calendar calendar1 = (Calendar) calendar.clone();
                             calendar1.add(Calendar.MINUTE, TravelTimeMin - 2);
 

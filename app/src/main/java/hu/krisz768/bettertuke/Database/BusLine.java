@@ -4,6 +4,8 @@ import android.content.Context;
 
 import java.io.Serializable;
 
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
+
 public class BusLine implements Serializable {
     private final String LineId;
     private final int DepartureHour;
@@ -53,9 +55,9 @@ public class BusLine implements Serializable {
     }
 
     public static BusLine BusLinesByLineId(String Id, boolean GetGTFS, java.util.Date date, Context ctx) {
-        DatabaseManager Dm = new DatabaseManager(ctx);
+        NewGTFSDatabase NDm = new NewGTFSDatabase(ctx);
 
-        return Dm.GetBusLineById(Id, GetGTFS, date);
+        return NDm.GetBusLineById(Id, GetGTFS, date);
     }
 
     public String getDate() {

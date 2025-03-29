@@ -19,7 +19,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import hu.krisz768.bettertuke.BuildConfig;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseManager;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabaseManager;
 import hu.krisz768.bettertuke.R;
@@ -118,7 +117,7 @@ public class DatabaseUpdate extends Fragment {
             }*/
             NewGTFSDatabaseManager gtfsDatabaseManager = new NewGTFSDatabaseManager(context);
 
-            if (gtfsDatabaseManager.ForceUpdate(Step -> activity.runOnUiThread(() -> SetPercentage(33+((66/9)*Step))))) {
+            if (gtfsDatabaseManager.ForceUpdate(Step -> activity.runOnUiThread(() -> SetPercentage(((50/9)*Step))))) {
                 AddLog("NewGTFS Database downloaded successfully");
             } else {
                 AddLog("NewGTFS Database download fail");
@@ -138,7 +137,7 @@ public class DatabaseUpdate extends Fragment {
         if (mUpdateGFTS) {
             GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(context);
 
-            if (gtfsDatabaseManager.ForceUpdate(Step -> activity.runOnUiThread(() -> SetPercentage(33+((66/9)*Step))))) {
+            if (gtfsDatabaseManager.ForceUpdate(Step -> activity.runOnUiThread(() -> SetPercentage(50+((50/9)*Step))))) {
                 AddLog("GTFS Database downloaded successfully");
             } else {
                 AddLog("GTFS Database download fail");

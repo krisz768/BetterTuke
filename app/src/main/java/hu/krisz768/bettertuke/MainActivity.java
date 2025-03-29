@@ -77,7 +77,6 @@ import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusNum;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.IncomingBusFragment.BottomSheetIncomingBusFragment;
 import hu.krisz768.bettertuke.NearStops.BottomSheetNearStops;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
@@ -653,7 +652,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         for (Favorite favoriteStop : favoriteStops) {
-            BusStops busStop = busStops.get(Integer.parseInt(favoriteStop.getData()));
+            BusStops busStop = busStops.get(favoriteStop.getData());
 
             if (busStop == null) {
                 continue;
@@ -921,7 +920,7 @@ public class MainActivity extends AppCompatActivity {
             AddBackStack();
         }
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
         Date parsedDate = null;
 
         try {

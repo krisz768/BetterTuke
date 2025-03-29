@@ -103,7 +103,11 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             Calendar ArriveTime = (Calendar) StartTime.clone();
 
-            ArriveTime.add(Calendar.MINUTE, Data.getSumTravelTime());
+            //ArriveTime.add(Calendar.MINUTE, Data.getSumTravelTime());
+            String[] TimeParts = Data.getArriveTime().split(":");
+            ArriveTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(TimeParts[0]));
+            ArriveTime.set(Calendar.MINUTE, Integer.parseInt(TimeParts[1]));
+
             String TimeString = String.format(Locale.US, "%02d", ArriveTime.get(Calendar.HOUR_OF_DAY)) + ":" + String.format(Locale.US, "%02d", ArriveTime.get(Calendar.MINUTE));
             Time.setText(TimeString);
 
@@ -222,7 +226,7 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 if (Date == null) {
                     Delay.setText("");
                 } else {
-                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
                     SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy. MM. dd.", Locale.US);
                     try {
                         java.util.Date ParsedDate = formatter.parse(Date);

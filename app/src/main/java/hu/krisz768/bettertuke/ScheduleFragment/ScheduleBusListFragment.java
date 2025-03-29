@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hu.krisz768.bettertuke.Database.BusNum;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;

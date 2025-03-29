@@ -1,5 +1,8 @@
 package hu.krisz768.bettertuke.SearchFragment;
 
+import static android.view.View.GONE;
+import static android.view.View.INVISIBLE;
+
 import android.content.Context;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -14,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import hu.krisz768.bettertuke.Database.BusNum;
 import hu.krisz768.bettertuke.Database.BusPlaces;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
@@ -56,7 +58,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             this.StopName.setText(ctx.getString(R.string.BusStopNameWithNum, StopName.trim(), StopNum));
 
-            view.setOnClickListener(view -> Callback.OnResultClick(new SearchResult(SearchResult.SearchType.FavStop, "", Integer.parseInt(StopId))));
+
+
+            view.setOnClickListener(view -> Callback.OnResultClick(new SearchResult(SearchResult.SearchType.FavStop, "", StopId)));
         }
 
         public String GetStopId() {
