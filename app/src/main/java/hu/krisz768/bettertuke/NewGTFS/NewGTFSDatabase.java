@@ -350,7 +350,7 @@ public class NewGTFSDatabase {
                 }
 
 
-                ret = new BusLine(cursor.getString(0), DepartureHour,DepartureMinute, lineInfoTravelTimes, lineInfoRoute, lineInfoRouteInfo, CTrip);
+                ret = new BusLine(Id, DepartureHour,DepartureMinute, lineInfoTravelTimes, lineInfoRoute, lineInfoRouteInfo, CTrip);
             }
             cursor.close();
 
@@ -420,6 +420,21 @@ public class NewGTFSDatabase {
             log(e.toString());
             return null;
 
+        }
+    }
+
+    public boolean IsStopInBusRoute(String trip_id, String StopId) {
+        try {
+            Cursor cursor = Sld.rawQuery("SELECT trip_id FROM stop_times WHERE trip_id = \"" + trip_id + "\" AND stop_id = \"" + StopId + "\";", null);
+            while (cursor.moveToNext()) {
+                return true;
+            }
+            cursor.close();
+
+            return false;
+        } catch (Exception e) {
+            log(e.toString());
+            return false;
         }
     }
 

@@ -46,6 +46,7 @@ import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.InfoFragment;
 import hu.krisz768.bettertuke.LoadingFragment;
 import hu.krisz768.bettertuke.MainActivity;
+import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
@@ -57,8 +58,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private static final String PLACE = "Place";
     private static final String STOP = "Stop";
     private static final String STARTMODE = "StartMode";
-    private static final String PLACELIST = "PlaceList";
-    private static final String STOPLIST = "StopList";
     private int mPlace;
     private volatile String mStop;
     private HashMap<Integer, BusPlaces> mPlaceList;
@@ -75,13 +74,11 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     public BottomSheetIncomingBusFragment() {
 
     }
-    public static BottomSheetIncomingBusFragment newInstance(int Place, String Stop, IncomBusBackStack StartMode, HashMap<Integer, BusPlaces> PlaceList, HashMap<String, BusStops> StopList) {
+    public static BottomSheetIncomingBusFragment newInstance(int Place, String Stop, IncomBusBackStack StartMode) {
         BottomSheetIncomingBusFragment fragment = new BottomSheetIncomingBusFragment();
         Bundle args = new Bundle();
         args.putInt(PLACE, Place);
         args.putString(STOP, Stop);
-        args.putSerializable(PLACELIST, PlaceList);
-        args.putSerializable(STOPLIST, StopList);
         args.putSerializable(STARTMODE, StartMode);
         fragment.setArguments(args);
         return fragment;
@@ -94,10 +91,11 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         if (getArguments() != null) {
             mPlace = getArguments().getInt(PLACE);
             mStop = getArguments().getString(STOP);
-            mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
-            mStopList = (HashMap<String, BusStops>) getArguments().getSerializable(STOPLIST);
             mStartMode = (IncomBusBackStack) getArguments().getSerializable(STARTMODE);
         }
+
+        mPlaceList = MainActivity.busPlaces;
+        mStopList = MainActivity.busStops;
     }
 
     @Override
@@ -202,10 +200,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
         }
 
-        TukeServerApi serverApi = new TukeServerApi(this.getActivity());
+        GTFSRProvider GTFSRProvider_ = new GTFSRProvider(this.getActivity());
 
         UpdateLoop = Executors.newScheduledThreadPool(1);
-        UpdateLoop.scheduleAtFixedRate(() -> GetIncomingBuses(serverApi), 0, 10, TimeUnit.SECONDS);
+        UpdateLoop.scheduleAtFixedRate(() -> GetIncomingBuses(GTFSRProvider_), 0, 10, TimeUnit.SECONDS);
     }
 
     @Override
@@ -273,8 +271,8 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             new Thread(() -> {
                 ResetList();
 
-                TukeServerApi serverApi = new TukeServerApi(getActivity());
-                GetIncomingBuses(serverApi);
+                GTFSRProvider GTFSRProvider_ = new GTFSRProvider(getActivity());
+                GetIncomingBuses(GTFSRProvider_);
             }).start();
         });
 
@@ -314,8 +312,8 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         }
 
         new Thread(() -> {
-            TukeServerApi serverApi = new TukeServerApi(getActivity());
-            GetIncomingBuses(serverApi);
+            GTFSRProvider GTFSRProvider_ = new GTFSRProvider(getActivity());
+            GetIncomingBuses(GTFSRProvider_);
         }).start();
     }
 
@@ -417,7 +415,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         }
     }
 
-    private void GetIncomingBuses(TukeServerApi serverApi) {
+    private void GetIncomingBuses(GTFSRProvider GTFSRProvider_) {
         try {
             final String SendStopId = mStop;
             final String SendDate = SelectedDate;
@@ -453,7 +451,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                     ArrayList<IncomingBusRespModel> list = new ArrayList<>();
 
                     for (BusStops element : SelectedPlaceStopsArray) {
-                        IncomingBusRespModel[] Data = serverApi.getNextIncomingBuses(element.getId());
+                        IncomingBusRespModel[] Data = GTFSRProvider_.getNextIncomingBuses(element.getId());
                         if (Data != null) {
                             list.addAll(Arrays.asList(Data));
                         } else {
@@ -469,7 +467,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                         list.toArray(BusList);
                     }
                 } else {
-                    BusList = serverApi.getNextIncomingBuses(mStop);
+                    BusList = GTFSRProvider_.getNextIncomingBuses(mStop);
                 }
             }
 
@@ -525,7 +523,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
                         if (Bj != null) {
                             if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
-                                Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId() + "");
+                                Boolean IsBusStarted = GTFSRProvider_.getIsBusHasStarted(incomingBusRespModel.getLineId() + "");
                                 if (IsBusStarted == null) {
                                     IsBusStarted = false;
                                 } else {

@@ -104,8 +104,8 @@ public class MainActivity extends AppCompatActivity {
     private LatLng SelectedPlace;
     private IncomBusBackStack IncomBusMode = new IncomBusBackStack("", "", false);
     private GoogleMap googleMap;
-    private HashMap<Integer, BusPlaces> busPlaces;
-    private HashMap<String, BusStops> busStops;
+    public static HashMap<Integer, BusPlaces> busPlaces;
+    public static  HashMap<String, BusStops> busStops;
     private final List<BackStack> backStack = new ArrayList<>();
     private boolean smallMarkerMode = false;
     private boolean IsBackButtonHalfExpanded = true;
@@ -905,7 +905,7 @@ public class MainActivity extends AppCompatActivity {
         BottomSheetSetNormalParams(65);
 
         try{
-            BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, IncomBusMode, busPlaces, busStops);
+            BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, IncomBusMode);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainerView2, InBusFragment)
                     .commit();
@@ -1050,7 +1050,7 @@ public class MainActivity extends AppCompatActivity {
     private void ShowBottomSheetTrackBus() {
         BottomSheetSetNormalParams(90);
 
-        BottomSheetTrackBusFragment TrackBusFragment = BottomSheetTrackBusFragment.newInstance( CurrentStop, busPlaces, busStops, busLine);
+        BottomSheetTrackBusFragment TrackBusFragment = BottomSheetTrackBusFragment.newInstance( CurrentStop, busLine);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragmentContainerView2, TrackBusFragment)
                 .commit();

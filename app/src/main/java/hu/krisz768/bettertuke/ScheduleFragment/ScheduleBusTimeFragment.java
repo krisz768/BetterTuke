@@ -41,6 +41,7 @@ import hu.krisz768.bettertuke.Database.BusScheduleTime;
 import hu.krisz768.bettertuke.Database.BusVariation;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.InfoFragment;
+import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.ScheduleActivity;
@@ -620,8 +621,8 @@ public class ScheduleBusTimeFragment extends Fragment {
             for (BusScheduleTime busScheduleTime : Lines) {
                 if (mStopId.equals("-1")) {
                     if ((busScheduleTime.getHour() == CurrentHour && CurrentMinute >= busScheduleTime.getMinute()) || busScheduleTime.getHour() + 1 == CurrentHour || busScheduleTime.getHour() + 2 == CurrentHour) {
-                        TukeServerApi tukeServerApi = new TukeServerApi(ctx);
-                        Boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
+                        GTFSRProvider GTFSRProvider_ = new GTFSRProvider(ctx);
+                        Boolean IsStarted = GTFSRProvider_.getIsBusHasStarted(busScheduleTime.getLineId());
                         if (IsStarted == null){
                             if(HelperProvider.displayOfflineText()){
                                 Activity activity = getActivity();
@@ -652,8 +653,8 @@ public class ScheduleBusTimeFragment extends Fragment {
                     }
                 } else {
                     if (busScheduleTime.getHour() == CurrentHour || busScheduleTime.getHour() + 1 == CurrentHour || busScheduleTime.getHour() - 1 == CurrentHour) {
-                        TukeServerApi tukeServerApi = new TukeServerApi(ctx);
-                        Boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
+                        GTFSRProvider GTFSRProvider_ = new GTFSRProvider(ctx);
+                        Boolean IsStarted = GTFSRProvider_.getIsBusHasStarted(busScheduleTime.getLineId());
                         if (IsStarted == null){
                             if(HelperProvider.displayOfflineText()){
                                 Activity activity = getActivity();

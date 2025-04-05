@@ -14,19 +14,6 @@ public class TukeServerApi {
         this.ctx = ctx;
     }
 
-    public String getServerDatabaseVersion() {
-        try {
-            apiGetDatabaseVersion data = new apiGetDatabaseVersion();
-            Thread thread = new Thread(data);
-            thread.start();
-            thread.join();
-            return data.getValue();
-        } catch (Exception e) {
-            log(e.toString());
-        }
-
-        return "Err";
-    }
 
     @Nullable
     public IncomingBusRespModel[] getNextIncomingBuses(String StopId) {
@@ -60,7 +47,7 @@ public class TukeServerApi {
         return null;
     }
 
-    @Nullable
+    /*@Nullable
     public Boolean getIsBusHasStarted(String LineId) {
         try {
             apiGetIsBusHasStarted data = new apiGetIsBusHasStarted(2);
@@ -76,20 +63,7 @@ public class TukeServerApi {
         }
 
         return null;
-    }
-
-    public boolean downloadDatabaseFile() {
-        try {
-            apiGetDatabaseDownload data = new apiGetDatabaseDownload(ctx);
-            Thread thread = new Thread(data);
-            thread.start();
-            thread.join();
-            return  data.RetCode;
-        } catch (Exception e) {
-            log(e.toString());
-            return false;
-        }
-    }
+    }*/
 
     private void log (String msg) {
         Log.e("ApiInterface", msg);

@@ -31,6 +31,7 @@ import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.MainActivity;
+import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 import hu.krisz768.bettertuke.api_interface.TukeServerApi;
@@ -39,12 +40,8 @@ import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class BottomSheetTrackBusFragment extends Fragment {
     private static final String STOP = "Stop";
-    private static final String PLACELIST = "PlaceList";
-    private static final String STOPLIST = "StopList";
     private static final String LINEOBJ = "LineObj";
     private String mStop;
-    private HashMap<Integer, BusPlaces> mPlaceList;
-    private HashMap<Integer, BusStops> mStopList;
     private BusLine mBusLine;
     private TrackBusListFragment TrackBusFragment;
     private TextView PlateNumber;
@@ -65,12 +62,10 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
     }
 
-    public static BottomSheetTrackBusFragment newInstance(String Stop, HashMap<Integer, BusPlaces> PlaceList, HashMap<String, BusStops> StopList, BusLine LineObj) {
+    public static BottomSheetTrackBusFragment newInstance(String Stop, BusLine LineObj) {
         BottomSheetTrackBusFragment fragment = new BottomSheetTrackBusFragment();
         Bundle args = new Bundle();
         args.putString(STOP, Stop);
-        args.putSerializable(PLACELIST, PlaceList);
-        args.putSerializable(STOPLIST, StopList);
         args.putSerializable(LINEOBJ, LineObj);
         fragment.setArguments(args);
         return fragment;
@@ -82,8 +77,6 @@ public class BottomSheetTrackBusFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mStop = getArguments().getString(STOP);
-            mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
-            mStopList = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPLIST);
             mBusLine = (BusLine) getArguments().getSerializable(LINEOBJ);
         }
     }
@@ -120,7 +113,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
             }).start();
 
 
-            TrackBusFragment = TrackBusListFragment.newInstance(mBusLine, mStop, mPlaceList, mStopList, null);
+            TrackBusFragment = TrackBusListFragment.newInstance(mBusLine, mStop, null);
             getChildFragmentManager().beginTransaction()
                     .replace(R.id.BusTrackFragmentView, TrackBusFragment)
                     .commit();
@@ -165,21 +158,21 @@ public class BottomSheetTrackBusFragment extends Fragment {
             }
         }
 
-        TukeServerApi serverApi = new TukeServerApi(this.getActivity());
+        GTFSRProvider GTFSRProvider_ = new GTFSRProvider(this.getActivity());
 
         UpdateLoop = Executors.newScheduledThreadPool(1);
-        UpdateLoop.scheduleAtFixedRate(() -> GetBusPosition(serverApi), 0, 2, TimeUnit.SECONDS);
+        UpdateLoop.scheduleAtFixedRate(() -> GetBusPosition(GTFSRProvider_), 0, 2, TimeUnit.SECONDS);
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    private void GetBusPosition(TukeServerApi serverApi) {
+    private void GetBusPosition(GTFSRProvider GTFSRProvider_) {
         try {
             if (mBusLine.getDate() != null) {
                 UpdateLoop.shutdown();
                 return;
             }
 
-            TrackBusRespModel BusPosition = serverApi.getBusLocation(mBusLine.getLineId());
+            TrackBusRespModel BusPosition = GTFSRProvider_.getBusLocation(mBusLine.getLineId());
             if (getView() == null) {
                 return;
             }
@@ -225,7 +218,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
                         int CurrentMinute = Now.get(Calendar.MINUTE);
 
                         if ((mBusLine.getDepartureHour() == CurrentHour && CurrentMinute > mBusLine.getDepartureMinute()) || mBusLine.getDepartureHour() < CurrentHour) {
-                            Boolean IsCBusStarted = serverApi.getIsBusHasStarted(mBusLine.getCTrip().getLineId() + "");
+                            Boolean IsCBusStarted = GTFSRProvider_.getIsBusHasStarted(mBusLine.getCTrip().getLineId() + "");
 
                             if (IsCBusStarted != null && IsCBusStarted) {
                                 activity.runOnUiThread(() -> ((MainActivity)activity).TrackBus(mBusLine.getCTrip().getLineId(), mBusLine.getDate()));
@@ -244,7 +237,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
             }
 
             if (TrackBusFragment == null) {
-                TrackBusFragment = TrackBusListFragment.newInstance(mBusLine, mStop, mPlaceList, mStopList, BusPosition);
+                TrackBusFragment = TrackBusListFragment.newInstance(mBusLine, mStop, BusPosition);
                 getChildFragmentManager().beginTransaction()
                         .replace(R.id.BusTrackFragmentView, TrackBusFragment)
                         .commit();

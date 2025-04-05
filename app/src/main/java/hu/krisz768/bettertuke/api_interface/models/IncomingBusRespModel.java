@@ -1,15 +1,16 @@
 package hu.krisz768.bettertuke.api_interface.models;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 
 public class IncomingBusRespModel implements Serializable {
     private final String LineNum;
     private final String LineName;
-    private final Date ArriveTime;
+    private Date ArriveTime;
     private final String LineId;
-    private final int RemainingMin;
-    private final boolean AtStop;
+    private int RemainingMin;
+    private boolean AtStop;
     private boolean Started;
     private boolean Miss;
 
@@ -58,5 +59,19 @@ public class IncomingBusRespModel implements Serializable {
 
     public boolean isAtStop() {
         return AtStop;
+    }
+
+    public void setDelay(int Delay) {
+        RemainingMin += Delay;
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(ArriveTime);
+        calendar.add(Calendar.MINUTE, Delay);
+
+        ArriveTime = calendar.getTime();
+    }
+
+    public void setAtStop () {
+        AtStop = true;
     }
 }

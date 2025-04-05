@@ -27,8 +27,6 @@ import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
 public class TrackBusListFragment extends Fragment {
     private static final String STOP = "Stop";
-    private static final String PLACELIST = "PlaceList";
-    private static final String STOPLIST = "StopList";
     private static final String LINES = "LineInfo";
     private static final String POSITION = "BusPosition";
     private String mStop;
@@ -43,13 +41,11 @@ public class TrackBusListFragment extends Fragment {
 
     }
 
-    public static TrackBusListFragment newInstance(BusLine LineInfo, String Stop, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList, TrackBusRespModel BusPosition) {
+    public static TrackBusListFragment newInstance(BusLine LineInfo, String Stop, TrackBusRespModel BusPosition) {
         TrackBusListFragment fragment = new TrackBusListFragment();
         Bundle args = new Bundle();
         args.putSerializable(LINES, LineInfo);
         args.putString(STOP, Stop);
-        args.putSerializable(PLACELIST, PlaceList);
-        args.putSerializable(STOPLIST, StopList);
         args.putSerializable(POSITION, BusPosition);
         fragment.setArguments(args);
         return fragment;
@@ -62,10 +58,11 @@ public class TrackBusListFragment extends Fragment {
         if (getArguments() != null) {
             mLine = (BusLine) getArguments().getSerializable(LINES);
             mStop = getArguments().getString(STOP);
-            mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
-            mStopList = (HashMap<String, BusStops>) getArguments().getSerializable(STOPLIST);
             mBusPosition = (TrackBusRespModel) getArguments().getSerializable(POSITION);
         }
+
+        mPlaceList = MainActivity.busPlaces;
+        mStopList = MainActivity.busStops;
     }
 
     @Override

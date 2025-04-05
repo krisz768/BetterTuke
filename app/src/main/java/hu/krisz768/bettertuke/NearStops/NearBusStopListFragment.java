@@ -37,6 +37,7 @@ public class NearBusStopListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
+
             mBusPlaces = (BusPlaces[]) getArguments().getSerializable(BUSPLACES);
             mFavCount = getArguments().getInt(FAVCOUNT);
         }
