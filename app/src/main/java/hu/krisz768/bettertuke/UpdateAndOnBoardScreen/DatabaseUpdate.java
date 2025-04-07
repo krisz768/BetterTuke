@@ -22,7 +22,6 @@ import hu.krisz768.bettertuke.BuildConfig;
 import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseManager;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabaseManager;
 import hu.krisz768.bettertuke.R;
-import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
 public class DatabaseUpdate extends Fragment {
     private static final String UPDATEBASE= "UpdateBase";

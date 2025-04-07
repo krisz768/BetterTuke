@@ -166,13 +166,12 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                     if (trackBusListAdapter.IsViewLongClicked) {
                         String SecoundText = "";
                         int DelaySec = BusPosition.getDelaySec();
-                        int DelayMinute = DelaySec/60;
-                        DelaySec = DelaySec%60;
+                        int DelayMinute = BusPosition.getDelayMin();
 
                         if (BusPosition.getDelaySec() == 1) {
-                            SecoundText = ctx.getString(R.string.DelayStringWithSecOneSecond, DelaySec);
+                            SecoundText = ctx.getString(R.string.DelayStringWithSecOneSecond, DelaySec, BusPosition.getSpeed());
                         } else {
-                            SecoundText = ctx.getString(R.string.DelayStringWithSec, DelaySec);
+                            SecoundText = ctx.getString(R.string.DelayStringWithSec, DelaySec, BusPosition.getSpeed());
                         }
 
                         if (BusPosition.getDelayMin() < 0) {

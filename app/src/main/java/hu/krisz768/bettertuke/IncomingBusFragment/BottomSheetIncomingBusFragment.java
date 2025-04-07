@@ -50,7 +50,7 @@ import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
-import hu.krisz768.bettertuke.api_interface.TukeServerApi;
+import hu.krisz768.bettertuke.api_interface.models.BusPositionRespModel;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 import hu.krisz768.bettertuke.models.IncomBusBackStack;
 
@@ -85,7 +85,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
@@ -595,6 +594,15 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                             .commit();
                 }
             }
+
+            BusPositionRespModel[] BusPositions = GTFSRProvider_.getALLBusLocation();
+            if (BusPositions != null) {
+                if (mainActivity != null) {
+                    mainActivity.runOnUiThread(() -> mainActivity.BusPositionMarkers(BusPositions));
+                }
+            }
+
+
         } catch (Exception e) {
             Log.e("Update bus list error", e.toString());
             e.printStackTrace();

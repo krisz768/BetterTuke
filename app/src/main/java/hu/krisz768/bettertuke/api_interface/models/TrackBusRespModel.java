@@ -12,9 +12,10 @@ public class TrackBusRespModel implements Serializable {
     private final float GpsLatitude;
     private final int DelayMin;
     private final int DelaySec;
+    private final int Speed;
     private final Date LastUpdate;
 
-    public TrackBusRespModel(String licensePlateNumber, int stopNumber, String stopId, boolean atStop, float GpsLongitude, float GpsLatitude, int delayMin, int delaySec, Date lastUpdate) {
+    public TrackBusRespModel(String licensePlateNumber, int stopNumber, String stopId, boolean atStop, float GpsLongitude, float GpsLatitude, int delayMin, int delaySec, Date lastUpdate, int speed) {
         LicensePlateNumber = licensePlateNumber;
         StopNumber = stopNumber;
         StopId = stopId;
@@ -24,6 +25,7 @@ public class TrackBusRespModel implements Serializable {
         DelayMin = delayMin;
         DelaySec = delaySec;
         LastUpdate = lastUpdate;
+        Speed = speed;
     }
 
     public String getLicensePlateNumber() {
@@ -60,5 +62,9 @@ public class TrackBusRespModel implements Serializable {
 
     public Date getLastUpdate() {
         return LastUpdate;
+    }
+
+    public int getSpeed() {
+        return Speed;
     }
 }

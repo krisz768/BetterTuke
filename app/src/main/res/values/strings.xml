@@ -62,8 +62,8 @@
     <string name="DatabaseNotContain">The database does not contain data for this date.</string>
     <string name="IncBusAnotherDay" translatable="false">%1$s</string>
     <string name="DatabaseError">Error: this busline is not included in the database.</string>
-    <string name="DelayStringWithSec">&#160;%1$d seconds</string>
-    <string name="DelayStringWithSecOneSecond">&#160;%1$d second</string>
+    <string name="DelayStringWithSec">&#160;%1$d seconds, %2$d km/h</string>
+    <string name="DelayStringWithSecOneSecond">&#160;%1$d second, %2$d km/h</string>
     <string name="TrackOldDataWarm">Outdated information</string>
     <string name="AllStopButton">All</string>
     <string name="DisableAdMenu">Disable ads</string>

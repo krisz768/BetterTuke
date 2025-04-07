@@ -54,8 +54,8 @@
     <string name="WifiOnBusIndicator">Wifi</string>
     <string name="DatabaseNotContain">Az adatbázis erre a napra nem tartalmaz adatokat.</string>
     <string name="DatabaseError">Hiba: Az adatbázis nem tartalmazza ezt a járatot.</string>
-    <string name="DelayStringWithSec">&#160;%1$d másodperc</string>
-    <string name="DelayStringWithSecOneSecond">&#160;%1$d másodperc</string>
+    <string name="DelayStringWithSec">&#160;%1$d másodperc, %2$d km/h</string>
+    <string name="DelayStringWithSecOneSecond">&#160;%1$d másodperc, %2$d km/h</string>
     <string name="TrackOldDataWarm">Elavult információk</string>
     <string name="AllStopButton">Összes</string>
     <string name="DisableAdMenu">Reklámok kikapcsolása</string>

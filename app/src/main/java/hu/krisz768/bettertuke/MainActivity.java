@@ -84,6 +84,7 @@ import hu.krisz768.bettertuke.SearchFragment.SearchViewFragment;
 import hu.krisz768.bettertuke.TrackBusFragment.BottomSheetTrackBusFragment;
 import hu.krisz768.bettertuke.UserDatabase.Favorite;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
+import hu.krisz768.bettertuke.api_interface.models.BusPositionRespModel;
 import hu.krisz768.bettertuke.models.BackStack;
 import hu.krisz768.bettertuke.models.IncomBusBackStack;
 import hu.krisz768.bettertuke.models.LatLngInterpolator;
@@ -110,8 +111,10 @@ public class MainActivity extends AppCompatActivity {
     private boolean smallMarkerMode = false;
     private boolean IsBackButtonHalfExpanded = true;
     private Marker BusMarker;
+    private HashMap<String, Marker> AllBusMarker;
     private boolean UserTouchedMap = false;
     private ObjectAnimator MarkerAnimator;
+    private HashMap<String,ObjectAnimator> AllMarkerAnimator;
     private Integer ShortcutType;
     private String ShortcutData;
     private boolean OnStartFragmentError = false;
@@ -152,6 +155,13 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.ShowScheduleButton).setOnClickListener(view -> ShowSchedule("-1", null, null, null, false));
 
         findViewById(R.id.PosButton).setOnClickListener(view -> SelectPosUserPos());
+
+        UserDatabase userDatabase = new UserDatabase(this);
+        String AllBusVisible = userDatabase.GetPreference("AllBusVisible");
+        findViewById(R.id.AllBusVisibilityToggle).setOnClickListener(view -> ToggleAllBusVisibility());
+        if (AllBusVisible == null || AllBusVisible.equals("true")) {
+            ((FloatingActionButton)findViewById(R.id.AllBusVisibilityToggle)).setImageResource(R.drawable.baseline_disabled_visible_24);
+        }
 
         findViewById(R.id.PosButton).setVisibility(View.GONE);
 
@@ -375,9 +385,16 @@ public class MainActivity extends AppCompatActivity {
         } else if (Md.getType() == MarkerDescriptor.Types.Place) {
             SelectPlace(Integer.parseInt(Md.getId()));
         } else if (Md.getType() == MarkerDescriptor.Types.Bus){
-            ZoomTo(BusMarker.getPosition());
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
-            UserTouchedMap = false;
+            if (!Md.getId().equals("-1")) {
+                Date now = new Date();
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
+
+                TrackBus(Md.getId(), formatter.format(now));
+            } else {
+                ZoomTo(BusMarker.getPosition());
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                UserTouchedMap = false;
+            }
         } else {
             ZoomTo(SelectedPlace);
         }
@@ -500,6 +517,29 @@ public class MainActivity extends AppCompatActivity {
             BitmapDescriptor BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapBus));
             MarkerOptions BusMarkerOption = new MarkerOptions().position(new LatLng(BusMarker.getPosition().latitude, BusMarker.getPosition().longitude)).icon(BusBitmap);
             CreateBusMarker(BusMarkerOption);
+        }
+
+        UserDatabase userDatabase = new UserDatabase(this);
+
+        String AllBusVisible = userDatabase.GetPreference("AllBusVisible");
+
+        if (DetermineMode() != Mode.IncBus || !(AllBusVisible == null || AllBusVisible.equals("true"))) {
+            AllBusMarker = null;
+        }
+        if (AllBusMarker != null) {
+            HashMap<String, Marker> allBusMarker = AllBusMarker;
+            AllBusMarker = new HashMap<>();
+            for (String busMarker : allBusMarker.keySet()) {
+                BitmapDescriptor BusBitmap;
+                if (!smallMarkerMode) {
+                    BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.AllBusSmallLabel));
+                } else {
+                    BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.GetBusBitmap(busMarker, "-",this));
+                }
+
+                MarkerOptions BusMarkerOption = new MarkerOptions().position(new LatLng(allBusMarker.get(busMarker).getPosition().latitude, allBusMarker.get(busMarker).getPosition().longitude)).icon(BusBitmap);
+                CreateAllBusMarker(busMarker, BusMarkerOption);
+            }
         }
 
         BitmapDescriptor StopSelected = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected));
@@ -956,6 +996,20 @@ public class MainActivity extends AppCompatActivity {
             BusMarker = null;
         }
 
+        if (AllBusMarker != null) {
+            List<String> DeletableMarkers = new ArrayList<>();
+            for (String key : AllBusMarker.keySet()) {
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && AllMarkerAnimator.get(key) != null) {
+                    AllMarkerAnimator.get(key).cancel();
+                }
+                AllBusMarker.get(key).remove();
+                DeletableMarkers.add(key);
+            }
+            for (String key : DeletableMarkers) {
+                AllBusMarker.remove(key);
+            }
+        }
+
         boolean ZoomToFirst = true;
 
         for (int i = 0; i < busLine.getStops().length; i++) {
@@ -1117,6 +1171,85 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void BusPositionMarkers(BusPositionRespModel[] Positions) {
+
+        if (DetermineMode() != Mode.IncBus) {
+            return;
+        }
+
+        UserDatabase userDatabase = new UserDatabase(this);
+
+        String AllBusVisible = userDatabase.GetPreference("AllBusVisible");
+        if (!(AllBusVisible == null || AllBusVisible.equals("true"))) {
+            return;
+        }
+
+        if (AllBusMarker == null) {
+            AllBusMarker = new HashMap<>();
+        }
+
+        List<String> UpdatedKeys = new ArrayList<>();
+        for (BusPositionRespModel Position : Positions) {
+
+            UpdatedKeys.add(Position.getTripId());
+            if (!AllBusMarker.containsKey(Position.getTripId())) {
+                BitmapDescriptor BusBitmap;
+                if (!smallMarkerMode) {
+                    BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.AllBusSmallLabel));
+                    HelperProvider.GetBusBitmap(Position.getTripId(), Position.getLineNum(), this);
+                } else {
+                    BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.GetBusBitmap(Position.getTripId(), Position.getLineNum(), this));
+                }
+                MarkerOptions BusMarkerOption = new MarkerOptions().position(new LatLng(Position.getGpsLatitude(), Position.getGpsLongitude())).icon(BusBitmap);
+                CreateAllBusMarker(Position.getTripId(), BusMarkerOption);
+            } else {
+                animateALlMarker(Position.getTripId(), AllBusMarker.get(Position.getTripId()), new LatLng(Position.getGpsLatitude(), Position.getGpsLongitude()), new LatLngInterpolator.Linear());
+            }
+        }
+
+        List<String> DeletableMarkers = new ArrayList<>();
+        for (String key : AllBusMarker.keySet()) {
+            if (!UpdatedKeys.contains(key)) {
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && AllMarkerAnimator.get(key) != null) {
+                    AllMarkerAnimator.get(key).cancel();
+                }
+                AllBusMarker.get(key).remove();
+                DeletableMarkers.add(key);
+            }
+        }
+        for (String key : DeletableMarkers) {
+            AllBusMarker.remove(key);
+        }
+    }
+
+    private void CreateAllBusMarker(String TripId, MarkerOptions option) {
+        if (IsMapInitialized) {
+            Marker NewMarker = googleMap.addMarker(option);
+            NewMarker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Bus, TripId));
+            NewMarker.setZIndex(Float.MAX_VALUE);
+            AllBusMarker.put(TripId, NewMarker);
+        }
+
+    }
+
+    private void animateALlMarker(String TripId, Marker marker, LatLng finalPosition, final LatLngInterpolator latLngInterpolator) {
+        if (AllMarkerAnimator == null) {
+            AllMarkerAnimator = new HashMap<>();
+        }
+
+        if(AllMarkerAnimator.containsKey(TripId) && AllMarkerAnimator.get(TripId) != null) {
+            AllMarkerAnimator.get(TripId).cancel();
+        }
+
+        TypeEvaluator<LatLng> typeEvaluator = latLngInterpolator::interpolate;
+        Property<Marker, LatLng> property = Property.of(Marker.class, LatLng.class, "position");
+        ObjectAnimator markerAnimator = ObjectAnimator.ofObject(marker, property, typeEvaluator, finalPosition);
+        markerAnimator.setDuration(500);
+        markerAnimator.start();
+
+        AllMarkerAnimator.put(TripId, markerAnimator);
+    }
+
     private void animateMarker(Marker marker, LatLng finalPosition, final LatLngInterpolator latLngInterpolator) {
         if(MarkerAnimator != null) {
             MarkerAnimator.cancel();
@@ -1245,6 +1378,20 @@ public class MainActivity extends AppCompatActivity {
             }
             BusMarker.remove();
             BusMarker = null;
+        }
+
+        if (AllBusMarker != null) {
+            List<String> DeletableMarkers = new ArrayList<>();
+            for (String key : AllBusMarker.keySet()) {
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && AllMarkerAnimator.get(key) != null) {
+                    AllMarkerAnimator.get(key).cancel();
+                }
+                AllBusMarker.get(key).remove();
+                DeletableMarkers.add(key);
+            }
+            for (String key : DeletableMarkers) {
+                AllBusMarker.remove(key);
+            }
         }
 
         switch (DetermineMode()) {
@@ -1439,6 +1586,24 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
             return latLng.latitude + ", " + latLng.longitude;
+        }
+    }
+
+    private void ToggleAllBusVisibility() {
+        UserDatabase userDatabase = new UserDatabase(this);
+
+        String AllBusVisible = userDatabase.GetPreference("AllBusVisible");
+        if (AllBusVisible != null && AllBusVisible.equals("true")) {
+            userDatabase.SetPreference("AllBusVisible", "false");
+            ((FloatingActionButton)findViewById(R.id.AllBusVisibilityToggle)).setImageResource(R.drawable.baseline_visibility_24);
+        } else {
+            userDatabase.SetPreference("AllBusVisible", "true");
+            ((FloatingActionButton)findViewById(R.id.AllBusVisibilityToggle)).setImageResource(R.drawable.baseline_disabled_visible_24);
+        }
+
+        if (DetermineMode() == Mode.IncBus) {
+            ShowBottomSheetIncomingBuses();
+            MarkerRenderer();
         }
     }
 

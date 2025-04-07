@@ -54,7 +54,7 @@ public class NewGTFSDatabase {
             Cursor cursor = Sld.rawQuery("SELECT * FROM stops WHERE 1", null);
             HashMap<String, BusStops> AllStops = new HashMap<>();
             while(cursor.moveToNext()) {
-                AllStops.put(cursor.getString(0),new BusStops(cursor.getString(0), cursor.getString(1), cursor.getFloat(5), cursor.getFloat(4), cursor.getString(3)));
+                AllStops.put(cursor.getString(0),new BusStops(cursor.getString(0), cursor.getString(1), cursor.getFloat(5), cursor.getFloat(4), cursor.getString(0).substring(cursor.getString(0).length()-1)));
             }
             cursor.close();
 
@@ -425,7 +425,7 @@ public class NewGTFSDatabase {
 
     public boolean IsStopInBusRoute(String trip_id, String StopId) {
         try {
-            Cursor cursor = Sld.rawQuery("SELECT trip_id FROM stop_times WHERE trip_id = \"" + trip_id + "\" AND stop_id = \"" + StopId + "\";", null);
+            Cursor cursor = Sld.rawQuery("SELECT trip_id FROM stop_times WHERE trip_id = '" + trip_id + "' AND stop_id = '" + StopId + "';", null);
             while (cursor.moveToNext()) {
                 return true;
             }
@@ -442,7 +442,7 @@ public class NewGTFSDatabase {
         try
         {
 
-            Cursor cursor = Sld.rawQuery("SELECT st.trip_id FROM stop_times as st INNER JOIN trips as t ON st.trip_id = t.trip_id INNER JOIN calendar_dates as cd ON t.service_id = cd.service_id INNER JOIN routes as r ON t.route_id = r.route_id WHERE r.route_short_name = \"" + TripName + "\" AND st.stop_sequence = 1 AND st.stop_id = 'SP" + StartingStopId + "' AND st.departure_time = \"" + DepartureTime + "\" AND cd.date = \"" + Date + "\" AND cd.exception_type = 1;", null);
+            Cursor cursor = Sld.rawQuery("SELECT st.trip_id FROM stop_times as st INNER JOIN trips as t ON st.trip_id = t.trip_id INNER JOIN calendar_dates as cd ON t.service_id = cd.service_id INNER JOIN routes as r ON t.route_id = r.route_id WHERE r.route_short_name = '" + TripName + "' AND st.stop_sequence = 1 AND st.stop_id = 'SP" + StartingStopId + "' AND st.departure_time = '" + DepartureTime + "' AND cd.date = '" + Date + "' AND cd.exception_type = 1;", null);
             String TripId = "-1";
             while(cursor.moveToNext()) {
                 TripId = cursor.getString(0);
@@ -464,7 +464,7 @@ public class NewGTFSDatabase {
             Calendar EndTime = Calendar.getInstance();
             EndTime.setTime(new Date());
 
-            Cursor cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = \"" + LineId + "\" ORDER BY stop_sequence DESC LIMIT 1;", null);
+            Cursor cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = '" + LineId + "' ORDER BY stop_sequence DESC LIMIT 1;", null);
             while (cursor.moveToNext()) {
                 String[] TimeParts = cursor.getString(0).split(":");
 
@@ -473,7 +473,7 @@ public class NewGTFSDatabase {
             }
             cursor.close();
 
-            cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = \"" + LineId + "\" ORDER BY stop_sequence ASC LIMIT 1;", null);
+            cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = '" + LineId + "' ORDER BY stop_sequence ASC LIMIT 1;", null);
             while (cursor.moveToNext()) {
                 String[] TimeParts = cursor.getString(0).split(":");
 
@@ -500,7 +500,7 @@ public class NewGTFSDatabase {
             Calendar EndTime = Calendar.getInstance();
             EndTime.setTime(new Date());
 
-            Cursor cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = \"" + LineId + "\" AND stop_id = \"" + StopId + "\" ORDER BY stop_sequence DESC LIMIT 1;", null);
+            Cursor cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = '" + LineId + "' AND stop_id = '" + StopId + "' ORDER BY stop_sequence DESC LIMIT 1;", null);
             while (cursor.moveToNext()) {
                 String[] TimeParts = cursor.getString(0).split(":");
 
@@ -509,7 +509,7 @@ public class NewGTFSDatabase {
             }
             cursor.close();
 
-            cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = \"" + LineId + "\" ORDER BY stop_sequence ASC LIMIT 1;", null);
+            cursor = Sld.rawQuery("SELECT arrival_time FROM stop_times WHERE trip_id = '" + LineId + "' ORDER BY stop_sequence ASC LIMIT 1;", null);
             while (cursor.moveToNext()) {
                 String[] TimeParts = cursor.getString(0).split(":");
 
@@ -531,7 +531,7 @@ public class NewGTFSDatabase {
         try {
             int BusCount = 0;
 
-            Cursor cursor = Sld.rawQuery("SELECT count(date) FROM calendar_dates WHERE date = \"" + Date + "\";", null);
+            Cursor cursor = Sld.rawQuery("SELECT count(date) FROM calendar_dates WHERE date = '" + Date + "';", null);
             while (cursor.moveToNext()) {
                 BusCount = cursor.getInt(0);
             }
@@ -600,7 +600,7 @@ public class NewGTFSDatabase {
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO routes (route_id, agency_id, route_short_name, route_long_name, route_type, route_color, route_text_color) VALUES (?, ?, ?, ?, ?, ?, ?);");
         for (int i = 1; i< Lines.length; i++) {
-            String[] Data= Lines[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+            String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", -1);
 
             try {
                 stmt.bindString(1, Data[0]);
@@ -627,7 +627,7 @@ public class NewGTFSDatabase {
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO calendar (service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (?,?,?,?,?,?,?,?,?,?)");
         Sld.beginTransaction();
         for (int i = 1; i< Lines.length; i++) {
-            String[] Data= Lines[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+            String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", -1);
 
             try {
                 stmt.bindString(1, Data[0]);
@@ -657,7 +657,7 @@ public class NewGTFSDatabase {
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO calendar_dates (service_id, date, exception_type) VALUES (?,?,?)");
         for (int i = 1; i< Lines.length; i++) {
-            String[] Data= Lines[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+            String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", -1);
 
             try {
                 stmt.bindString(1, Data[0]);
@@ -680,7 +680,7 @@ public class NewGTFSDatabase {
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO shapes (shape_id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled) VALUES (?,?,?,?,?)");
         for (int i = 1; i< Lines.length; i++) {
-            String[] Data= Lines[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+            String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", -1);
 
             try {
                 stmt.bindLong(1, Long.parseLong(Data[0]));
@@ -705,7 +705,7 @@ public class NewGTFSDatabase {
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO stop_times (trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign) VALUES (?,?,?,?,?,?)");
         for (int i = 1; i< Lines.length; i++) {
-            String[] Data= Lines[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+            String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", -1);
 
             try {
                 stmt.bindString(1, Data[0]);
@@ -731,7 +731,7 @@ public class NewGTFSDatabase {
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO stops (stop_id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, stop_timezone, wheelchair_boarding) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
         for (int i = 1; i< Lines.length; i++) {
-            String[] Data= Lines[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", 0-1);
+            String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", 0-1);
 
             try {
                 stmt.bindString(1, Data[0]);
@@ -762,7 +762,7 @@ public class NewGTFSDatabase {
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO feed_info (feed_publisher_name, feed_publisher_url, feed_lang, feed_start_date, feed_end_date, feed_version) VALUES (?,?,?,?,?,?)");
         for (int i = 1; i< Lines.length; i++) {
-            String[] Data= Lines[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+            String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", -1);
 
             try {
                 stmt.bindString(1, Data[0]);
@@ -788,7 +788,7 @@ public class NewGTFSDatabase {
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO trips (route_id, service_id, trip_id, trip_headsign, trip_short_name, direction_id, shape_id) VALUES (?,?,?,?,?,?,?)");
         for (int i = 1; i< Lines.length; i++) {
-            String[] Data= Lines[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+            String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", -1);
 
             try {
                 stmt.bindString(1, Data[0]);

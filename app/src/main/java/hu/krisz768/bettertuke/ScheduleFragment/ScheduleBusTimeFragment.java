@@ -46,7 +46,6 @@ import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.ScheduleActivity;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
-import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
 public class ScheduleBusTimeFragment extends Fragment {
     private static final String LINENUM= "lineNum";
@@ -171,9 +170,9 @@ public class ScheduleBusTimeFragment extends Fragment {
             TwoWay = true;
         }
 
-        if (!IsForwardWayDescTextSet && IsBackWayDescTextSet) {
-            DescText.setText(WayDescStringBackwards);
-            SelectedWay = "V";
+        if (IsForwardWayDescTextSet && !IsBackWayDescTextSet) {
+            DescText.setText(WayDescStringForward);
+            SelectedWay = "O";
         }
 
         if (!mStopId.equals("-1") && !TwoWay) {
@@ -399,9 +398,9 @@ public class ScheduleBusTimeFragment extends Fragment {
 
             scheduleActivity.runOnUiThread(() -> {
                 ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
-                if (TwoWay && SelectedWay.equals("O")) {
+                if (TwoWay && SelectedWay.equals("V")) {
                     BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionForward));
-                } else if (TwoWay && SelectedWay.equals("V")){
+                } else if (TwoWay && SelectedWay.equals("O")){
                     BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionBackwards));
                 } else {
                     BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionOneWay));

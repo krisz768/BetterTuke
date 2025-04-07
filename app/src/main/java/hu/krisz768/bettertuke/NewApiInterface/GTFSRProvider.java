@@ -1,5 +1,7 @@
 package hu.krisz768.bettertuke.NewApiInterface;
 
+import static java.lang.Math.round;
+
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
@@ -21,7 +23,7 @@ import java.util.Locale;
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.LineInfoTravelTime;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
-import hu.krisz768.bettertuke.api_interface.apiGetIsBusHasStarted;
+import hu.krisz768.bettertuke.api_interface.models.BusPositionRespModel;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
@@ -109,11 +111,31 @@ public class GTFSRProvider {
 
         for (GtfsRealtime.FeedEntity entity : OnlineData.getEntityList()) {
             if (entity.getVehicle().getTrip().getTripId().equals(LineId)) {
-                return new TrackBusRespModel(entity.getVehicle().getVehicle().getLicensePlate().split("#")[0].replace("-",""), entity.getVehicle().getCurrentStopSequence(), entity.getVehicle().getStopId(), entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT, entity.getVehicle().getPosition().getLongitude(), entity.getVehicle().getPosition().getLatitude(), DelayMin, DelaySec, PositionDate);
+                return new TrackBusRespModel(entity.getVehicle().getVehicle().getLicensePlate().split("#")[0].replace("-",""), entity.getVehicle().getCurrentStopSequence(), entity.getVehicle().getStopId(), entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT, entity.getVehicle().getPosition().getLongitude(), entity.getVehicle().getPosition().getLatitude(), DelayMin, DelaySec, PositionDate, round(entity.getVehicle().getPosition().getSpeed()*3.6F));
             }
         }
 
         return null;
+    }
+
+    public BusPositionRespModel[] getALLBusLocation() {
+        UpdateData();
+
+        if (OnlineData == null) {
+            return null;
+        }
+
+        List<BusPositionRespModel> Positions = new ArrayList<>();
+
+        for (GtfsRealtime.FeedEntity entity : OnlineData.getEntityList()) {
+                Positions.add(new BusPositionRespModel(entity.getVehicle().getPosition().getLongitude(), entity.getVehicle().getPosition().getLatitude(), entity.getVehicle().getTrip().getRouteId(),  entity.getVehicle().getTrip().getTripId()));
+        }
+
+        BusPositionRespModel[] ret = new BusPositionRespModel[Positions.size()];
+
+        Positions.toArray(ret);
+
+        return ret;
     }
 
     public IncomingBusRespModel[] getNextIncomingBuses(String StopId) {

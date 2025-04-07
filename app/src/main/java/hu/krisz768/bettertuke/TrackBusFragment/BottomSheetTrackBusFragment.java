@@ -34,7 +34,6 @@ import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
-import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 import hu.krisz768.bettertuke.models.BusAttributes;
 

@@ -92,7 +92,7 @@ public class ScheduleActivity extends AppCompatActivity {
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
         Date date = new Date();
-        Sbtf = ScheduleBusTimeFragment.newInstance(LineNum, StopId, "O", formatter.format(date));
+        Sbtf = ScheduleBusTimeFragment.newInstance(LineNum, StopId, "V", formatter.format(date));
 
         getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in,
                 R.anim.fade_out,
