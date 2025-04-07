@@ -168,7 +168,7 @@ public class HelperProvider {
         } else {
             Bitmap newBitmap = overlayToBottom(HelperProvider.BitmapFromVector(R.drawable.bus_marker_label, com.google.android.material.R.attr.colorPrimary, ctx, true),HelperProvider.BitmapFromVector(R.drawable.bus_small, com.google.android.material.R.attr.colorOnPrimary, ctx, false));
 
-            newBitmap = AddBusNum(newBitmap, num);
+            newBitmap = AddBusNum(newBitmap, num, ctx);
             BusBitmapContainer.put(TripId, newBitmap);
 
             return newBitmap;
@@ -229,15 +229,21 @@ public class HelperProvider {
         return bmOverlay;
     }
 
-    private static Bitmap AddBusNum(Bitmap bmp, String num) {
+    private static Bitmap AddBusNum(Bitmap bmp, String num, Context ctx) {
         Bitmap newBitmap = Bitmap.createBitmap(bmp);
         Canvas canvas = new Canvas(newBitmap);
         Paint paint = new Paint();
-        paint.setColor(com.google.android.material.R.attr.colorOnPrimary);
+
+        TypedValue typedValue = new TypedValue();
+        ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
+
+        int color = ContextCompat.getColor(ctx, typedValue.resourceId);
+
+        paint.setColor(color);
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(55);
         paint.setFakeBoldText(true);
-        paint.setAlpha(170);
+        //paint.setAlpha(170);
         canvas.drawText(num, canvas.getWidth()/2, 52, paint);
         //paint.setStyle(Paint.Style.FILL);
 

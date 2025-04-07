@@ -1593,7 +1593,7 @@ public class MainActivity extends AppCompatActivity {
         UserDatabase userDatabase = new UserDatabase(this);
 
         String AllBusVisible = userDatabase.GetPreference("AllBusVisible");
-        if (AllBusVisible != null && AllBusVisible.equals("true")) {
+        if (AllBusVisible == null || AllBusVisible.equals("true")) {
             userDatabase.SetPreference("AllBusVisible", "false");
             ((FloatingActionButton)findViewById(R.id.AllBusVisibilityToggle)).setImageResource(R.drawable.baseline_visibility_24);
         } else {
