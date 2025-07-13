@@ -1,6 +1,9 @@
 package hu.krisz768.bettertuke.NewGTFS;
 
 import android.content.Context;
+import android.os.Build;
+import android.os.Environment;
+import android.os.FileUtils;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -193,6 +196,13 @@ public class NewGTFSDatabaseDownload implements Runnable {
 
             //UserDatabase userDatabase = new UserDatabase(ctx);
             //userDatabase.SetPreference("GTFS-cl", Online);
+
+             /*File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "asd.sql");
+             File database =  new File(ctx.getFilesDir() + "/Database", "NewGTFS.db");
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                FileUtils.copy(new FileInputStream(database), new FileOutputStream(f));
+            }*/
 
             RetCode = true;
         } catch (Exception e) {

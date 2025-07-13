@@ -241,10 +241,14 @@ public class HelperProvider {
 
         paint.setColor(color);
         paint.setTextAlign(Paint.Align.CENTER);
-        paint.setTextSize(55);
+
+        double relation = Math.sqrt(canvas.getWidth() * canvas.getHeight());
+        relation = relation / 250;
+
+        paint.setTextSize((float) (relation*80));
         paint.setFakeBoldText(true);
         //paint.setAlpha(170);
-        canvas.drawText(num, canvas.getWidth()/2, 52, paint);
+        canvas.drawText(num, canvas.getWidth()/2, (float)( canvas.getHeight()/4.2), paint);
         //paint.setStyle(Paint.Style.FILL);
 
         /*if (num.length() == 1) {
@@ -630,8 +634,9 @@ public class HelperProvider {
     }
 
     public static String GetStopDirectionString(Context ctx, String id) {
-        NewGTFSDatabase gtfsDatabase = new NewGTFSDatabase(ctx);
-        String name = gtfsDatabase.GetDirectionName(id);
+        //NewGTFSDatabase gtfsDatabase = new NewGTFSDatabase(ctx);
+        GTFSDatabase gtfsDatabase = new GTFSDatabase(ctx);
+        String name = gtfsDatabase.GetStopName(id);
 
         if (name == null) {
             return "-";

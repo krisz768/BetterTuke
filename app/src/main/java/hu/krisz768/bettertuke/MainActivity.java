@@ -1,6 +1,10 @@
 package hu.krisz768.bettertuke;
 
+import static androidx.core.content.pm.ShortcutManagerCompat.getMaxShortcutCountPerActivity;
+
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -54,12 +58,22 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.OnTokenCanceledListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.color.utilities.DynamicColor;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.search.SearchBar;
 import com.google.android.material.search.SearchView;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.appupdate.AppUpdateOptions;
+import com.google.android.play.core.install.InstallStateUpdatedListener;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.InstallStatus;
+import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.android.ump.ConsentForm;
 import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
@@ -122,6 +136,8 @@ public class MainActivity extends AppCompatActivity {
     private OnBackInvokedCallback onBackPressedCallback;
     private ConsentInformation consentInformation;
     private final AtomicBoolean isMobileAdsInitializeCalled = new AtomicBoolean(false);
+    private ActivityResultLauncher activityResultLauncher;
+    private AppUpdateManager appUpdateManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,6 +184,47 @@ public class MainActivity extends AppCompatActivity {
         InitializeConsentWindow();
 
         SetupGoogleMap();
+
+        CheckForUpdates();
+    }
+
+    private void CheckForUpdates () {
+        activityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartIntentSenderForResult(),
+                (ActivityResultCallback<ActivityResult>) result -> {
+                    if (result.getResultCode() != RESULT_OK) {
+
+                    }
+                });
+        appUpdateManager = AppUpdateManagerFactory.create(this);
+        Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+        appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
+                appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        activityResultLauncher,
+                        AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build());
+            }
+        });
+
+        InstallStateUpdatedListener listener = state -> {
+            if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                popupSnackbarForCompleteUpdate();
+            }
+        };
+
+        appUpdateManager.registerListener(listener);
+
+    }
+
+    private void popupSnackbarForCompleteUpdate() {
+        Snackbar snackbar =
+                Snackbar.make(
+                        findViewById(R.id.MainActivityViewLayout),
+                        R.string.UpdateReadyToInstall,
+                        Snackbar.LENGTH_INDEFINITE);
+        snackbar.setAction(R.string.UpdateReadyToInstallButton, view -> appUpdateManager.completeUpdate());
+        snackbar.show();
     }
 
     private void InitializeConsentWindow() {
@@ -316,7 +373,7 @@ public class MainActivity extends AppCompatActivity {
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
                     Date date = new Date();
 
-                    ShowSchedule("-1", ShortcutData, "O", formatter.format(date),true);
+                    ShowSchedule("-1", ShortcutData, "V", formatter.format(date),true);
                 } else {
                     SelectStop(ShortcutData, false);
                     GetClosestStop = false;
@@ -1534,7 +1591,7 @@ public class MainActivity extends AppCompatActivity {
         if (searchResult.getType() == SearchResult.SearchType.Line) {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
             Date date = new Date();
-            ShowSchedule("-1", ((BusNum) searchResult.getData()).getLineName(), "O", formatter.format(date), true);
+            ShowSchedule("-1", ((BusNum) searchResult.getData()).getLineName(), "V", formatter.format(date), true);
         } else if (searchResult.getType() == SearchResult.SearchType.FavStop) {
             SelectStop((String) searchResult.getData(), true);
         } else if (searchResult.getType() == SearchResult.SearchType.Stop) {

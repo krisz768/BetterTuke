@@ -5,13 +5,14 @@ import android.content.Context;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import hu.krisz768.bettertuke.Gtfs.GTFSDatabase;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 
 public class BusStops implements Serializable {
     private final String Id;
     private final String Place;
-    private final float GpsLongitude;
-    private final float GpsLatitude;
+    private float GpsLongitude;
+    private float GpsLatitude;
     private final String StopNum;
 
     public BusStops(String id, String place, float gpsLongitude, float gpsLatitude, String stopNum) {
@@ -37,6 +38,11 @@ public class BusStops implements Serializable {
         return -1;
     }
 
+    public void SetCoords(float GpsLongitude, float GpsLatitude) {
+        this.GpsLongitude = GpsLongitude;
+        this.GpsLatitude = GpsLatitude;
+    }
+
     public float getGpsLongitude() {
         return GpsLongitude;
     }
@@ -51,7 +57,13 @@ public class BusStops implements Serializable {
 
     public static HashMap<String, BusStops> GetAllStops(Context ctx) {
         NewGTFSDatabase Dm = new NewGTFSDatabase(ctx);
+        GTFSDatabase GDm = new GTFSDatabase(ctx);
 
-        return Dm.GetAllBusStops();
+        HashMap<String, BusStops> Stops = Dm.GetAllBusStops();
+        for (BusStops Stop : Stops.values()) {
+            GDm.UpdateStopCoords(Stop);
+        }
+
+        return Stops;
     }
 }

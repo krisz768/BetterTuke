@@ -37,6 +37,9 @@ public class NewGTFSDatabaseManager {
             String Current = NewGTFSDatabase.GetDatabaseVersion(ctx).trim();
             String Online = OnlineVersion.Version.trim();
 
+            if (Online.equals("") || OnlineVersion.Error) {
+                return false;
+            }
             if (Current == null || Current.equals("Err")) {
                 return true;
             } else return !Current.equals(Online);

@@ -212,12 +212,17 @@ public class GTFSRProvider {
                                 ArriveTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(TimeParts[0]));
                                 ArriveTime.set(Calendar.MINUTE, Integer.parseInt(TimeParts[1]));
 
-                                ArriveTime.add(Calendar.MINUTE, entityUpdate.getTripUpdate().getDelay()/60);
+                                if (entityUpdate != null) {
+                                    ArriveTime.add(Calendar.MINUTE, entityUpdate.getTripUpdate().getDelay()/60);
+                                    log( "É:" + Litt.getArriveTime() + " D:" + entityUpdate.getTripUpdate().getDelay());
+                                }
+
 
                                 long diff = ArriveTime.getTime().getTime() - new Date().getTime();
 
-                                log( "É:" + Litt.getArriveTime() + " D:" + entityUpdate.getTripUpdate().getDelay());
-                                BusList.add(new IncomingBusRespModel(LineInfo.getRouteInfo().getLineNum(), LineInfo.getRouteInfo().getLineName(), ArriveTime.getTime(), entity.getVehicle().getTrip().getTripId(), (int) (diff / 1000) / 60, (Litt.getOrder() == entity.getVehicle().getCurrentStopSequence()) && entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT));
+                                int RemainingMin = (int) (diff / 1000) / 60;
+
+                                BusList.add(new IncomingBusRespModel(LineInfo.getRouteInfo().getLineNum(), LineInfo.getRouteInfo().getLineName(), ArriveTime.getTime(), entity.getVehicle().getTrip().getTripId(), Math.max(RemainingMin, 0), (Litt.getOrder() == entity.getVehicle().getCurrentStopSequence()) && entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT));
                                 /*for (int i = 0; i < BusList.size(); i++) {
 
                                     //log("INS T:" + BusList.get(i).getRemainingMin()  + " / " +  (int) (diff / 1000) / 60);

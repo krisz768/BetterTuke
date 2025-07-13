@@ -1,5 +1,8 @@
 package hu.krisz768.bettertuke;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
 
@@ -11,6 +14,15 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.Task;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.appupdate.AppUpdateOptions;
+import com.google.android.play.core.install.model.ActivityResult;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.UpdateAvailability;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -145,6 +157,7 @@ public class SplashActivity extends AppCompatActivity {
             return;
         }*/
 
+        /// ////////////////////////////////////////////////////////////////////////////////////
         Context ctx = getApplicationContext();
 
         Boolean UpdateGTFS = false;
@@ -169,7 +182,7 @@ public class SplashActivity extends AppCompatActivity {
 
         }
 
-        //StartUpdate(true, false);
+        //StartUpdate(true, true);
     }
 
     private void StartMain() {

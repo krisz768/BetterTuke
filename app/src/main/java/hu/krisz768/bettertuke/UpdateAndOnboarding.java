@@ -26,6 +26,8 @@ public class UpdateAndOnboarding extends AppCompatActivity {
         boolean Update = false;
         int UpdateType = 3;
 
+        final int test = b.getInt("UpdateType");
+
         if (b != null) {
             Update = b.getBoolean("Update");
             UpdateType = b.getInt("UpdateType");
@@ -44,6 +46,7 @@ public class UpdateAndOnboarding extends AppCompatActivity {
                 @Override
                 public void onFail() {
                     Toast.makeText(getApplicationContext(), R.string.DatabaseUpdateError, Toast.LENGTH_LONG).show();
+                    //Toast.makeText(getApplicationContext(), "asdasd: " + test, Toast.LENGTH_LONG).show();
                 }
             });
 

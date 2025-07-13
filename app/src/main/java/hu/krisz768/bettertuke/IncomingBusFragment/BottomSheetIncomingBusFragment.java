@@ -95,6 +95,13 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
         mPlaceList = MainActivity.busPlaces;
         mStopList = MainActivity.busStops;
+
+        if (mPlaceList == null) {
+            mPlaceList = BusPlaces.getAllBusPlaces(this.getContext());
+        }
+        if (mStopList == null) {
+            mStopList = BusStops.GetAllStops(this.getContext());
+        }
     }
 
     @Override
@@ -599,6 +606,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             if (BusPositions != null) {
                 if (mainActivity != null) {
                     mainActivity.runOnUiThread(() -> mainActivity.BusPositionMarkers(BusPositions));
+                }
+            } else {
+                if (mainActivity != null) {
+                    mainActivity.runOnUiThread(() -> mainActivity.BusPositionMarkers(new BusPositionRespModel[0]));
                 }
             }
 

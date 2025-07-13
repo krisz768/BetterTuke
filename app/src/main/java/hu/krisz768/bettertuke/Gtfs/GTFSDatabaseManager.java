@@ -24,6 +24,9 @@ public class GTFSDatabaseManager {
             String Current = userDatabase.GetPreference("GTFS-cl");
             String Online = contentLength.ContentLength;
 
+            if (contentLength.Error || contentLength.ContentLength.equals("")) {
+                return false;
+            }
             if (Current == null) {
                 return true;
             } else return !Current.equals(Online);

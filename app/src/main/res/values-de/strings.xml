@@ -82,4 +82,6 @@
     <string name="OnBoardPrevButtonDesc">Vorheriger Button</string>
     <string name="PrivacyButton">Datenschutz-Optionen</string>
     <string name="PrivacySettingsNotAvailable">Nicht verfügbar</string>
+    <string name="UpdateReadyToInstall">" Update heruntergeladen"</string>
+    <string name="UpdateReadyToInstallButton">" INSTALLIEREN"</string>
 </resources>

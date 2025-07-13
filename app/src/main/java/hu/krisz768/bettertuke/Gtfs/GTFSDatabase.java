@@ -10,14 +10,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.Database.LineInfoRoute;
 
 public class GTFSDatabase {
     private static SQLiteDatabase Sld;
 
-    public String GetStopName (int StopId) {
+    public String GetStopName (String StopId) {
         try
         {
+            StopId = StopId.substring(2);
             Cursor cursor = Sld.rawQuery("SELECT stop_desc FROM stops f WHERE stop_id = " + StopId +";", null);
             String Name = null;
             while(cursor.moveToNext()) {
@@ -110,6 +112,30 @@ public class GTFSDatabase {
         }
     }
 
+    public void UpdateStopCoords (BusStops BusStop) {
+        try
+        {
+            String StopId = BusStop.getId().substring(2);
+            Cursor cursor = Sld.rawQuery("SELECT stop_lat, stop_lon FROM stops WHERE stop_id = \"" + StopId + "\";", null);
+            Float GpsLatitude = null;
+            Float GpsLongitude = null;
+
+            while(cursor.moveToNext()) {
+                //busLineData = new GTFSBusLineData(cursor.getString(0), cursor.getString(1),cursor.getString(2));
+                GpsLatitude = cursor.getFloat(0);
+                GpsLongitude = cursor.getFloat(1);
+            }
+
+            if (GpsLatitude != null && GpsLongitude != null) {
+                BusStop.SetCoords(GpsLongitude, GpsLatitude);
+            }
+
+            cursor.close();
+        } catch (Exception e) {
+            log(e.toString());
+        }
+    }
+
     public static void DeleteDatabase(Context Ctx) {
         File Database = new File(Ctx.getFilesDir() + "/Database", "GTFS.db");
         try {
@@ -133,12 +159,12 @@ public class GTFSDatabase {
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO routes (route_id, route_short_name, route_long_name, route_type, route_color, route_text_color) VALUES (?, ?, ?, ?, ?, ?);");
        for (int i = 1; i< Lines.length; i++) {
-           String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", -1);
+           String[] Data= Lines[i].split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)", -1);
 
            try {
                stmt.bindLong(1, Long.parseLong(Data[0]));
                stmt.bindString(2, Data[2]);
-               stmt.bindString(3, Data[3].replaceAll("'", ""));
+               stmt.bindString(3, Data[3].replaceAll("\"", ""));
                stmt.bindString(4, Data[4]);
                stmt.bindString(5, Data[5]);
                stmt.bindString(6, Data[6]);
@@ -260,12 +286,12 @@ public class GTFSDatabase {
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO stops (stop_id, stop_name, stop_desc, stop_lat, stop_lon, parent_station) VALUES (?,?,?,?,?,?)");
         for (int i = 1; i< Lines.length; i++) {
-            String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", -1);
+            String[] Data= Lines[i].split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)", -1);
 
             try {
                 stmt.bindLong(1, Long.parseLong(Data[0]));
-                stmt.bindString(2, Data[1].replaceAll("'", ""));
-                stmt.bindString(3, Data[2].replaceAll("'", ""));
+                stmt.bindString(2, Data[1].replaceAll("\"", ""));
+                stmt.bindString(3, Data[2].replaceAll("\"", ""));
                 stmt.bindString(4, Data[3]);
                 stmt.bindString(5, Data[4]);
                 stmt.bindString(6, Data[5]);
