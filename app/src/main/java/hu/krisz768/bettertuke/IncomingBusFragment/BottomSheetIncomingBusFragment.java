@@ -184,7 +184,17 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                         }
                     }
 
-                    userDatabase.AddFavorite(UserDatabase.FavoriteType.Stop, mStop,  getString(R.string.BusStopNameWithNum, BusStopName.getText().toString().trim(), StopNum.trim()));
+                    String StopName;
+
+                    String DirectionText = HelperProvider.GetStopDirectionString(getContext(),mStop);
+
+                    if (DirectionText.equals("-") || DirectionText.isEmpty() || DirectionText.equals(" ")) {
+                        StopName = StopNum.trim();
+                    } else {
+                        StopName = DirectionText;
+                    }
+
+                    userDatabase.AddFavorite(UserDatabase.FavoriteType.Stop, mStop,  getString(R.string.BusStopNameWithNum, BusStopName.getText().toString().trim(), StopName));
                     FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
                 }
             });

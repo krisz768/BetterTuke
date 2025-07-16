@@ -1,4 +1,4 @@
-package hu.krisz768.bettertuke.NearStops;
+package hu.krisz768.bettertuke.ShortcutCreator;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,12 +10,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import hu.krisz768.bettertuke.Database.BusPlaces;
+import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.HelperProvider;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
+import hu.krisz768.bettertuke.StopShortcutCreatorActivity;
 
-public class NearBusStopListAdapter extends RecyclerView.Adapter<NearBusStopListAdapter.ViewHolder>{
-    private final BusPlaces[] busPlaces;
-    private final NearBusStopListFragment Callback;
+public class StopShortcodeSubListAdapter  extends RecyclerView.Adapter<StopShortcodeSubListAdapter.ViewHolder>{
+    private final BusStops[] busStops;
+    private final StopShortcutCreatorActivity Callback;
     private final int FavCount;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -32,43 +35,47 @@ public class NearBusStopListAdapter extends RecyclerView.Adapter<NearBusStopList
             this.view = view;
         }
 
-        public void setData(BusPlaces stop, NearBusStopListFragment Callback, boolean Fav) {
+        public void setData(BusStops stop, StopShortcutCreatorActivity Callback, boolean Fav) {
             icon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected));
+
             if (Fav) {
                 FavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
                 FavIcon.setVisibility(View.VISIBLE);
             } else {
                 FavIcon.setVisibility(View.GONE);
             }
+            NewGTFSDatabase Dm = new NewGTFSDatabase(Callback);
+            String StopName = Dm.GetStopName(stop.getId());
+            String StopNum = HelperProvider.GetStopDirectionString(Callback,stop.getId());
 
-            StopName.setText(stop.getName());
+            this.StopName.setText(Callback.getString(R.string.BusStopNameWithNum, StopName.trim(), StopNum));
 
             view.setOnClickListener(view -> Callback.OnStopClick(stop.getId()));
         }
     }
 
-    public NearBusStopListAdapter(BusPlaces[] busPlaces, NearBusStopListFragment Callback, int FavCount) {
-        this.busPlaces = busPlaces;
+    public StopShortcodeSubListAdapter(BusStops[] busStops, StopShortcutCreatorActivity Callback, int FavCount) {
+        this.busStops = busStops;
         this.Callback = Callback;
         this.FavCount = FavCount;
     }
 
     @NonNull
     @Override
-    public NearBusStopListAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public StopShortcodeSubListAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.near_stop_recview, viewGroup, false);
 
-        return new NearBusStopListAdapter.ViewHolder(view);
+        return new StopShortcodeSubListAdapter.ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(NearBusStopListAdapter.ViewHolder viewHolder, final int position) {
-        viewHolder.setData(busPlaces[position], Callback, position < FavCount);
+    public void onBindViewHolder(StopShortcodeSubListAdapter.ViewHolder viewHolder, final int position) {
+        viewHolder.setData(busStops[position], Callback, position < FavCount);
     }
 
     @Override
     public int getItemCount() {
-        return busPlaces.length;
+        return busStops.length;
     }
 }

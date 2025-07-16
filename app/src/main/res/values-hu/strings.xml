@@ -83,4 +83,6 @@
     <string name="PrivacySettingsNotAvailable">Nem elérhető</string>
     <string name="UpdateReadyToInstall">Frissítés letöltve</string>
     <string name="UpdateReadyToInstallButton">" TELEPÍTÉS"</string>
+    <string name="StopShortcutIcon">Megálló</string>
+    <string name="BusShortcutIcon">Vonal</string>
 </resources>

@@ -91,4 +91,6 @@
     <string name="PrivacySettingsNotAvailable">Not available</string>
     <string name="UpdateReadyToInstall">An update has just been downloaded.</string>
     <string name="UpdateReadyToInstallButton">INSTALL</string>
+    <string name="StopShortcutIcon">Stop</string>
+    <string name="BusShortcutIcon">Bus line</string>
 </resources>

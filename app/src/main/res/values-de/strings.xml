@@ -84,4 +84,6 @@
     <string name="PrivacySettingsNotAvailable">Nicht verfügbar</string>
     <string name="UpdateReadyToInstall">" Update heruntergeladen"</string>
     <string name="UpdateReadyToInstallButton">" INSTALLIEREN"</string>
+    <string name="StopShortcutIcon">Haltestelle</string>
+    <string name="BusShortcutIcon">Buslinie</string>
 </resources>

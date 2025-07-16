@@ -12,20 +12,27 @@ import java.util.List;
 
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.Database.LineInfoRoute;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 
 public class GTFSDatabase {
     private static SQLiteDatabase Sld;
+    private Context ctx;
 
     public String GetStopName (String StopId) {
         try
         {
-            StopId = StopId.substring(2);
-            Cursor cursor = Sld.rawQuery("SELECT stop_desc FROM stops f WHERE stop_id = " + StopId +";", null);
+            String EditedStopId = StopId.substring(2);
+            Cursor cursor = Sld.rawQuery("SELECT stop_desc FROM stops f WHERE stop_id = " + EditedStopId +";", null);
             String Name = null;
             while(cursor.moveToNext()) {
                 Name = cursor.getString(0);
             }
             cursor.close();
+
+            if (Name == null) {
+                NewGTFSDatabase Ngd = new NewGTFSDatabase(ctx);
+                Name = Ngd.GetDirectionName(StopId);
+            }
             return Name;
         } catch (Exception e) {
             log(e.toString());
@@ -126,7 +133,7 @@ public class GTFSDatabase {
                 GpsLongitude = cursor.getFloat(1);
             }
 
-            if (GpsLatitude != null && GpsLongitude != null) {
+            if (GpsLatitude != null && GpsLongitude != null && GpsLatitude != 0 && GpsLongitude != 0) {
                 BusStop.SetCoords(GpsLongitude, GpsLatitude);
             }
 
@@ -152,6 +159,8 @@ public class GTFSDatabase {
             GTFSDatabaseHelper Dbh = new GTFSDatabaseHelper(Ctx, DATABASEFILE);
             Sld = Dbh.getWritableDatabase();
         }
+
+        this.ctx = Ctx;
     }
 
     public void InsertRoutes(String fileContent) {

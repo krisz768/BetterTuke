@@ -1,5 +1,6 @@
-package hu.krisz768.bettertuke.NearStops;
+package hu.krisz768.bettertuke.ShortcutCreator;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,11 +12,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.HelperProvider;
+import hu.krisz768.bettertuke.NearStops.NearBusStopListAdapter;
+import hu.krisz768.bettertuke.NearStops.NearBusStopListFragment;
 import hu.krisz768.bettertuke.R;
+import hu.krisz768.bettertuke.StopShortcutCreatorActivity;
 
-public class NearBusStopListAdapter extends RecyclerView.Adapter<NearBusStopListAdapter.ViewHolder>{
+public class StopShortcutMainListAdapter extends RecyclerView.Adapter<StopShortcutMainListAdapter.ViewHolder>{
     private final BusPlaces[] busPlaces;
-    private final NearBusStopListFragment Callback;
+    private final StopShortcutCreatorActivity Callback;
     private final int FavCount;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -32,8 +36,9 @@ public class NearBusStopListAdapter extends RecyclerView.Adapter<NearBusStopList
             this.view = view;
         }
 
-        public void setData(BusPlaces stop, NearBusStopListFragment Callback, boolean Fav) {
+        public void setData(BusPlaces stop, StopShortcutCreatorActivity Callback, boolean Fav) {
             icon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected));
+
             if (Fav) {
                 FavIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
                 FavIcon.setVisibility(View.VISIBLE);
@@ -43,11 +48,11 @@ public class NearBusStopListAdapter extends RecyclerView.Adapter<NearBusStopList
 
             StopName.setText(stop.getName());
 
-            view.setOnClickListener(view -> Callback.OnStopClick(stop.getId()));
+            view.setOnClickListener(view -> Callback.OnPlaceClick(stop.getId()));
         }
     }
 
-    public NearBusStopListAdapter(BusPlaces[] busPlaces, NearBusStopListFragment Callback, int FavCount) {
+    public StopShortcutMainListAdapter(BusPlaces[] busPlaces, StopShortcutCreatorActivity Callback, int FavCount) {
         this.busPlaces = busPlaces;
         this.Callback = Callback;
         this.FavCount = FavCount;
@@ -55,15 +60,15 @@ public class NearBusStopListAdapter extends RecyclerView.Adapter<NearBusStopList
 
     @NonNull
     @Override
-    public NearBusStopListAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public StopShortcutMainListAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.near_stop_recview, viewGroup, false);
 
-        return new NearBusStopListAdapter.ViewHolder(view);
+        return new StopShortcutMainListAdapter.ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(NearBusStopListAdapter.ViewHolder viewHolder, final int position) {
+    public void onBindViewHolder(StopShortcutMainListAdapter.ViewHolder viewHolder, final int position) {
         viewHolder.setData(busPlaces[position], Callback, position < FavCount);
     }
 
