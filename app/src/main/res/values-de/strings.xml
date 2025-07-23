@@ -86,4 +86,7 @@
     <string name="UpdateReadyToInstallButton">" INSTALLIEREN"</string>
     <string name="StopShortcutIcon">Haltestelle</string>
     <string name="BusShortcutIcon">Buslinie</string>
+    <string name="ActiveBuses">Aktive Busse</string>
+    <string name="InternetError">Bitte stellen Sie eine Verbindung zum Internet her.</string>
+    <string name="BusTypeIcon">Symbol für den Bustyp</string>
 </resources>

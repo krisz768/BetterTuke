@@ -5,6 +5,10 @@
         android:icon="@drawable/baseline_info_24"
         android:title="@string/AboutUsMenu" />
     <item
+        android:id="@+id/ActiveBusButton"
+        android:icon="@drawable/baseline_info_24"
+        android:title="@string/ActiveBuses" />
+    <item
         android:id="@+id/PrivacyButton"
         android:icon="@drawable/baseline_info_24"
         android:title="@string/PrivacyButton" />

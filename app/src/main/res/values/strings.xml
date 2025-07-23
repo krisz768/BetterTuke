@@ -93,4 +93,10 @@
     <string name="UpdateReadyToInstallButton">INSTALL</string>
     <string name="StopShortcutIcon">Stop</string>
     <string name="BusShortcutIcon">Bus line</string>
+    <string name="ActiveBuses">Active buses</string>
+    <string name="InternetError">Please connect to the internet.</string>
+    <string name="BusTypeIcon">Bus type icon</string>
+    <string name="BusTypeRec" translatable="false">%1$s (%2$d)</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

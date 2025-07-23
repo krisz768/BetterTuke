@@ -2,6 +2,8 @@ package hu.krisz768.bettertuke.NewApiInterface;
 
 import static java.lang.Math.round;
 
+import static hu.krisz768.bettertuke.HelperProvider.getBusAttributes;
+
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
@@ -23,9 +25,11 @@ import java.util.Locale;
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.LineInfoTravelTime;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
+import hu.krisz768.bettertuke.api_interface.models.ActiveBusTypeRespModel;
 import hu.krisz768.bettertuke.api_interface.models.BusPositionRespModel;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
+import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class GTFSRProvider {
     private final Context ctx;
@@ -267,6 +271,38 @@ public class GTFSRProvider {
         }
 
         return false;
+    }
+
+    public ActiveBusTypeRespModel[] GetActiveBuses() {
+        UpdateData();
+
+        if (OnlineData == null) {
+            return null;
+        }
+
+        ArrayList<ActiveBusTypeRespModel> Resp = new ArrayList<>();
+
+        for (GtfsRealtime.FeedEntity entity : OnlineData.getEntityList()) {
+            BusAttributes busAttributes = getBusAttributes(ctx, entity.getVehicle().getVehicle().getLicensePlate().split("#")[0].replace("-",""));
+            boolean Found = false;
+
+            for (int i = 0; i < Resp.size(); i++) {
+                if (Resp.get(i).getBusTypeName().equals(busAttributes.getType())) {
+                    Resp.get(i).AddTripId(entity.getVehicle().getTrip().getTripId(), busAttributes.getPlateNumber());
+                    Found = true;
+                    break;
+                }
+            }
+
+            if (!Found) {
+                Resp.add(new ActiveBusTypeRespModel(busAttributes.getType(), entity.getVehicle().getTrip().getTripId(), busAttributes.getPlateNumber()));
+            }
+        }
+
+        ActiveBusTypeRespModel[] ret = new ActiveBusTypeRespModel[Resp.size()];
+        Resp.toArray(ret);
+
+        return ret;
     }
 
     private void log (String msg) {

@@ -178,6 +178,7 @@ public class BusShortcutCreatorActivity extends AppCompatActivity {
                     new ShortcutInfoCompat.Builder(this, Id).setIntent(intent).setShortLabel(Id).setIcon(IconCompat.createWithBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapBus))).build();
             ShortcutManagerCompat.requestPinShortcut(this, sic, null);
 
+            finish();
         }
     }
 

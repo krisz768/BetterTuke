@@ -85,4 +85,7 @@
     <string name="UpdateReadyToInstallButton">" TELEPÍTÉS"</string>
     <string name="StopShortcutIcon">Megálló</string>
     <string name="BusShortcutIcon">Vonal</string>
+    <string name="ActiveBuses">Aktív buszok</string>
+    <string name="InternetError">Kérlek kapcsolódj az internetre.</string>
+    <string name="BusTypeIcon">Busz típús ikon</string>
 </resources>

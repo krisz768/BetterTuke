@@ -2,6 +2,7 @@ package hu.krisz768.bettertuke.models;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import hu.krisz768.bettertuke.ActiveBusActivity;
 import hu.krisz768.bettertuke.Database.BusLine;
 
 public class BackStack {
@@ -13,8 +14,9 @@ public class BackStack {
     private final LatLng SelectedPlace;
     private final BusLine busLine;
     private final IncomBusBackStack IncomBusMode;
+    private final String ActiveBusType;
 
-    public BackStack(Integer currentPlace, String currentStop, String currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace, IncomBusBackStack IncomBusMode) {
+    public BackStack(Integer currentPlace, String currentStop, String currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace, IncomBusBackStack IncomBusMode, String activeBusType) {
         CurrentPlace = currentPlace;
         CurrentStop = currentStop;
         CurrentBusTrack = currentBusTrack;
@@ -23,6 +25,7 @@ public class BackStack {
         this.IsBackButtonCollapse = IsBackButtonCollapse;
         this.SelectedPlace = SelectedPlace;
         this.IncomBusMode = IncomBusMode;
+        ActiveBusType = activeBusType;
     }
 
     public Integer getCurrentPlace() {
@@ -55,5 +58,9 @@ public class BackStack {
 
     public IncomBusBackStack getIncomBusMode() {
         return IncomBusMode;
+    }
+
+    public String getActiveBusType() {
+        return ActiveBusType;
     }
 }

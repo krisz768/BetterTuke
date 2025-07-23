@@ -1420,6 +1420,15 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        if (PrevState.getActiveBusType() != null) {
+            ShowActiveBusActivity(PrevState.getActiveBusType());
+
+            backStack.remove(backStack.size() - 1);
+
+            RestorePrevState();
+            return;
+        }
+
         CurrentPlace = PrevState.getCurrentPlace();
         CurrentStop = PrevState.getCurrentStop();
         CurrentBusTrack = PrevState.getCurrentBusTrack();
@@ -1491,8 +1500,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void AddBackStack() {
-        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace, IncomBusMode));
+        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace, IncomBusMode, null));
         EnableBack();
+    }
+
+    public void ShowActiveBusActivity(String BusType) {
+        Intent AbIntent = new Intent(this, ActiveBusActivity.class);
+
+        if (BusType != null) {
+            AbIntent.putExtra("BusType", BusType);
+        }
+
+        ActiveBusResultLaunch.launch(AbIntent);
     }
 
     public void ShowSchedule(String StopId, String LineNum, String Direction, String Date, boolean PreSelected) {
@@ -1511,7 +1530,18 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     if (result.getData() != null) {
                         TrackBus(result.getData().getExtras().getString("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
-                        backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null));
+                        backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null, null));
+                    }
+                }
+            });
+
+    ActivityResultLauncher<Intent> ActiveBusResultLaunch = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    if (result.getData() != null) {
+                        TrackBus(result.getData().getExtras().getString("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
+                        backStack.add(new BackStack(null, null, null, null, null, false, null, null, result.getData().getExtras().getString("BusType")));
                     }
                 }
             });
@@ -1525,6 +1555,9 @@ public class MainActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.AboutUsButton:
                     ShowAbout();
+                    return true;
+                case R.id.ActiveBusButton:
+                    ShowActiveBusActivity(null);
                     return true;
                 case R.id.PrivacyButton:
                     ShowPrivacySettings();

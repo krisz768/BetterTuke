@@ -12,6 +12,7 @@
         android:name=".BetterTukeApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
@@ -21,25 +22,27 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="34">
         <activity
+            android:name=".ActiveBusActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
+            android:exported="false" />
+        <activity
             android:name=".BusShortcutCreatorActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
-            android:icon="@mipmap/bus_shortcut_icon_round"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
             android:exported="false"
+            android:icon="@mipmap/bus_shortcut_icon_round"
             android:label="@string/BusShortcutIcon">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
             </intent-filter>
         </activity>
-
-
         <activity
             android:name=".UpdateAndOnboarding"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
             android:exported="false"
             android:noHistory="true" />
         <activity
             android:name=".ScheduleActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
@@ -47,7 +50,7 @@
         </activity>
         <activity
             android:name=".StopShortcutCreatorActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
             android:exported="false"
             android:icon="@mipmap/stop_shortcut_icon_round"
             android:label="@string/StopShortcutIcon">
@@ -68,7 +71,7 @@
         -->
         <meta-data
             android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
-            android:value="true"/>
+            android:value="true" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="" />
@@ -79,7 +82,7 @@
 
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
             android:exported="false"
             android:label="@string/title_activity_main"
             android:theme="@style/Theme.BetterTuke">

@@ -202,11 +202,13 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
             inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         }
 
+        mLayoutManager.onSaveInstanceState();
+
         ScrollState = mLayoutManager.onSaveInstanceState();
 
         StopClicked = true;
 
-        findViewById(R.id.StopShortcutSearch).setVisibility(View.INVISIBLE);
+        findViewById(R.id.StopShortcutSearch).setVisibility(View.GONE);
 
         List<BusStops> ResultsList = new ArrayList<>();
         for (BusStops mStop : busStops.values()) {
@@ -251,6 +253,7 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
                     new ShortcutInfoCompat.Builder(this, Id).setIntent(intent).setShortLabel(label).setIcon(IconCompat.createWithBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected))).build();
             ShortcutManagerCompat.requestPinShortcut(this, sic, null);
 
+            finish();
         }
     }
 
