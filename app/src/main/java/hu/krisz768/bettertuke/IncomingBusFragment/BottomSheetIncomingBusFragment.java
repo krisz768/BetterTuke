@@ -569,6 +569,15 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
 
             if (BusList != null && BusList.length > 0) {
+                NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
+
+                for (IncomingBusRespModel incomingBusRespModel : BusList) {
+                    String newName = NDm.GetBusNameByStop(incomingBusRespModel.getLineId(),mStop);
+                    if (newName != null) {
+                        incomingBusRespModel.setLineName(newName);
+                    }
+                }
+
                 if (InBusFragment == null) {
                     try {
                         InBusFragment = IncomingBusListFragment.newInstance(BusList, SelectedDate, DateTimeSelected);

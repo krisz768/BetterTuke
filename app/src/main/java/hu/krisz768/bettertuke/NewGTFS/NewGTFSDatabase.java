@@ -809,6 +809,24 @@ public class NewGTFSDatabase {
         Sld.endTransaction();
     }
 
+    public String GetBusNameByStop(String TripId, String StopId) {
+        try
+        {
+            String ret = null;
+            Cursor cursor = Sld.rawQuery("SELECT substr(t.stop_headsign, length(r.route_short_name)+2) FROM stop_times AS t INNER JOIN trips AS tr ON t.trip_id = tr.trip_id INNER JOIN routes AS r ON r.route_id = tr.route_id WHERE t.trip_id = '" + TripId + "' AND t.stop_id = '" + StopId + "';", null);
+            while(cursor.moveToNext()) {
+                ret = cursor.getString(0);
+            }
+            cursor.close();
+
+            return ret;
+
+        } catch (Exception e) {
+            log(e.toString());
+            return null;
+        }
+    }
+
     private void log (String msg) {
         Log.e("NewGTFSDatabase", msg);
     }

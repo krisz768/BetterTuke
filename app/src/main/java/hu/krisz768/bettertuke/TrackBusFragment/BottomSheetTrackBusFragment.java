@@ -52,6 +52,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
     private ImageView AirConditioner;
     private ImageView Wifi;
     private ImageView Usb;
+    private TextView BusText;
     private boolean BusAttributesVisible = false;
     private ScheduledExecutorService UpdateLoop;
     private TrackBusRespModel RecentBusPosition;
@@ -85,7 +86,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_bottom_sheet_track_bus, container, false);
         TextView BusNum = view.findViewById(R.id.TrackBusNumber);
-        TextView BusText = view.findViewById(R.id.TrackBusName);
+        BusText = view.findViewById(R.id.TrackBusName);
 
         BusNum.setText(mBusLine.getRouteInfo().getLineNum());
         int WhiteColor = Color.rgb(255,255,255);
@@ -181,6 +182,10 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
             if (BusPosition != null) {
                 if (activity != null) {
+                    if (BusPosition.getBusNameByStop() != null) {
+                        BusText.setText(BusPosition.getBusNameByStop());
+                    }
+
                     Calendar calendar = Calendar.getInstance();
                     calendar.add(Calendar.MINUTE, -1);
                     if (BusPosition.getLastUpdate().after(calendar.getTime())) {

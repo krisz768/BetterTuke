@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class IncomingBusRespModel implements Serializable {
     private final String LineNum;
-    private final String LineName;
+    private String LineName;
     private Date ArriveTime;
     private final String LineId;
     private int RemainingMin;
@@ -69,6 +69,10 @@ public class IncomingBusRespModel implements Serializable {
         calendar.add(Calendar.MINUTE, Delay);
 
         ArriveTime = calendar.getTime();
+    }
+
+    public void setLineName(String lineName) {
+        LineName = lineName;
     }
 
     public void setAtStop () {

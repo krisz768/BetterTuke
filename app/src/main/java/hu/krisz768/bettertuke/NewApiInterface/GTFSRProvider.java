@@ -112,10 +112,11 @@ public class GTFSRProvider {
             PositionDate = new Date(entityUpdate.getTripUpdate().getTimestamp()*1000);
         }
 
-
         for (GtfsRealtime.FeedEntity entity : OnlineData.getEntityList()) {
             if (entity.getVehicle().getTrip().getTripId().equals(LineId)) {
-                return new TrackBusRespModel(entity.getVehicle().getVehicle().getLicensePlate().split("#")[0].replace("-",""), entity.getVehicle().getCurrentStopSequence(), entity.getVehicle().getStopId(), entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT, entity.getVehicle().getPosition().getLongitude(), entity.getVehicle().getPosition().getLatitude(), DelayMin, DelaySec, PositionDate, round(entity.getVehicle().getPosition().getSpeed()*3.6F));
+                NewGTFSDatabase Ngd = new NewGTFSDatabase(ctx);
+                String NewBusName = Ngd.GetBusNameByStop(LineId, entity.getVehicle().getStopId());
+                return new TrackBusRespModel(entity.getVehicle().getVehicle().getLicensePlate().split("#")[0].replace("-",""), entity.getVehicle().getCurrentStopSequence(), entity.getVehicle().getStopId(), entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT, entity.getVehicle().getPosition().getLongitude(), entity.getVehicle().getPosition().getLatitude(), DelayMin, DelaySec, PositionDate, round(entity.getVehicle().getPosition().getSpeed()*3.6F), NewBusName);
             }
         }
 
