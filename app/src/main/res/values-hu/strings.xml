@@ -88,4 +88,5 @@
     <string name="ActiveBuses">Aktív buszok</string>
     <string name="InternetError">Kérlek kapcsolódj az internetre.</string>
     <string name="BusTypeIcon">Busz típús ikon</string>
+    <string name="NearBuses">Közeli buszok:</string>
 </resources>

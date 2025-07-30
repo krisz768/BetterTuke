@@ -57,6 +57,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
     private ScheduledExecutorService UpdateLoop;
     private TrackBusRespModel RecentBusPosition;
     private boolean IsOldDataWarnDisplayed = false;
+    private boolean FirstDataLoose = false;
 
     public BottomSheetTrackBusFragment() {
 
@@ -181,6 +182,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
             Activity activity = getActivity();
 
             if (BusPosition != null) {
+                FirstDataLoose = true;
                 if (activity != null) {
                     if (BusPosition.getBusNameByStop() != null) {
                         BusText.setText(BusPosition.getBusNameByStop());
@@ -210,6 +212,10 @@ public class BottomSheetTrackBusFragment extends Fragment {
                     }
                 }
             } else {
+                if (FirstDataLoose) {
+                    FirstDataLoose = false;
+                    return;
+                }
                 if (activity != null) {
                     BusAttributesVisible = false;
                     activity.runOnUiThread(() -> BusNum.setBackground(activity.getDrawable(R.drawable.bus_number_background_inactive)));

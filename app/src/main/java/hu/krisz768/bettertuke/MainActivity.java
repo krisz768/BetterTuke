@@ -580,7 +580,9 @@ public class MainActivity extends AppCompatActivity {
 
         String AllBusVisible = userDatabase.GetPreference("AllBusVisible");
 
-        if (DetermineMode() != Mode.IncBus || !(AllBusVisible == null || AllBusVisible.equals("true"))) {
+        Mode CurrentMode = DetermineMode();
+
+        if ((CurrentMode != Mode.IncBus && CurrentMode != Mode.NearStops) || !(AllBusVisible == null || AllBusVisible.equals("true"))) {
             AllBusMarker = null;
         }
         if (AllBusMarker != null) {
@@ -1229,8 +1231,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void BusPositionMarkers(BusPositionRespModel[] Positions) {
+        Mode CurrenMode = DetermineMode();
 
-        if (DetermineMode() != Mode.IncBus) {
+        if (CurrenMode != Mode.IncBus && CurrenMode != Mode.NearStops) {
             return;
         }
 
@@ -1693,6 +1696,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (DetermineMode() == Mode.IncBus) {
             ShowBottomSheetIncomingBuses();
+            MarkerRenderer();
+        }
+
+        if (DetermineMode() == Mode.NearStops) {
+            ShowBottomSheetNearStops();
             MarkerRenderer();
         }
     }
