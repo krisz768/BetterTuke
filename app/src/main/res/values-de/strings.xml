@@ -90,4 +90,5 @@
     <string name="InternetError">Bitte stellen Sie eine Verbindung zum Internet her.</string>
     <string name="BusTypeIcon">Symbol für den Bustyp</string>
     <string name="NearBuses">Busse in der Nähe:</string>
+    <string name="SwitchBusActivityTitle">Transfermöglichkeiten:</string>
 </resources>

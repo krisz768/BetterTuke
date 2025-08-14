@@ -1,11 +1,15 @@
 package hu.krisz768.bettertuke.TrackBusFragment;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -47,6 +51,7 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         private final TextView Time;
         private final TextView Delay;
         private final ImageView trackGraphic;
+        private final Button switchGraphic;
         private final View view;
 
         public ViewHolder(View view) {
@@ -56,6 +61,7 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             Time = view.findViewById(R.id.TrackBusStopTime);
             Delay = view.findViewById(R.id.TrackBusDelayTime);
             trackGraphic = view.findViewById(R.id.trackGraphic);
+            switchGraphic = view.findViewById(R.id.TrackBusSwitchIcon);
 
             this.view = view;
         }
@@ -111,6 +117,18 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             String TimeString = String.format(Locale.US, "%02d", ArriveTime.get(Calendar.HOUR_OF_DAY)) + ":" + String.format(Locale.US, "%02d", ArriveTime.get(Calendar.MINUTE));
             Time.setText(TimeString);
 
+            switchGraphic.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Callback.OnSwitchClick(Data.getStopId());
+                }
+            });
+
+            switchGraphic.setVisibility(VISIBLE);
+            if (Pos == 0) {
+                switchGraphic.setVisibility(GONE);
+            }
+
             if (BusPosition != null) {
                 boolean ShowDelay = false;
 
@@ -148,10 +166,12 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackNormalHalf));
                         } else {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackNormalFull));
+                            switchGraphic.setVisibility(GONE);
                         }
                         ShowDelay = true;
                     } else if (BusPosition.getStopNumber() > Data.getOrder()) {
                         trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackNormalFull));
+                        switchGraphic.setVisibility(GONE);
                     } else {
                         if (PrevStopId == BusPosition.getStopNumber() && !BusPosition.isAtStop()) {
                             trackGraphic.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.TrackNormalInc));

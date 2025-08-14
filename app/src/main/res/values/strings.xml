@@ -98,5 +98,6 @@
     <string name="BusTypeIcon">Bus type icon</string>
     <string name="BusTypeRec" translatable="false">%1$s (%2$d)</string>
     <string name="NearBuses">Nearby buses:</string>
+    <string name="SwitchBusActivityTitle">Transfer options:</string>
     <!-- TODO: Remove or change this placeholder text -->
 </resources>

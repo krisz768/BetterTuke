@@ -1777,4 +1777,12 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.PrivacySettingsNotAvailable, Toast.LENGTH_LONG).show();
         }
     }
+
+    public void OpenSwitchActivity(String TripID, String StopID, String Date) {
+        Intent SwitchIntent = new Intent(this, SwitchActivity.class);
+        SwitchIntent.putExtra("StopId", StopID);
+        SwitchIntent.putExtra("TripId", TripID);
+        SwitchIntent.putExtra("Date", Date);
+        scheduleResultLaunch.launch(SwitchIntent);
+    }
 }

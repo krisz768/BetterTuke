@@ -163,4 +163,10 @@ public class TrackBusListFragment extends Fragment {
             }
         }
     }
+
+    public void OnSwitchClick(String StopID) {
+        if(getActivity() != null){
+            ((MainActivity) getActivity()).OpenSwitchActivity(mLine.getLineId(), StopID, mLine.getDate());
+        }
+    }
 }
