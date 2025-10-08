@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
@@ -641,6 +642,9 @@ public class HelperProvider {
         if (name == null) {
             return "-";
         }
+
+        Log.e("TESZTETTET", id);
+        
         return name;
     }
 }

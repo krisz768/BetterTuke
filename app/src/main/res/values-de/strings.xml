@@ -91,4 +91,6 @@
     <string name="BusTypeIcon">Symbol für den Bustyp</string>
     <string name="NearBuses">Busse in der Nähe:</string>
     <string name="SwitchBusActivityTitle">Transfermöglichkeiten:</string>
+    <string name="SwitchTimeString">%1$s (%2$s Minuten)</string>
+    <string name="SwitchTimeStringOneMinute">%1$s (%2$s Minute)</string>
 </resources>

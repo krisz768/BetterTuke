@@ -90,4 +90,6 @@
     <string name="BusTypeIcon">Busz típús ikon</string>
     <string name="NearBuses">Közeli buszok:</string>
     <string name="SwitchBusActivityTitle">Átszállási lehetőségek:</string>
+    <string name="SwitchTimeString">%1$s (%2$s perc)</string>
+    <string name="SwitchTimeStringOneMinute">%1$s (%2$s perc)</string>
 </resources>

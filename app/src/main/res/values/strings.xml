@@ -99,7 +99,6 @@
     <string name="BusTypeRec" translatable="false">%1$s (%2$d)</string>
     <string name="NearBuses">Nearby buses:</string>
     <string name="SwitchBusActivityTitle">Transfer options:</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="SwitchTimeString">%1$s (%2$s minutes)</string>
+    <string name="SwitchTimeStringOneMinute">%1$s (%2$s minute)</string>
 </resources>

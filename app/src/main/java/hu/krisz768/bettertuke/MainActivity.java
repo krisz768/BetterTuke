@@ -1549,6 +1549,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+    ActivityResultLauncher<Intent> switchResultLaunch = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    if (result.getData() != null) {
+                        TrackBus(result.getData().getExtras().getString("TrackId"), result.getData().getExtras().getString("Date"));
+                    }
+                }
+            });
+
     @SuppressLint("NonConstantResourceId")
     private void SetupSearchView() {
         searchView = findViewById(R.id.search_view);
@@ -1783,6 +1793,6 @@ public class MainActivity extends AppCompatActivity {
         SwitchIntent.putExtra("StopId", StopID);
         SwitchIntent.putExtra("TripId", TripID);
         SwitchIntent.putExtra("Date", Date);
-        scheduleResultLaunch.launch(SwitchIntent);
+        switchResultLaunch.launch(SwitchIntent);
     }
 }

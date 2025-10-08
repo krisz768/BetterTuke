@@ -1,7 +1,10 @@
 package hu.krisz768.bettertuke;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -55,5 +58,14 @@ public class SwitchActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.SwitchFragmentContainer, Sf)
                 .commit();
+    }
+
+    public void TrackBus(String Id, String Date) {
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra("TrackId",Id);
+        returnIntent.putExtra("Date",Date);
+
+        setResult(Activity.RESULT_OK,returnIntent);
+        finish();
     }
 }
