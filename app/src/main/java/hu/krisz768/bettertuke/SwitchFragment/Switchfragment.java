@@ -41,6 +41,7 @@ import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.IncomingBusFragment.BottomSheetIncomingBusFragment;
 import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusListFragment;
 import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusStopSelectorAdapter;
+import hu.krisz768.bettertuke.LoadingFragment;
 import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
@@ -233,6 +234,20 @@ public class Switchfragment extends Fragment {
         CurrentStopID = StopID;
         Sbssa.setSelectedStop(StopID);
         Sbssa.notifyDataSetChanged();
+
+        ResetList();
+
+        new Thread(() -> {
+            GTFSRProvider GTFSRProvider_ = new GTFSRProvider(getActivity());
+            GetBusPosition(GTFSRProvider_);
+        }).start();
+    }
+
+    private void ResetList() {
+        getChildFragmentManager().beginTransaction()
+                .replace(R.id.BusSwitchListFragment, new LoadingFragment())
+                .commit();
+        InBusFragment = null;
     }
 
     @Override
@@ -303,6 +318,7 @@ public class Switchfragment extends Fragment {
 
     private void GetIncomingBuses(String Time) {
         NewGTFSDatabase NDm = new NewGTFSDatabase(getContext());
+
         FragmentActivity mainActivity = (FragmentActivity)getActivity();
         Date currentTime = Calendar.getInstance().getTime();
         GTFSRProvider GTFSRProvider_ = new GTFSRProvider(this.getActivity());
@@ -311,7 +327,16 @@ public class Switchfragment extends Fragment {
 
         SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd", Locale.US);
         String CurrentDate = sdf1.format(new Date());
-        BusList = NDm.GetOfflineDepartureTimes(CurrentStopID, Date == null ? CurrentDate : Date, Time);
+
+        BusList = GTFSRProvider_.getNextIncomingBuses(CurrentStopID, Date == null ? CurrentDate : Date, Time);
+
+        if (BusList == null) {
+            NDm.GetOfflineDepartureTimes(CurrentStopID, Date == null ? CurrentDate : Date, Time);
+            if(mainActivity != null && HelperProvider.displayOfflineText()) {
+                mainActivity.runOnUiThread(() -> Toast.makeText(mainActivity,R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
+                HelperProvider.setOfflineTextDisplayed();
+            }
+        }
 
         if (BusList != null) {
 

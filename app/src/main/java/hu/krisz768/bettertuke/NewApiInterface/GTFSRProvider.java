@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.google.transit.realtime.GtfsRealtime;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -144,19 +145,23 @@ public class GTFSRProvider {
     }
 
     public IncomingBusRespModel[] getNextIncomingBuses(String StopId) {
+        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd", Locale.US);
+        SimpleDateFormat Sdf2 = new SimpleDateFormat("HH:mm", Locale.US);
+        String CurrentDate = sdf1.format(new Date());
+        String CurrentTime = Sdf2.format(new Date());
+
+        return getNextIncomingBuses(StopId, CurrentDate, CurrentTime);
+    }
+
+    public IncomingBusRespModel[] getNextIncomingBuses(String StopId, String SDate,  String STime) {
         UpdateData();
 
         if (OnlineData == null || OnlineDataUpdates == null) {
             return null;
         }
 
-        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd", Locale.US);
-        SimpleDateFormat Sdf2 = new SimpleDateFormat("HH:mm", Locale.US);
-        String CurrentDate = sdf1.format(new Date());
-        String CurrentTime = Sdf2.format(new Date());
-
         NewGTFSDatabase NDm = new NewGTFSDatabase(ctx);
-        List<IncomingBusRespModel> BusList = new ArrayList<>(List.of(NDm.GetOfflineDepartureTimes(StopId, CurrentDate, CurrentTime)));
+        List<IncomingBusRespModel> BusList = new ArrayList<>(List.of(NDm.GetOfflineDepartureTimes(StopId, SDate, STime)));
         List<IncomingBusRespModel> RemovableBusList = new ArrayList<>();
 
 
@@ -222,12 +227,21 @@ public class GTFSRProvider {
                                     log( "É:" + Litt.getArriveTime() + " D:" + entityUpdate.getTripUpdate().getDelay());
                                 }
 
+                                Calendar CompareTime = (Calendar) Calendar.getInstance();
+                                String[] CompareTimeParts = STime.split(":");
+                                CompareTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(CompareTimeParts[0]));
+                                CompareTime.set(Calendar.MINUTE, Integer.parseInt(CompareTimeParts[1]));
 
-                                long diff = ArriveTime.getTime().getTime() - new Date().getTime();
+                                long diff = ArriveTime.getTime().getTime() - CompareTime.getTime().getTime();
 
                                 int RemainingMin = (int) (diff / 1000) / 60;
 
-                                BusList.add(new IncomingBusRespModel(LineInfo.getRouteInfo().getLineNum(), LineInfo.getRouteInfo().getLineName(), ArriveTime.getTime(), entity.getVehicle().getTrip().getTripId(), Math.max(RemainingMin, 0), (Litt.getOrder() == entity.getVehicle().getCurrentStopSequence()) && entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT));
+                                log( "Remaining min:" + RemainingMin);
+
+                                if (RemainingMin >= 0) {
+                                    BusList.add(new IncomingBusRespModel(LineInfo.getRouteInfo().getLineNum(), LineInfo.getRouteInfo().getLineName(), ArriveTime.getTime(), entity.getVehicle().getTrip().getTripId(), Math.max(RemainingMin, 0), (Litt.getOrder() == entity.getVehicle().getCurrentStopSequence()) && entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT));
+                                }
+
                                 /*for (int i = 0; i < BusList.size(); i++) {
 
                                     //log("INS T:" + BusList.get(i).getRemainingMin()  + " / " +  (int) (diff / 1000) / 60);
