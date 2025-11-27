@@ -24,7 +24,9 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +43,7 @@ import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.IncomingBusFragment.BottomSheetIncomingBusFragment;
 import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusListFragment;
 import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusStopSelectorAdapter;
+import hu.krisz768.bettertuke.InfoFragment;
 import hu.krisz768.bettertuke.LoadingFragment;
 import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
@@ -54,6 +57,7 @@ public class Switchfragment extends Fragment {
     private static final String ARG_PARAM1 = "TripID";
     private static final String ARG_PARAM2 = "StopID";
     private static final String ARG_PARAM3 = "Date";
+    private static final String ARG_PARAM4 = "CurrentStopID";
 
     private String TripID;
     private String StopID;
@@ -74,13 +78,14 @@ public class Switchfragment extends Fragment {
 
     }
 
-    public static Switchfragment newInstance(String TripID, String StopID, String Date) {
+    public static Switchfragment newInstance(String TripID, String StopID,String CurrentStopID, String Date) {
         Switchfragment fragment = new Switchfragment();
         Bundle args = new Bundle();
 
         args.putString(ARG_PARAM1, TripID);
         args.putString(ARG_PARAM2, StopID);
         args.putString(ARG_PARAM3, Date);
+        args.putString(ARG_PARAM4, CurrentStopID);
         fragment.setArguments(args);
         return fragment;
     }
@@ -91,7 +96,7 @@ public class Switchfragment extends Fragment {
         if (getArguments() != null) {
             TripID = getArguments().getString(ARG_PARAM1);
             StopID = getArguments().getString(ARG_PARAM2);
-            CurrentStopID = StopID;
+            CurrentStopID = getArguments().getString(ARG_PARAM4);
             Date = getArguments().getString(ARG_PARAM3);
         }
 
@@ -178,6 +183,7 @@ public class Switchfragment extends Fragment {
                 @Override
                 public void run() {
                     Sbssa = new SwitchBusStopSelectorAdapter(SelectedPlaceStopsArray,StopID, switchfragment, StopNames, ctx);
+                    Sbssa.setSelectedStop(CurrentStopID);
 
                     RecyclerView StopSelectorRec = view.findViewById(R.id.SwichBusStopListRecView);
                     LinearLayoutManager mLayoutManager = new LinearLayoutManager(ctx);
@@ -283,7 +289,11 @@ public class Switchfragment extends Fragment {
                 return;
             }
 
-            TrackBusRespModel BusPosition = GTFSRProvider_.getBusLocation(mBusLine.getLineId());
+            TrackBusRespModel BusPosition = null;
+
+            if (Date == null) {
+                BusPosition = GTFSRProvider_.getBusLocation(mBusLine.getLineId());
+            }
 
             View view = getView();
             if (view == null) {
@@ -295,20 +305,60 @@ public class Switchfragment extends Fragment {
                 return;
             }
 
+            TextView BusArrInfo = view.findViewById(R.id.SwitchBusStopInfo);
+
+            Date CurrentTime = new Date();
+
             if (BusPosition != null) {
-                TextView BusArrInfo = view.findViewById(R.id.SwitchBusStopInfo);
+
                 if (BusPosition.getDelayMin()==1){
                     BusArrInfo.setText(ctx.getString(R.string.SwitchTimeStringOneMinute, ArrTime, BusPosition.getDelayMin() >= 0 ? "+" + BusPosition.getDelayMin() : BusPosition.getDelayMin()));
                 } else {
                     BusArrInfo.setText(ctx.getString(R.string.SwitchTimeString, ArrTime, BusPosition.getDelayMin() >= 0 ? "+" + BusPosition.getDelayMin() : BusPosition.getDelayMin()));
                 }
 
-                Calendar calendar = Calendar.getInstance();
+                Calendar Parsecalendar = Calendar.getInstance();
                 SimpleDateFormat Sdf2 = new SimpleDateFormat("HH:mm", Locale.US);
-                calendar.setTime(Sdf2.parse(ArrTime));
-                calendar.add(Calendar.MINUTE, BusPosition.getDelayMin());
+                Parsecalendar.setTime(Sdf2.parse(ArrTime));
+                Parsecalendar.add(Calendar.MINUTE, BusPosition.getDelayMin());
 
-                GetIncomingBuses(Sdf2.format(calendar.getTime()));
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.HOUR_OF_DAY, Parsecalendar.get(Calendar.HOUR_OF_DAY));
+                calendar.set(Calendar.MINUTE, Parsecalendar.get(Calendar.MINUTE));
+
+                if (calendar.getTime().after(CurrentTime)) {
+                    GetIncomingBuses(Sdf2.format(calendar.getTime()));
+                } else {
+                    DisplayInfoFragmentBusLeft();
+                }
+            } else {
+                if (Date == null) {
+                    BusArrInfo.setText(ArrTime);
+                } else {
+                    StringBuilder str = new StringBuilder(Date);
+
+                    str.insert(6, ". ");
+                    str.insert(4, ". ");
+
+                    BusArrInfo.setText(str + ". " + ArrTime);
+                }
+
+
+                Calendar Parsecalendar = Calendar.getInstance();
+                SimpleDateFormat Sdf2 = new SimpleDateFormat("HH:mm", Locale.US);
+                Parsecalendar.setTime(Sdf2.parse(ArrTime));
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.HOUR_OF_DAY, Parsecalendar.get(Calendar.HOUR_OF_DAY));
+                calendar.set(Calendar.MINUTE, Parsecalendar.get(Calendar.MINUTE));
+
+                Log.e("TAG", "GetBusPosition: " + calendar.toString());
+                
+                if (calendar.getTime().after(CurrentTime) || Date != null) {
+                    GetIncomingBuses(Sdf2.format(calendar.getTime()));
+                } else {
+                    DisplayInfoFragmentBusLeft();
+                }
             }
         } catch (Exception e) {
             Log.e("Update bus pos error", e.toString());
@@ -328,17 +378,78 @@ public class Switchfragment extends Fragment {
         SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd", Locale.US);
         String CurrentDate = sdf1.format(new Date());
 
-        BusList = GTFSRProvider_.getNextIncomingBuses(CurrentStopID, Date == null ? CurrentDate : Date, Time);
+        if (Date != null) {
+            if (CurrentStopID.equals("-1")) {
+                ArrayList<IncomingBusRespModel> list = new ArrayList<>();
+
+                for (BusStops element : SelectedPlaceStopsArray) {
+                    list.addAll(Arrays.asList(NDm.GetOfflineDepartureTimes(element.getId(), Date, Time)));
+                }
+
+                Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+
+                BusList = new IncomingBusRespModel[list.size()];
+                list.toArray(BusList);
+            } else {
+                BusList = NDm.GetOfflineDepartureTimes(CurrentStopID, Date, Time);
+            }
+        } else {
+            if (CurrentStopID.equals("-1")) {
+                ArrayList<IncomingBusRespModel> list = new ArrayList<>();
+
+                for (BusStops element : SelectedPlaceStopsArray) {
+                    IncomingBusRespModel[] Data = GTFSRProvider_.getNextIncomingBuses(element.getId(), CurrentDate, Time);
+                    if (Data != null) {
+                        list.addAll(Arrays.asList(Data));
+                    } else {
+                        list = null;
+                        break;
+                    }
+                }
+
+                if (list != null) {
+                    Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+
+                    BusList = new IncomingBusRespModel[list.size()];
+                    list.toArray(BusList);
+                }
+            } else {
+                BusList = GTFSRProvider_.getNextIncomingBuses(CurrentStopID, CurrentDate, Time);
+            }
+        }
 
         if (BusList == null) {
-            NDm.GetOfflineDepartureTimes(CurrentStopID, Date == null ? CurrentDate : Date, Time);
+            if (CurrentStopID.equals("-1")) {
+                ArrayList<IncomingBusRespModel> list = new ArrayList<>();
+
+                for (BusStops element : SelectedPlaceStopsArray) {
+                    list.addAll(Arrays.asList(NDm.GetOfflineDepartureTimes(element.getId(), Date == null ? CurrentDate : Date, Time)));
+                }
+
+                Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+
+                BusList = new IncomingBusRespModel[list.size()];
+                list.toArray(BusList);
+            } else {
+                BusList = NDm.GetOfflineDepartureTimes(CurrentStopID, Date == null ? CurrentDate : Date, Time);
+            }
             if(mainActivity != null && HelperProvider.displayOfflineText()) {
                 mainActivity.runOnUiThread(() -> Toast.makeText(mainActivity,R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
                 HelperProvider.setOfflineTextDisplayed();
             }
         }
 
-        if (BusList != null) {
+        if (BusList != null && Date == null) {
+            ArrayList<IncomingBusRespModel> list2 = new ArrayList<>();
+            for (IncomingBusRespModel incomingBusRespModel : BusList) {
+                if (!incomingBusRespModel.getLineId().equals(TripID)) {
+                    list2.add(incomingBusRespModel);
+                }
+            }
+
+            BusList = new IncomingBusRespModel[list2.size()];
+            list2.toArray(BusList);
+
 
             Calendar Now = Calendar.getInstance();
             for (IncomingBusRespModel incomingBusRespModel : BusList) {
@@ -375,25 +486,9 @@ public class Switchfragment extends Fragment {
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         if (InBusFragment == null) {
             try {
-                InBusFragment = SwitchBusListFregment.newInstance(BusList, Date);
+                InBusFragment = SwitchBusListFregment.newInstance(BusList, Date, StopID, CurrentStopID);
                 getChildFragmentManager().beginTransaction()
                         .replace(R.id.BusSwitchListFragment, InBusFragment)
                         .commit();
@@ -408,9 +503,17 @@ public class Switchfragment extends Fragment {
                     if (InBusFragment != null) {
                         InBusFragment.UpdateList(finalBusList);
                     }
-
                 });
             }
         }
+    }
+
+    private void DisplayInfoFragmentBusLeft() {
+        InBusFragment = null;
+
+        InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.BusLeftStop), -1);
+        getChildFragmentManager().beginTransaction()
+                .replace(R.id.BusSwitchListFragment, Fragment)
+                .commit();
     }
 }

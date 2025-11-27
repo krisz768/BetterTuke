@@ -238,7 +238,7 @@ public class GTFSRProvider {
 
                                 log( "Remaining min:" + RemainingMin);
 
-                                if (RemainingMin >= 0) {
+                                if (RemainingMin >= 0 && RemainingMin < 91) {
                                     BusList.add(new IncomingBusRespModel(LineInfo.getRouteInfo().getLineNum(), LineInfo.getRouteInfo().getLineName(), ArriveTime.getTime(), entity.getVehicle().getTrip().getTripId(), Math.max(RemainingMin, 0), (Litt.getOrder() == entity.getVehicle().getCurrentStopSequence()) && entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT));
                                 }
 

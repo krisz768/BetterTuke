@@ -25,6 +25,8 @@ public class SwitchBusListAdapter extends RecyclerView.Adapter<SwitchBusListAdap
     private final Context ctx;
     private final SwitchBusListFregment ClickCallBack;
     private final String Date;
+    private final String StopID;
+    private final String CurrentStopID;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView number;
@@ -41,12 +43,12 @@ public class SwitchBusListAdapter extends RecyclerView.Adapter<SwitchBusListAdap
             this.view = view;
         }
 
-        public void setData(IncomingBusRespModel Data, Context ctx, SwitchBusListFregment ClickCallBack, String Date) {
+        public void setData(IncomingBusRespModel Data, Context ctx, SwitchBusListFregment ClickCallBack, String Date, String StopID, String CurrentStopID) {
 
             /*if (Custom) {
                 view.setOnClickListener(view -> ClickCallBack.OnBusClick(Data.getLineId(), Date));
             } else  {*/
-                view.setOnClickListener(view -> ClickCallBack.OnBusClick(Data.getLineId(), null));
+                view.setOnClickListener(view -> ClickCallBack.OnBusClick(Data.getLineId(), Date, StopID, CurrentStopID));
             //}
 
 
@@ -91,11 +93,13 @@ public class SwitchBusListAdapter extends RecyclerView.Adapter<SwitchBusListAdap
         this.BusList = BusList;
     }
 
-    public SwitchBusListAdapter(IncomingBusRespModel[] BusList, String Date, Context ctx, SwitchBusListFregment ClickCallBack) {
+    public SwitchBusListAdapter(IncomingBusRespModel[] BusList, String Date, Context ctx, SwitchBusListFregment ClickCallBack, String StopID, String CurrentStopID) {
         this.BusList = BusList;
         this.ctx = ctx;
         this.ClickCallBack = ClickCallBack;
         this.Date = Date;
+        this.StopID = StopID;
+        this.CurrentStopID = CurrentStopID;
     }
 
     @NonNull
@@ -109,7 +113,7 @@ public class SwitchBusListAdapter extends RecyclerView.Adapter<SwitchBusListAdap
 
     @Override
     public void onBindViewHolder(SwitchBusListAdapter.ViewHolder viewHolder, final int position) {
-        viewHolder.setData(BusList[position], ctx, ClickCallBack, Date);
+        viewHolder.setData(BusList[position], ctx, ClickCallBack, Date, StopID, CurrentStopID);
     }
 
     @Override

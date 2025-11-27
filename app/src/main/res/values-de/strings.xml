@@ -93,4 +93,5 @@
     <string name="SwitchBusActivityTitle">Transfermöglichkeiten:</string>
     <string name="SwitchTimeString">%1$s (%2$s Minuten)</string>
     <string name="SwitchTimeStringOneMinute">%1$s (%2$s Minute)</string>
+    <string name="BusLeftStop">" Der Bus fuhr von der Haltestelle ab."</string>
 </resources>

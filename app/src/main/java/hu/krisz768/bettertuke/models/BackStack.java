@@ -15,8 +15,9 @@ public class BackStack {
     private final BusLine busLine;
     private final IncomBusBackStack IncomBusMode;
     private final String ActiveBusType;
+    private final SwitchBackStack switchBackStack;
 
-    public BackStack(Integer currentPlace, String currentStop, String currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace, IncomBusBackStack IncomBusMode, String activeBusType) {
+    public BackStack(Integer currentPlace, String currentStop, String currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace, IncomBusBackStack IncomBusMode, String activeBusType, SwitchBackStack switchBackStack) {
         CurrentPlace = currentPlace;
         CurrentStop = currentStop;
         CurrentBusTrack = currentBusTrack;
@@ -26,6 +27,7 @@ public class BackStack {
         this.SelectedPlace = SelectedPlace;
         this.IncomBusMode = IncomBusMode;
         ActiveBusType = activeBusType;
+        this.switchBackStack = switchBackStack;
     }
 
     public Integer getCurrentPlace() {
@@ -62,5 +64,9 @@ public class BackStack {
 
     public String getActiveBusType() {
         return ActiveBusType;
+    }
+
+    public SwitchBackStack getSwitchBackStack() {
+        return switchBackStack;
     }
 }

@@ -239,7 +239,7 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
 
     public void OnStopClick(String Id) {
         if (ShortcutManagerCompat.isRequestPinShortcutSupported(this)){
-            Intent intent = new Intent(this, MainActivity.class).setAction(Intent.ACTION_MAIN);
+            Intent intent = new Intent(this, SplashActivity.class).setAction(Intent.ACTION_MAIN);
             intent.putExtra("ShortcutType", 1);
             intent.putExtra("ShortcutId", Id);
 

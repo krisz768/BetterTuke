@@ -92,4 +92,5 @@
     <string name="SwitchBusActivityTitle">Átszállási lehetőségek:</string>
     <string name="SwitchTimeString">%1$s (%2$s perc)</string>
     <string name="SwitchTimeStringOneMinute">%1$s (%2$s perc)</string>
+    <string name="BusLeftStop">A busz elhagyta a megállót.</string>
 </resources>

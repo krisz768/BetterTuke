@@ -19,6 +19,7 @@ public class SwitchActivity extends AppCompatActivity {
 
     private String TripID;
     private String StopID;
+    private String CurrentStopID;
     private String Date;
 
     @Override
@@ -40,6 +41,7 @@ public class SwitchActivity extends AppCompatActivity {
         if (b != null) {
             TripID = b.getString("TripId");
             StopID = b.getString("StopId");
+            CurrentStopID = b.getString("CurrentStopId");
             Date = b.getString("Date");
         }
 
@@ -53,17 +55,20 @@ public class SwitchActivity extends AppCompatActivity {
     }
 
     private void InitFragment() {
-        Switchfragment Sf = Switchfragment.newInstance(TripID, StopID, Date);
+        Switchfragment Sf = Switchfragment.newInstance(TripID, StopID, CurrentStopID,Date);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.SwitchFragmentContainer, Sf)
                 .commit();
     }
 
-    public void TrackBus(String Id, String Date) {
+    public void TrackBus(String Id, String Date, String StopId, String CurrentStopId) {
         Intent returnIntent = new Intent();
         returnIntent.putExtra("TrackId",Id);
         returnIntent.putExtra("Date",Date);
+        returnIntent.putExtra("StopId",StopId);
+        returnIntent.putExtra("CurrentStopId",CurrentStopId);
+        returnIntent.putExtra("TripId",TripID);
 
         setResult(Activity.RESULT_OK,returnIntent);
         finish();

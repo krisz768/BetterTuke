@@ -441,25 +441,63 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             IncomingBusRespModel[] BusList = null;
 
             MainActivity mainActivity = (MainActivity)getActivity();
+            SimpleDateFormat sdf3 = new SimpleDateFormat("yyyyMMdd", Locale.US);
 
             if (DateTimeSelected) {
                 if (mainActivity != null) {
                     if (mStop.equals("-1")) {
-                        ArrayList<IncomingBusRespModel> list = new ArrayList<>();
-                        NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
+                        ArrayList<IncomingBusRespModel> list = null;
+                        if (sdf3.format(new Date()).equals(SelectedDate)) {
+                            list = new ArrayList<>();
 
-                        for (BusStops element : SelectedPlaceStopsArray) {
-                            list.addAll(Arrays.asList(NDm.GetOfflineDepartureTimes(element.getId(), SelectedDate, SelectedTime)));
+                            for (BusStops element : SelectedPlaceStopsArray) {
+                                IncomingBusRespModel[] Data = GTFSRProvider_.getNextIncomingBuses(element.getId(), SelectedDate, SelectedTime);
+                                if (Data != null) {
+                                    list.addAll(Arrays.asList(Data));
+                                } else {
+                                    list = null;
+                                    break;
+                                }
+                            }
                         }
 
-                        Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+                        if (list != null) {
+                            Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
 
-                        BusList = new IncomingBusRespModel[list.size()];
-                        list.toArray(BusList);
+                            BusList = new IncomingBusRespModel[list.size()];
+                            list.toArray(BusList);
+                        } else {
+                            if(HelperProvider.displayOfflineText() && sdf3.format(new Date()).equals(SelectedDate)) {
+                                mainActivity.runOnUiThread(() -> Toast.makeText(mainActivity,R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
+                                HelperProvider.setOfflineTextDisplayed();
+                            }
+
+                            list = new ArrayList<>();
+                            NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
+
+                            for (BusStops element : SelectedPlaceStopsArray) {
+                                list.addAll(Arrays.asList(NDm.GetOfflineDepartureTimes(element.getId(), SelectedDate, SelectedTime)));
+                            }
+
+                            Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+
+                            BusList = new IncomingBusRespModel[list.size()];
+                            list.toArray(BusList);
+                        }
                     } else {
-                        NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
-                        BusList = NDm.GetOfflineDepartureTimes(SendStopId, SelectedDate, SelectedTime);
+                        if (sdf3.format(new Date()).equals(SelectedDate)) {
+                            BusList = GTFSRProvider_.getNextIncomingBuses(SendStopId, SelectedDate, SelectedTime);
+                        }
 
+                        if (BusList == null) {
+                            if(HelperProvider.displayOfflineText() && sdf3.format(new Date()).equals(SelectedDate)) {
+                                mainActivity.runOnUiThread(() -> Toast.makeText(mainActivity,R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
+                                HelperProvider.setOfflineTextDisplayed();
+                            }
+
+                            NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
+                            BusList = NDm.GetOfflineDepartureTimes(SendStopId, SelectedDate, SelectedTime);
+                        }
                     }
                 }
             } else {
@@ -526,7 +564,6 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
             SimpleDateFormat Sdf = new SimpleDateFormat("H", Locale.US);
             SimpleDateFormat Sdf2 = new SimpleDateFormat("m", Locale.US);
-            SimpleDateFormat sdf3 = new SimpleDateFormat("yyyyMMdd", Locale.US);
 
             if (!DateTimeSelected || sdf3.format(new Date()).equals(SelectedDate)) {
                 if (BusList != null) {

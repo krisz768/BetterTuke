@@ -105,6 +105,7 @@ import hu.krisz768.bettertuke.models.LatLngInterpolator;
 import hu.krisz768.bettertuke.models.MarkerDescriptor;
 import hu.krisz768.bettertuke.models.ScheduleBackStack;
 import hu.krisz768.bettertuke.models.SearchResult;
+import hu.krisz768.bettertuke.models.SwitchBackStack;
 
 public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
@@ -1432,6 +1433,15 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        if (PrevState.getSwitchBackStack() != null) {
+            OpenSwitchActivity(PrevState.getSwitchBackStack().getTripID(), PrevState.getSwitchBackStack().getStopID(), PrevState.getSwitchBackStack().getCurrentStopID(), PrevState.getSwitchBackStack().getDate());
+
+            backStack.remove(backStack.size() - 1);
+
+            RestorePrevState();
+            return;
+        }
+
         CurrentPlace = PrevState.getCurrentPlace();
         CurrentStop = PrevState.getCurrentStop();
         CurrentBusTrack = PrevState.getCurrentBusTrack();
@@ -1503,7 +1513,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void AddBackStack() {
-        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace, IncomBusMode, null));
+        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace, IncomBusMode, null, null));
         EnableBack();
     }
 
@@ -1533,7 +1543,7 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     if (result.getData() != null) {
                         TrackBus(result.getData().getExtras().getString("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
-                        backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null, null));
+                        backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null, null, null));
                     }
                 }
             });
@@ -1544,7 +1554,7 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     if (result.getData() != null) {
                         TrackBus(result.getData().getExtras().getString("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
-                        backStack.add(new BackStack(null, null, null, null, null, false, null, null, result.getData().getExtras().getString("BusType")));
+                        backStack.add(new BackStack(null, null, null, null, null, false, null, null, result.getData().getExtras().getString("BusType"), null));
                     }
                 }
             });
@@ -1555,6 +1565,7 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     if (result.getData() != null) {
                         TrackBus(result.getData().getExtras().getString("TrackId"), result.getData().getExtras().getString("Date"));
+                        backStack.add(new BackStack(null, null, null, null, null, false, null, null, null, new SwitchBackStack(result.getData().getExtras().getString("TripId"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getString("CurrentStopId"), result.getData().getExtras().getString("Date"))));
                     }
                 }
             });
@@ -1788,9 +1799,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void OpenSwitchActivity(String TripID, String StopID, String Date) {
+    public void OpenSwitchActivity(String TripID, String StopID, String CurrentStopID, String Date) {
         Intent SwitchIntent = new Intent(this, SwitchActivity.class);
         SwitchIntent.putExtra("StopId", StopID);
+        SwitchIntent.putExtra("CurrentStopId", CurrentStopID);
         SwitchIntent.putExtra("TripId", TripID);
         SwitchIntent.putExtra("Date", Date);
         switchResultLaunch.launch(SwitchIntent);

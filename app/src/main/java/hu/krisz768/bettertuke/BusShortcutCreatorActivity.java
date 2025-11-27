@@ -170,7 +170,7 @@ public class BusShortcutCreatorActivity extends AppCompatActivity {
 
     public void OnBusClick(String Id) {
         if (ShortcutManagerCompat.isRequestPinShortcutSupported(this)){
-            Intent intent = new Intent(this, MainActivity.class).setAction(Intent.ACTION_MAIN);
+            Intent intent = new Intent(this, SplashActivity.class).setAction(Intent.ACTION_MAIN);
             intent.putExtra("ShortcutType", 0);
             intent.putExtra("ShortcutId", Id);
 
