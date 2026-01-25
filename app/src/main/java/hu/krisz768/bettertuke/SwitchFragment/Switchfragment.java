@@ -326,7 +326,22 @@ public class Switchfragment extends Fragment {
                 calendar.set(Calendar.HOUR_OF_DAY, Parsecalendar.get(Calendar.HOUR_OF_DAY));
                 calendar.set(Calendar.MINUTE, Parsecalendar.get(Calendar.MINUTE));
 
-                if (calendar.getTime().after(CurrentTime)) {
+                boolean BusLeft = false;
+
+                for (int i = 0; i < mBusLine.getStops().length; i++) {
+                    if (StopID.equals(BusPosition.getStopId()) && BusPosition.isAtStop()) {
+                        break;
+                    }
+                    if (mBusLine.getStops()[i].getStopId().equals(StopID)) {
+                        BusLeft = true;
+                        break;
+                    }
+                    if (mBusLine.getStops()[i].getStopId().equals(BusPosition.getStopId())) {
+                        break;
+                    }
+                }
+
+                if (!BusLeft) {
                     GetIncomingBuses(Sdf2.format(calendar.getTime()));
                 } else {
                     DisplayInfoFragmentBusLeft();
