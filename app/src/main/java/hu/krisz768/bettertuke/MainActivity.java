@@ -143,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
     private String ShortcutData;
     private boolean OnStartFragmentError = false;
     private boolean IsMapInitialized = false;
-    private OnBackInvokedCallback onBackPressedCallback;
     private ConsentInformation consentInformation;
     private final AtomicBoolean isMobileAdsInitializeCalled = new AtomicBoolean(false);
     private ActivityResultLauncher activityResultLauncher;
@@ -884,10 +883,9 @@ public class MainActivity extends AppCompatActivity {
                             }
                             params2.bottomMargin = params.height + dp20;
                         }
-                        DisableBack();
+
                     } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                         params.height = bottomSheet.getHeight();
-                        EnableBack();
                     } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                             if(IsMapInitialized) {
@@ -900,9 +898,9 @@ public class MainActivity extends AppCompatActivity {
                             }
                             params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20 + BottomInset;
                         }
-                        EnableBack();
+
                     } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                        EnableBack();
+
                     }
 
                     fragmentView.setLayoutParams(params);
@@ -1372,8 +1370,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void SetupBackButton() {
-        onBackPressedCallback = this::DoBack;
-
         OnBackPressedCallback onBackPressedCallbackOld = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -1381,9 +1377,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            getOnBackPressedDispatcher().addCallback(onBackPressedCallbackOld);
-        }
+        getOnBackPressedDispatcher().addCallback(onBackPressedCallbackOld);
     }
 
     private void DoBack() {
@@ -1402,33 +1396,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (backStack.size() == 1 && !backStack.get(0).isBackButtonCollapse()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(onBackPressedCallback);
-            }
-        }
-
         if (backStack.size() == 0) {
             finish();
         } else {
             RestorePrevState();
-        }
-    }
-
-    private void EnableBack() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
-                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
-                    onBackPressedCallback
-            );
-        }
-    }
-
-    private void DisableBack() {
-        if (backStack.size() == 0) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(onBackPressedCallback);
-            }
         }
     }
 
@@ -1539,7 +1510,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void AddBackStack() {
         backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace, IncomBusMode, null, null));
-        EnableBack();
     }
 
     public void ShowActiveBusActivity(String BusType) {
