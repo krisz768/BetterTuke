@@ -13,14 +13,16 @@ public class IncomingBusRespModel implements Serializable {
     private boolean AtStop;
     private boolean Started;
     private boolean Miss;
+    private String ArriveStop;
 
-    public IncomingBusRespModel(String lineNum, String lineName, Date arriveTime, String LineId, int remainingMin, boolean AtStop) {
+    public IncomingBusRespModel(String lineNum, String lineName, Date arriveTime, String LineId, int remainingMin, boolean AtStop, String ArriveStop) {
         LineNum = lineNum;
         LineName = lineName;
         ArriveTime = arriveTime;
         this.LineId = LineId;
         RemainingMin = remainingMin;
         this.AtStop = AtStop;
+        this.ArriveStop = ArriveStop;
     }
 
     public void setStarted(boolean started) {
@@ -77,5 +79,9 @@ public class IncomingBusRespModel implements Serializable {
 
     public void setAtStop () {
         AtStop = true;
+    }
+
+    public String getArriveStop() {
+        return ArriveStop;
     }
 }

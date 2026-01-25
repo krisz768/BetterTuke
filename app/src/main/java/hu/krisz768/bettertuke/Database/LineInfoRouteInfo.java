@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class LineInfoRouteInfo implements Serializable {
     private final String Id;
     private final String LineNum;
-    private final String LineName;
+    private String LineName;
 
     public LineInfoRouteInfo(String id, String lineNum, String lineName) {
         Id = id;
@@ -23,5 +23,9 @@ public class LineInfoRouteInfo implements Serializable {
 
     public String getLineName() {
         return LineName;
+    }
+
+    public void setLineName (String LineName) {
+        this.LineName = LineName;
     }
 }

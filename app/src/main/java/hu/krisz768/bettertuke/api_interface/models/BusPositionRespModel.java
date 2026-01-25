@@ -7,12 +7,14 @@ public class BusPositionRespModel implements Serializable {
     private final float GpsLatitude;
     private final String LineNum;
     private final String TripId;
+    private final String StopId;
 
-    public BusPositionRespModel(float gpsLongitude, float gpsLatitude, String lineNum, String tripId) {
+    public BusPositionRespModel(float gpsLongitude, float gpsLatitude, String lineNum, String tripId, String StopId) {
         GpsLongitude = gpsLongitude;
         GpsLatitude = gpsLatitude;
         LineNum = lineNum;
         TripId = tripId;
+        this.StopId = StopId;
     }
 
     public float getGpsLongitude() {
@@ -29,5 +31,9 @@ public class BusPositionRespModel implements Serializable {
 
     public String getTripId() {
         return TripId;
+    }
+
+    public String getStopId() {
+        return StopId;
     }
 }

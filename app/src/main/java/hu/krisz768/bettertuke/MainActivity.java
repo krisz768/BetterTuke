@@ -2,6 +2,7 @@ package hu.krisz768.bettertuke;
 
 import static androidx.core.content.pm.ShortcutManagerCompat.getMaxShortcutCountPerActivity;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -12,6 +13,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentContainerView;
 
 import android.Manifest;
@@ -28,6 +32,8 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.FileUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -79,6 +85,9 @@ import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
 import com.google.android.ump.UserMessagingPlatform;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -139,6 +148,8 @@ public class MainActivity extends AppCompatActivity {
     private final AtomicBoolean isMobileAdsInitializeCalled = new AtomicBoolean(false);
     private ActivityResultLauncher activityResultLauncher;
     private AppUpdateManager appUpdateManager;
+    private int MapTopPadding = 0;
+    private int BottomInset = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,7 +169,21 @@ public class MainActivity extends AppCompatActivity {
         busStops = BusStops.GetAllStops(this);
         busPlaces = BusPlaces.getAllBusPlaces(this);
 
+        EdgeToEdge.enable(this);
+
         setContentView(R.layout.activity_main);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.MainActivityViewLayout), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            MapTopPadding = systemBars.top;
+            BottomInset = systemBars.bottom;
+
+            ConstraintLayout.LayoutParams BottomSheetConLayout = (ConstraintLayout.LayoutParams)findViewById(R.id.coordinatorLayout).getLayoutParams();
+            BottomSheetConLayout.topMargin = MapTopPadding;
+            findViewById(R.id.coordinatorLayout).setLayoutParams(BottomSheetConLayout);
+
+            return insets;
+        });
 
         View bottomSheet = findViewById(R.id.standard_bottom_sheet);
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
@@ -674,7 +699,7 @@ public class MainActivity extends AppCompatActivity {
             lineOptions.width(12);
 
             TypedValue typedValue = new TypedValue();
-            getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+            getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
             ContextCompat.getColor(this, typedValue.resourceId);
 
             lineOptions.color(ContextCompat.getColor(this, typedValue.resourceId));
@@ -846,16 +871,16 @@ public class MainActivity extends AppCompatActivity {
                     if (newState == BottomSheetBehavior.STATE_HALF_EXPANDED) {
                         IsBackButtonHalfExpanded = true;
 
-                        params.height = Math.round(bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio());
+                        params.height = Math.round((bottomSheet.getMeasuredHeight() + BottomInset) * bottomSheetBehavior.getHalfExpandedRatio());
 
                         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                             if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, 0);
+                                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, 0);
                             }
-                            params2.bottomMargin = dp20;
+                            params2.bottomMargin = dp20+ BottomInset;
                         } else {
                             if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, params.height);
+                                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, params.height);
                             }
                             params2.bottomMargin = params.height + dp20;
                         }
@@ -866,14 +891,14 @@ public class MainActivity extends AppCompatActivity {
                     } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                             if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, 0);
+                                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, 0);
                             }
-                            params2.bottomMargin = dp20;
+                            params2.bottomMargin = dp20 + BottomInset;
                         } else {
                             if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, bottomSheetBehavior.getPeekHeight());
+                                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, bottomSheetBehavior.getPeekHeight() + BottomInset);
                             }
-                            params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20;
+                            params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20 + BottomInset;
                         }
                         EnableBack();
                     } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
@@ -889,18 +914,18 @@ public class MainActivity extends AppCompatActivity {
                     ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
                     ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
 
-                    if (((bottomSheet.getMeasuredHeight()-bottomSheetBehavior.getPeekHeight())*slideOffset)+bottomSheetBehavior.getPeekHeight() < bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio()) {
+                    if (((bottomSheet.getMeasuredHeight()-bottomSheetBehavior.getPeekHeight()+ BottomInset)*slideOffset)+bottomSheetBehavior.getPeekHeight() < bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio()) {
                         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                             if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, 0);
+                                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, 0);
                             }
-                            params2.bottomMargin = dp20;
+                            params2.bottomMargin = dp20 + BottomInset;
                         } else {
                             int CalculatedHeight = Math.round(((bottomSheet.getMeasuredHeight()-bottomSheetBehavior.getPeekHeight())*slideOffset)+bottomSheetBehavior.getPeekHeight());
                             if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, CalculatedHeight);
+                                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, CalculatedHeight + BottomInset);
                             }
-                            params2.bottomMargin = CalculatedHeight + dp20;
+                            params2.bottomMargin = CalculatedHeight + dp20 + BottomInset;
                         }
                     } else {
                         params.height = Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheet.getMeasuredHeight() - bottomSheetBehavior.getPeekHeight()) * slideOffset));
@@ -958,42 +983,42 @@ public class MainActivity extends AppCompatActivity {
             if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, 0);
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, 0);
                     }
-                    params2.bottomMargin = dp20;
+                    params2.bottomMargin = dp20 + BottomInset;
                 } else {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, height);
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, height + BottomInset);
                     }
-                    params2.bottomMargin = height + dp20;
+                    params2.bottomMargin = height + dp20 + BottomInset;
                 }
 
                 ScheduleButton.setLayoutParams(params2);
             } else if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED){
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, 0);
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, 0);
                     }
-                    params2.bottomMargin = dp20;
+                    params2.bottomMargin = dp20 + BottomInset;
                 } else {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, height);
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, height + BottomInset);
                     }
-                    params2.bottomMargin = height + dp20;
+                    params2.bottomMargin = height + dp20 + BottomInset;
                 }
 
                 ScheduleButton.setLayoutParams(params2);
             } else if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED){
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, 0);
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, 0);
                     }
-                    params2.bottomMargin = dp20;
+                    params2.bottomMargin = dp20 + BottomInset;
                 } else {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, bottomSheetBehavior.getPeekHeight());
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, bottomSheetBehavior.getPeekHeight() + BottomInset);
                     }
-                    params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20;
+                    params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20 + BottomInset;
                 }
 
                 ScheduleButton.setLayoutParams(params2);
@@ -1148,12 +1173,12 @@ public class MainActivity extends AppCompatActivity {
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             if(IsMapInitialized) {
-                googleMap.setPadding(0, dp20 * 4, 0, 0);
+                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, 0);
             }
             params2.bottomMargin = dp20;
         } else {
             if(IsMapInitialized) {
-                googleMap.setPadding(0, dp20 * 4, 0, height);
+                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, height);
             }
             params2.bottomMargin = height + dp20;
         }
@@ -1586,10 +1611,16 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.PrivacyButton:
                     ShowPrivacySettings();
                     return true;
+                case R.id.DatabaseButton:
+                    ExportDatabase();
+                    return true;
                 default:
                     return false;
             }
         });
+
+        /*Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        searchBar.setPadding(0, 1, 0,0);*/
 
         searchView.setupWithSearchBar(searchBar);
 
@@ -1640,6 +1671,25 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void ExportDatabase() {
+        Toast.makeText(this,"Exportálás......", Toast.LENGTH_SHORT).show();
+
+        try {
+            File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "export.sql");
+            File database =  new File(this.getFilesDir() + "/Database", "NewGTFS.db");
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                FileUtils.copy(new FileInputStream(database), new FileOutputStream(f));
+            }
+
+            Toast.makeText(this,"Kész!", Toast.LENGTH_SHORT).show();
+        } catch (
+            Exception e
+        ) {
+            Toast.makeText(this,"Hiba! " + e.toString(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void OnSearchResultClick(SearchResult searchResult) {

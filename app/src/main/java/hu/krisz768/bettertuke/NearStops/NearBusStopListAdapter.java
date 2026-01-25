@@ -119,7 +119,16 @@ public class NearBusStopListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         NewGTFSDatabase db = new NewGTFSDatabase(Callback.getContext());
 
         for (int i = 0; i < NearBuses.length; i++) {
-            this.NearBuses.add(db.GetBusLineRouteInfoById(NearBuses[i].getTripId()));
+            LineInfoRouteInfo temp = db.GetBusLineRouteInfoById(NearBuses[i].getTripId());
+
+            NewGTFSDatabase NDm = new NewGTFSDatabase(Callback.getContext());
+
+            String newName = NDm.GetBusNameByStop(NearBuses[i].getTripId(),NearBuses[i].getStopId());
+            if (newName != null) {
+                temp.setLineName(newName);
+            }
+
+            this.NearBuses.add(temp);
         }
 
         for (int i = 0; i < this.NearBuses.size(); i++) {

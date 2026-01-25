@@ -258,7 +258,7 @@ public class ScheduleBusTimeFragment extends Fragment {
             return;
         }
 
-        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+        getContext().getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
         int colorPrimary = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
@@ -282,7 +282,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondaryContainer, typedValue, true);
         colorOnSecContainer = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
-        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorError, typedValue, true);
+        getContext().getTheme().resolveAttribute(android.R.attr.colorError, typedValue, true);
         int colorErr = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnError, typedValue, true);

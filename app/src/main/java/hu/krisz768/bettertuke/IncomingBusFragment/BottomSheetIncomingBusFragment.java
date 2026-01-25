@@ -609,7 +609,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
 
                 for (IncomingBusRespModel incomingBusRespModel : BusList) {
-                    String newName = NDm.GetBusNameByStop(incomingBusRespModel.getLineId(),mStop);
+                    String newName = NDm.GetBusNameByStop(incomingBusRespModel.getLineId(),incomingBusRespModel.getArriveStop());
                     if (newName != null) {
                         incomingBusRespModel.setLineName(newName);
                     }

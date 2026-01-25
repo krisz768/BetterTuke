@@ -100,10 +100,10 @@ public class TrackBusListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             TypedValue typedValue = new TypedValue();
             if (Data.getStopId().equals(CurrentStop)) {
-                ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+                ctx.getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
                 Name.setTextColor(ContextCompat.getColor(ctx, typedValue.resourceId));
             } else {
-                ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.color, typedValue, true);
+                ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorContainer, typedValue, true);
                 Name.setTextColor(Time.getTextColors());
             }
 

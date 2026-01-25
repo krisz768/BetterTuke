@@ -1,8 +1,12 @@
 package hu.krisz768.bettertuke;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -36,7 +40,15 @@ public class ScheduleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setTheme();
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_schedule);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.frameLayout2), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+
         Bundle b = getIntent().getExtras();
 
         SetupBack();

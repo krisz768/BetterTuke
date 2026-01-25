@@ -271,7 +271,7 @@ public class NewGTFSDatabase {
                     long diff = calendar.getTime().getTime() - GetTime.getTime().getTime();
                     int RemainingMinute = (int) (diff / 1000) / 60;
 
-                    Lines.add(new IncomingBusRespModel(cursor.getString(2), cursor.getString(3), calendar.getTime(), cursor.getString(0), RemainingMinute, false));
+                    Lines.add(new IncomingBusRespModel(cursor.getString(2), cursor.getString(3), calendar.getTime(), cursor.getString(0), RemainingMinute, false, StopId));
                 }
             }
             cursor.close();

@@ -63,7 +63,14 @@ public class BusTypeRouteListAdapter  extends RecyclerView.Adapter<BusTypeRouteL
         NewGTFSDatabase db = new NewGTFSDatabase(ClickCallBack.getContext());
 
         for (int i = 0; i < BusData.getTripIds().size(); i++) {
-            Data.add(db.GetBusLineRouteInfoById(BusData.getTripIds().get(i)));
+            LineInfoRouteInfo temp = db.GetBusLineRouteInfoById(BusData.getTripIds().get(i));
+
+            String newName = db.GetBusNameByStop(BusData.getTripIds().get(i),BusData.getStopIds().get(i));
+            if (newName != null) {
+                temp.setLineName(newName);
+            }
+
+            Data.add(temp);
         }
 
         for (int i = 0; i < Data.size(); i++) {
@@ -71,6 +78,7 @@ public class BusTypeRouteListAdapter  extends RecyclerView.Adapter<BusTypeRouteL
                 Data.remove(i);
                 BusData.getTripIds().remove(i);
                 BusData.getLPlates().remove(i);
+                BusData.getStopIds().remove(i);
                 i--;
             }
         }

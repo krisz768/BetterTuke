@@ -134,7 +134,7 @@ public class GTFSRProvider {
         List<BusPositionRespModel> Positions = new ArrayList<>();
 
         for (GtfsRealtime.FeedEntity entity : OnlineData.getEntityList()) {
-                Positions.add(new BusPositionRespModel(entity.getVehicle().getPosition().getLongitude(), entity.getVehicle().getPosition().getLatitude(), entity.getVehicle().getTrip().getRouteId(),  entity.getVehicle().getTrip().getTripId()));
+            Positions.add(new BusPositionRespModel(entity.getVehicle().getPosition().getLongitude(), entity.getVehicle().getPosition().getLatitude(), entity.getVehicle().getTrip().getRouteId(),  entity.getVehicle().getTrip().getTripId(), entity.getVehicle().getStopId()));
         }
 
         BusPositionRespModel[] ret = new BusPositionRespModel[Positions.size()];
@@ -239,7 +239,7 @@ public class GTFSRProvider {
                                 log( "Remaining min:" + RemainingMin);
 
                                 if (RemainingMin >= 0 && RemainingMin < 91) {
-                                    BusList.add(new IncomingBusRespModel(LineInfo.getRouteInfo().getLineNum(), LineInfo.getRouteInfo().getLineName(), ArriveTime.getTime(), entity.getVehicle().getTrip().getTripId(), Math.max(RemainingMin, 0), (Litt.getOrder() == entity.getVehicle().getCurrentStopSequence()) && entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT));
+                                    BusList.add(new IncomingBusRespModel(LineInfo.getRouteInfo().getLineNum(), LineInfo.getRouteInfo().getLineName(), ArriveTime.getTime(), entity.getVehicle().getTrip().getTripId(), Math.max(RemainingMin, 0), (Litt.getOrder() == entity.getVehicle().getCurrentStopSequence()) && entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT, StopId));
                                 }
 
                                 /*for (int i = 0; i < BusList.size(); i++) {
@@ -303,14 +303,14 @@ public class GTFSRProvider {
 
             for (int i = 0; i < Resp.size(); i++) {
                 if (Resp.get(i).getBusTypeName().equals(busAttributes.getType())) {
-                    Resp.get(i).AddTripId(entity.getVehicle().getTrip().getTripId(), busAttributes.getPlateNumber());
+                    Resp.get(i).AddTripId(entity.getVehicle().getTrip().getTripId(), busAttributes.getPlateNumber(), entity.getVehicle().getStopId());
                     Found = true;
                     break;
                 }
             }
 
             if (!Found) {
-                Resp.add(new ActiveBusTypeRespModel(busAttributes.getType(), entity.getVehicle().getTrip().getTripId(), busAttributes.getPlateNumber()));
+                Resp.add(new ActiveBusTypeRespModel(busAttributes.getType(), entity.getVehicle().getTrip().getTripId(), busAttributes.getPlateNumber(), entity.getVehicle().getStopId()));
             }
         }
 

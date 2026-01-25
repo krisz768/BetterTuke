@@ -51,7 +51,7 @@ public class SwitchBusStopSelectorAdapter  extends RecyclerView.Adapter<Recycler
                 int color = ContextCompat.getColor(ctx, typedValue.resourceId);
                 button.setBackgroundColor(color);
             } else {
-                ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+                ctx.getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
                 int color = ContextCompat.getColor(ctx, typedValue.resourceId);
                 button.setBackgroundColor(color);
             }
