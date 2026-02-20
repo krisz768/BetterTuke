@@ -35,6 +35,9 @@ public class NewGTFSOnlineVersion implements Runnable {
             }
             in.close();
 
+            if (VersionLine == null)
+                return;
+
             String[] VersionLineParts = VersionLine.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
             Version = VersionLineParts[5];

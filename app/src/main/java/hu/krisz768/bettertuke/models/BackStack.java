@@ -2,7 +2,6 @@ package hu.krisz768.bettertuke.models;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import hu.krisz768.bettertuke.ActiveBusActivity;
 import hu.krisz768.bettertuke.Database.BusLine;
 
 public class BackStack {

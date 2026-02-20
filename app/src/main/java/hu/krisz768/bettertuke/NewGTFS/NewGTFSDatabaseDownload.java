@@ -1,9 +1,6 @@
 package hu.krisz768.bettertuke.NewGTFS;
 
 import android.content.Context;
-import android.os.Build;
-import android.os.Environment;
-import android.os.FileUtils;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -16,9 +13,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import hu.krisz768.bettertuke.Gtfs.GTFSContentLength;
-import hu.krisz768.bettertuke.Gtfs.GTFSDatabase;
-import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseDownload;
-import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 
 public class NewGTFSDatabaseDownload implements Runnable {
     private final Context ctx;
@@ -192,17 +186,6 @@ public class NewGTFSDatabaseDownload implements Runnable {
             Thread thread = new Thread(contentLength);
             thread.start();
             thread.join();
-            //String Online = contentLength.ContentLength;
-
-            //UserDatabase userDatabase = new UserDatabase(ctx);
-            //userDatabase.SetPreference("GTFS-cl", Online);
-
-             /*File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "asd.sql");
-             File database =  new File(ctx.getFilesDir() + "/Database", "NewGTFS.db");
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                FileUtils.copy(new FileInputStream(database), new FileOutputStream(f));
-            }*/
 
             RetCode = true;
         } catch (Exception e) {

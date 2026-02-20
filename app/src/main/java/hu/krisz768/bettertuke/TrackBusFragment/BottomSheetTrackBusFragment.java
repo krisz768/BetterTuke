@@ -27,7 +27,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import hu.krisz768.bettertuke.Database.BusLine;
-import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.MainActivity;
@@ -75,7 +74,6 @@ public class BottomSheetTrackBusFragment extends Fragment {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
@@ -170,7 +168,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
         GTFSRProvider GTFSRProvider_ = new GTFSRProvider(this.getActivity());
 
         UpdateLoop = Executors.newScheduledThreadPool(1);
-        UpdateLoop.scheduleAtFixedRate(() -> GetBusPosition(GTFSRProvider_), 0, 2, TimeUnit.SECONDS);
+        UpdateLoop.scheduleWithFixedDelay(() -> GetBusPosition(GTFSRProvider_), 0, 2, TimeUnit.SECONDS);
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -257,7 +255,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
                         int CurrentMinute = Now.get(Calendar.MINUTE);
 
                         if ((mBusLine.getDepartureHour() == CurrentHour && CurrentMinute > mBusLine.getDepartureMinute()) || mBusLine.getDepartureHour() < CurrentHour) {
-                            Boolean IsCBusStarted = GTFSRProvider_.getIsBusHasStarted(mBusLine.getCTrip().getLineId() + "");
+                            Boolean IsCBusStarted = GTFSRProvider_.getIsBusHasStarted(mBusLine.getCTrip().getLineId());
 
                             if (IsCBusStarted != null && IsCBusStarted) {
                                 activity.runOnUiThread(() -> ((MainActivity)activity).TrackBus(mBusLine.getCTrip().getLineId(), mBusLine.getDate()));
@@ -304,7 +302,6 @@ public class BottomSheetTrackBusFragment extends Fragment {
             }
         } catch (Exception e) {
             Log.e("Update bus pos error", e.toString());
-            e.printStackTrace();
         }
 
         FirstBusUpdate = false;

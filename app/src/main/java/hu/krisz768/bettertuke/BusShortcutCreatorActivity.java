@@ -5,7 +5,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.widget.EditText;
 
 import androidx.activity.EdgeToEdge;
@@ -27,12 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import hu.krisz768.bettertuke.Database.BusNum;
-import hu.krisz768.bettertuke.Database.BusPlaces;
-import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.ShortcutCreator.BusShortcutListAdapter;
-import hu.krisz768.bettertuke.ShortcutCreator.StopShortcodeSubListAdapter;
-import hu.krisz768.bettertuke.ShortcutCreator.StopShortcutMainListAdapter;
 import hu.krisz768.bettertuke.UserDatabase.Favorite;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 
@@ -66,7 +61,12 @@ public class BusShortcutCreatorActivity extends AppCompatActivity {
         GetBuses();
         ListBuses();
 
-        ((TextInputLayout)findViewById(R.id.StopShortcutSearch)).getEditText().addTextChangedListener(new TextWatcher() {
+        EditText editText = ((TextInputLayout)findViewById(R.id.StopShortcutSearch)).getEditText();
+
+        if (editText == null)
+            return;
+
+        editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -85,7 +85,7 @@ public class BusShortcutCreatorActivity extends AppCompatActivity {
     }
 
     private void OnSearch(String input) {
-        if (input.equals("")) {
+        if (input.isEmpty()) {
             searchedList = null;
             searchedFavCount = 0;
 

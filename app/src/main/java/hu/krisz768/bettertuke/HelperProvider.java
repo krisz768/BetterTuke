@@ -30,12 +30,11 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import hu.krisz768.bettertuke.Gtfs.GTFSDatabase;
-import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class HelperProvider {
     private static final Bitmap[] BitmapContainer = new Bitmap[31];
-    private static HashMap<String, Bitmap> BusBitmapContainer = new HashMap<>();
+    private static final HashMap<String, Bitmap> BusBitmapContainer = new HashMap<>();
     private static JSONObject BusAttributes;
     private static boolean IsOfflineTextDisplayed = false;
     public static boolean displayOfflineText() {
@@ -248,39 +247,7 @@ public class HelperProvider {
 
         paint.setTextSize((float) (relation*80));
         paint.setFakeBoldText(true);
-        //paint.setAlpha(170);
         canvas.drawText(num, canvas.getWidth()/2, (float)( canvas.getHeight()/4.2), paint);
-        //paint.setStyle(Paint.Style.FILL);
-
-        /*if (num.length() == 1) {
-            paint.setTextSize(120);
-            canvas.drawText(num, 44, 120, paint);
-        } else if (num.length() == 2) {
-            paint.setTextSize(90);
-            canvas.drawText(num, 28, 110, paint);
-        } else if (num.length() == 3) {
-            paint.setTextSize(70);
-            canvas.drawText(num, 20, 105, paint);
-        } else if (num.length() == 4) {
-            paint.setTextSize(55);
-            canvas.drawText(num, 15, 97, paint);
-        }*/
-
-        /*if (num.length() == 1) {
-            paint.setTextSize(55);
-            canvas.drawText(num, 67, 52, paint);
-        } else if (num.length() == 2) {
-            paint.setTextSize(55);
-            canvas.drawText(num, 50, 52, paint);
-        } else if (num.length() == 3) {
-            paint.setTextSize(55);
-            canvas.drawText(num, 35, 52, paint);
-        } else if (num.length() == 4) {
-            paint.setTextSize(55);
-            canvas.drawText(num, 15, 52, paint);
-        }*/
-
-
 
         bmp.recycle();
         return newBitmap;

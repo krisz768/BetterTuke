@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -163,11 +162,7 @@ public class DatabaseUpdate extends Fragment {
     @SuppressLint("SetTextI18n")
     private void SetPercentage(int Percent) {
         progressText.setText(Percent + "%");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            progressBar.setProgress(Percent, true);
-        } else {
-            progressBar.setProgress(Percent);
-        }
+        progressBar.setProgress(Percent, true);
     }
 
     @Override

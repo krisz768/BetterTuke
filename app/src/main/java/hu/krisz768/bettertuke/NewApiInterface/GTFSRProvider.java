@@ -6,18 +6,15 @@ import static hu.krisz768.bettertuke.HelperProvider.getBusAttributes;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.google.transit.realtime.GtfsRealtime;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.net.URL;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -45,8 +42,6 @@ public class GTFSRProvider {
         this.ctx = ctx;
     }
 
-    //static int updatecount = 0;
-
     private void UpdateData () {
         Calendar Now = Calendar.getInstance();
         Now.add(Calendar.SECOND, -1);
@@ -54,14 +49,6 @@ public class GTFSRProvider {
         if (LastUpdate != null && !LastUpdate.before(Now)) {
             return;
         }
-
-        /*log( "UPDATE! ");
-        if (LastUpdate != null) {
-            log( "UPDATE2! " + updatecount + " N:" + Now.get(Calendar.MINUTE) + ":" + Now.get(Calendar.SECOND)+ ":" + Now.get(Calendar.MILLISECOND) + " LU:" + LastUpdate.get(Calendar.MINUTE) + ":" + LastUpdate.get(Calendar.SECOND)+ ":" + LastUpdate.get(Calendar.MILLISECOND));
-        }
-
-
-        updatecount++;*/
 
         Thread thr = new Thread(() -> {
             try {
@@ -72,9 +59,6 @@ public class GTFSRProvider {
                 OnlineDataUpdates = GtfsRealtime.FeedMessage.parseFrom(url2.openStream());
 
                 LastUpdate = Calendar.getInstance();
-                /*for (GtfsRealtime.FeedEntity entity : feed.getEntityList()) {
-                    Log.e("GTFSR", " " + entity.getId() + ": " + entity.getVehicle().getVehicle().getLabel() + " " + entity.getVehicle().getVehicle().getLicensePlate() + " " + entity.getVehicle().getCurrentStatus() + " " +  entity.getVehicle().getStopId() + " lat:" + entity.getVehicle().getPosition().getLatitude() + " lon:" + entity.getVehicle().getPosition().getLongitude() + " Tripid:" + entity.getVehicle().getTrip().getTripId());
-                }*/
             } catch (Exception e) {
                 OnlineData = null;
                 LastUpdate = null;
@@ -84,7 +68,7 @@ public class GTFSRProvider {
         thr.start();
         try {
             thr.join();
-        } catch (Exception e){
+        } catch (Exception ignored){
 
         }
     }
@@ -176,6 +160,8 @@ public class GTFSRProvider {
             for (GtfsRealtime.FeedEntity entity : OnlineDataUpdates.getEntityList()) {
                 if (entity.getTripUpdate().getTrip().getTripId().equals(Bus.getLineId())) {
                     Bus.setDelay(entity.getTripUpdate().getDelay() / 60);
+                    if (entityOriginal == null)
+                        continue;
                     if (entityOriginal.getVehicle().getStopId().equals(StopId) && entityOriginal.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT) {
                         Bus.setAtStop();
                     }
@@ -214,9 +200,7 @@ public class GTFSRProvider {
 
                     for (LineInfoTravelTime Litt : LineInfo.getStops()) {
                         if (Litt.getStopId().equals(StopId)){
-                            log("Info: " + LineInfo.getRouteInfo().getLineNum() + " " + Litt.getOrder() + " / " + entity.getVehicle().getCurrentStopSequence());
                             if ( (Litt.getOrder() > entity.getVehicle().getCurrentStopSequence()) || ((Litt.getOrder() == entity.getVehicle().getCurrentStopSequence()) && entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT)) {
-                                log("KÉSÉS: " + LineInfo.getRouteInfo().getLineNum());
                                 Calendar ArriveTime = (Calendar) Calendar.getInstance();
                                 String[] TimeParts = Litt.getArriveTime().split(":");
                                 ArriveTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(TimeParts[0]));
@@ -224,7 +208,6 @@ public class GTFSRProvider {
 
                                 if (entityUpdate != null) {
                                     ArriveTime.add(Calendar.MINUTE, entityUpdate.getTripUpdate().getDelay()/60);
-                                    log( "É:" + Litt.getArriveTime() + " D:" + entityUpdate.getTripUpdate().getDelay());
                                 }
 
                                 Calendar CompareTime = (Calendar) Calendar.getInstance();
@@ -236,20 +219,9 @@ public class GTFSRProvider {
 
                                 int RemainingMin = (int) (diff / 1000) / 60;
 
-                                log( "Remaining min:" + RemainingMin);
-
                                 if (RemainingMin >= 0 && RemainingMin < 91) {
-                                    BusList.add(new IncomingBusRespModel(LineInfo.getRouteInfo().getLineNum(), LineInfo.getRouteInfo().getLineName(), ArriveTime.getTime(), entity.getVehicle().getTrip().getTripId(), Math.max(RemainingMin, 0), (Litt.getOrder() == entity.getVehicle().getCurrentStopSequence()) && entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT, StopId));
+                                    BusList.add(new IncomingBusRespModel(LineInfo.getRouteInfo().getLineNum(), LineInfo.getRouteInfo().getLineName(), ArriveTime.getTime(), entity.getVehicle().getTrip().getTripId(), RemainingMin, (Litt.getOrder() == entity.getVehicle().getCurrentStopSequence()) && entity.getVehicle().getCurrentStatus() == GtfsRealtime.VehiclePosition.VehicleStopStatus.STOPPED_AT, StopId));
                                 }
-
-                                /*for (int i = 0; i < BusList.size(); i++) {
-
-                                    //log("INS T:" + BusList.get(i).getRemainingMin()  + " / " +  (int) (diff / 1000) / 60);
-                                    if (BusList.get(i).getRemainingMin() > (int) (diff / 1000) / 60) {
-
-                                        break;
-                                    }
-                                }*/
                             }
                         }
                     }
@@ -258,10 +230,10 @@ public class GTFSRProvider {
         }
 
         BusList.removeAll(RemovableBusList);
-        Collections.sort(BusList, new Comparator<IncomingBusRespModel>() {
+        BusList.sort(new Comparator<IncomingBusRespModel>() {
             @Override
             public int compare(IncomingBusRespModel o1, IncomingBusRespModel o2) {
-                return  o1.getRemainingMin() - o2.getRemainingMin();
+                return o1.getRemainingMin() - o2.getRemainingMin();
             }
         });
 
@@ -279,7 +251,6 @@ public class GTFSRProvider {
         }
 
         for (GtfsRealtime.FeedEntity entity : OnlineData.getEntityList()) {
-            //Log.e("GTFSR", " " + entity.getId() + ": " + entity.getVehicle().getVehicle().getLabel() + " " + entity.getVehicle().getVehicle().getLicensePlate() + " " + entity.getVehicle().getCurrentStatus() + " " +  entity.getVehicle().getStopId() + " lat:" + entity.getVehicle().getPosition().getLatitude() + " lon:" + entity.getVehicle().getPosition().getLongitude() + " Tripid:" + entity.getVehicle().getTrip().getTripId());
             if (entity.getVehicle().getTrip().getTripId().equals(LineId)) {
                 return true;
             }

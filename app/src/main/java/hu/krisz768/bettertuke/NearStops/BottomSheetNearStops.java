@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +13,6 @@ import android.widget.TextView;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -72,7 +70,7 @@ public class BottomSheetNearStops extends Fragment {
         GTFSRProvider GTFSRProvider_ = new GTFSRProvider(this.getActivity());
 
         UpdateLoop = Executors.newScheduledThreadPool(1);
-        UpdateLoop.scheduleAtFixedRate(() -> GetRealTimeData(GTFSRProvider_), 0, 10, TimeUnit.SECONDS);
+        UpdateLoop.scheduleWithFixedDelay(() -> GetRealTimeData(GTFSRProvider_), 0, 10, TimeUnit.SECONDS);
     }
 
     private void GetRealTimeData(GTFSRProvider GTFSRProvider_) {
@@ -114,7 +112,7 @@ public class BottomSheetNearStops extends Fragment {
                 }
             }
 
-            Collections.sort(NearBusList, (busPlaces, t1) -> {
+            NearBusList.sort((busPlaces, t1) -> {
                 Location StopLocation1 = new Location("");
                 StopLocation1.setLatitude(busPlaces.getGpsLatitude());
                 StopLocation1.setLongitude(busPlaces.getGpsLongitude());
@@ -126,7 +124,7 @@ public class BottomSheetNearStops extends Fragment {
                 return Math.round(location.distanceTo(StopLocation1) - location.distanceTo(StopLocation2));
             });
 
-            Collections.sort(FavBusList, (busPlaces, t1) -> {
+            FavBusList.sort((busPlaces, t1) -> {
                 Location StopLocation1 = new Location("");
                 StopLocation1.setLatitude(busPlaces.getGpsLatitude());
                 StopLocation1.setLongitude(busPlaces.getGpsLongitude());
@@ -253,7 +251,7 @@ public class BottomSheetNearStops extends Fragment {
                 }
             }
 
-            Collections.sort(NearBusPlacesList, (busPlaces, t1) -> {
+            NearBusPlacesList.sort((busPlaces, t1) -> {
                 Location StopLocation1 = new Location("");
                 StopLocation1.setLatitude(busPlaces.getGpsLatitude());
                 StopLocation1.setLongitude(busPlaces.getGpsLongitude());
@@ -265,7 +263,7 @@ public class BottomSheetNearStops extends Fragment {
                 return Math.round(location.distanceTo(StopLocation1) - location.distanceTo(StopLocation2));
             });
 
-            Collections.sort(FavNearBusPlacesList, (busPlaces, t1) -> {
+            FavNearBusPlacesList.sort((busPlaces, t1) -> {
                 Location StopLocation1 = new Location("");
                 StopLocation1.setLatitude(busPlaces.getGpsLatitude());
                 StopLocation1.setLongitude(busPlaces.getGpsLongitude());

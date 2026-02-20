@@ -45,11 +45,7 @@ public class SwitchBusListAdapter extends RecyclerView.Adapter<SwitchBusListAdap
 
         public void setData(IncomingBusRespModel Data, Context ctx, SwitchBusListFregment ClickCallBack, String Date, String StopID, String CurrentStopID) {
 
-            /*if (Custom) {
-                view.setOnClickListener(view -> ClickCallBack.OnBusClick(Data.getLineId(), Date));
-            } else  {*/
-                view.setOnClickListener(view -> ClickCallBack.OnBusClick(Data.getLineId(), Date, StopID, CurrentStopID));
-            //}
+            view.setOnClickListener(view -> ClickCallBack.OnBusClick(Data.getLineId(), Date, StopID, CurrentStopID));
 
 
             number.setText(Data.getLineNum());
@@ -63,17 +59,7 @@ public class SwitchBusListAdapter extends RecyclerView.Adapter<SwitchBusListAdap
                 arrtime.setText(ctx.getString(R.string.TrackTimeStringOneMinute, Sdf.format(Arrtime), Data.getRemainingMin()));
             } else {
                 arrtime.setText(ctx.getString(R.string.TrackTimeString, Sdf.format(Arrtime), Data.getRemainingMin()));
-            } /*else if (!Date.equals(Sdf2.format(new Date()))) {
-
-                StringBuilder str = new StringBuilder(Date);
-
-                str.insert(6, ". ");
-                str.insert(4, ". ");
-
-                arrtime.setText(ctx.getString(R.string.IncBusAnotherDay, str + ". " + Sdf.format(Arrtime)));
-            } else {
-                arrtime.setText(Sdf.format(Arrtime));
-            }*/
+            }
 
 
             int WhiteColor = Color.rgb(255,255,255);

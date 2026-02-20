@@ -17,16 +17,7 @@ import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.SwitchActivity;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
-
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SwitchBusListFregment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class SwitchBusListFregment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "List";
     private static final String ARG_PARAM2 = "Date";
     private static final String ARG_PARAM3 = "StopID";
@@ -39,7 +30,7 @@ public class SwitchBusListFregment extends Fragment {
     private String CurrentStopID;
 
     public SwitchBusListFregment() {
-        // Required empty public constructor
+
     }
 
     public static SwitchBusListFregment newInstance(IncomingBusRespModel[] List, String Date, String StopID, String CurrentStopID) {

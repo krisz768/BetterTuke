@@ -1,24 +1,17 @@
 package hu.krisz768.bettertuke;
 
-import static java.security.AccessController.getContext;
-
-import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.DrawableRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.pm.ShortcutInfoCompat;
 import androidx.core.content.pm.ShortcutManagerCompat;
@@ -38,13 +31,10 @@ import java.util.List;
 
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
-import hu.krisz768.bettertuke.NearStops.NearBusStopListAdapter;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
-import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusListFragment;
 import hu.krisz768.bettertuke.ShortcutCreator.StopShortcodeSubListAdapter;
 import hu.krisz768.bettertuke.ShortcutCreator.StopShortcutMainListAdapter;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
-import hu.krisz768.bettertuke.models.SearchResult;
 
 public class StopShortcutCreatorActivity extends AppCompatActivity {
 
@@ -88,7 +78,12 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
         GetStopPlaces();
         ListPlaces();
 
-        ((TextInputLayout)findViewById(R.id.StopShortcutSearch)).getEditText().addTextChangedListener(new TextWatcher() {
+        EditText editText = ((TextInputLayout)findViewById(R.id.StopShortcutSearch)).getEditText();
+
+        if (editText == null)
+            return;
+
+        editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -156,7 +151,7 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
     }
 
     private void OnSearch(String input) {
-        if (input.equals("")) {
+        if (input.isEmpty()) {
             searchedList = null;
             searchedFavPlaceCount = 0;
 

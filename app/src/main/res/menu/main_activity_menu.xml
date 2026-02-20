@@ -12,8 +12,4 @@
         android:id="@+id/PrivacyButton"
         android:icon="@drawable/baseline_info_24"
         android:title="@string/PrivacyButton" />
-    <item
-        android:id="@+id/DatabaseButton"
-        android:icon="@drawable/baseline_info_24"
-        android:title="DEBUG Adatbázis export" />
 </menu>

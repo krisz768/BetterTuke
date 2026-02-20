@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,15 +17,8 @@ import hu.krisz768.bettertuke.ActiveBusActivity;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.ActiveBusTypeRespModel;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link BusTypeRouteListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class BusTypeRouteListFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_DATA = "DATA";
 
     private ActiveBusTypeRespModel mData;

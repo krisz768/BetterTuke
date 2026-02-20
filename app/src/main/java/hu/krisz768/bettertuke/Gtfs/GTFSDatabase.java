@@ -16,7 +16,7 @@ import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 
 public class GTFSDatabase {
     private static SQLiteDatabase Sld;
-    private Context ctx;
+    private final Context ctx;
 
     public String GetStopName (String StopId) {
         try
@@ -88,7 +88,7 @@ public class GTFSDatabase {
             }
             cursor.close();
 
-            if (BlockId != null && !BlockId.equals("")) {
+            if (BlockId != null && !BlockId.isEmpty()) {
                 cursor = Sld.rawQuery("SELECT t.trip_id from trips as t INNER JOIN stop_times as st ON st.trip_id = t.trip_id WHERE t.block_id = " + BlockId + " AND st.arrival_time > '" + CurrenStartTime + "' AND st.stop_sequence = 0 ORDER BY st.arrival_time LIMIT 1;", null);
                 while(cursor.moveToNext()) {
                     CTripId = cursor.getString(0);
@@ -133,7 +133,7 @@ public class GTFSDatabase {
                 GpsLongitude = cursor.getFloat(1);
             }
 
-            if (GpsLatitude != null && GpsLongitude != null && GpsLatitude != 0 && GpsLongitude != 0) {
+            if (GpsLatitude != null && GpsLatitude != 0 && GpsLongitude != 0) {
                 BusStop.SetCoords(GpsLongitude, GpsLatitude);
             }
 
@@ -168,7 +168,7 @@ public class GTFSDatabase {
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO routes (route_id, route_short_name, route_long_name, route_type, route_color, route_text_color) VALUES (?, ?, ?, ?, ?, ?);");
        for (int i = 1; i< Lines.length; i++) {
-           String[] Data= Lines[i].split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)", -1);
+           String[] Data= Lines[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
 
            try {
                stmt.bindLong(1, Long.parseLong(Data[0]));
@@ -295,7 +295,7 @@ public class GTFSDatabase {
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO stops (stop_id, stop_name, stop_desc, stop_lat, stop_lon, location_type, parent_station) VALUES (?,?,?,?,?,?,?)");
         for (int i = 1; i< Lines.length; i++) {
-            String[] Data= Lines[i].split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)", -1);
+            String[] Data= Lines[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
 
             try {
                 stmt.bindLong(1, Long.parseLong(Data[0]));

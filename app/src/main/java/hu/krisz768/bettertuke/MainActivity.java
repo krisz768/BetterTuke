@@ -1,7 +1,5 @@
 package hu.krisz768.bettertuke;
 
-import static androidx.core.content.pm.ShortcutManagerCompat.getMaxShortcutCountPerActivity;
-
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
@@ -32,8 +30,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.FileUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -44,8 +40,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Toast;
-import android.window.OnBackInvokedCallback;
-import android.window.OnBackInvokedDispatcher;
 
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -86,9 +80,6 @@ import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
 import com.google.android.ump.UserMessagingPlatform;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -553,8 +544,8 @@ public class MainActivity extends AppCompatActivity {
         int FavId = Integer.MAX_VALUE;
 
         for (int i = 0; i < StopIds.size(); i++) {
-            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, StopIds.get(i).toString())) {
-                int tFavId = userDatabase.GetId(StopIds.get(i).toString(), UserDatabase.FavoriteType.Stop);
+            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, StopIds.get(i))) {
+                int tFavId = userDatabase.GetId(StopIds.get(i), UserDatabase.FavoriteType.Stop);
                 if (FavId > tFavId) {
                     CurrentStop = StopIds.get(i);
                     FavId = tFavId;
@@ -637,7 +628,12 @@ public class MainActivity extends AppCompatActivity {
                     BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.GetBusBitmap(busMarker, "-",this));
                 }
 
-                MarkerOptions BusMarkerOption = new MarkerOptions().position(new LatLng(allBusMarker.get(busMarker).getPosition().latitude, allBusMarker.get(busMarker).getPosition().longitude)).icon(BusBitmap);
+                Marker marker = allBusMarker.get(busMarker);
+
+                if (marker == null)
+                    continue;
+
+                MarkerOptions BusMarkerOption = new MarkerOptions().position(new LatLng(marker.getPosition().latitude, marker.getPosition().longitude)).icon(BusBitmap);
                 CreateAllBusMarker(busMarker, BusMarkerOption);
             }
         }
@@ -1079,10 +1075,18 @@ public class MainActivity extends AppCompatActivity {
         if (AllBusMarker != null) {
             List<String> DeletableMarkers = new ArrayList<>();
             for (String key : AllBusMarker.keySet()) {
-                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && AllMarkerAnimator.get(key) != null) {
-                    AllMarkerAnimator.get(key).cancel();
+                ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
+
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && objectAnimator != null) {
+                    objectAnimator.cancel();
                 }
-                AllBusMarker.get(key).remove();
+
+                Marker marker = AllBusMarker.get(key);
+
+                if (marker == null)
+                    continue;
+
+                marker.remove();
                 DeletableMarkers.add(key);
             }
             for (String key : DeletableMarkers) {
@@ -1292,10 +1296,17 @@ public class MainActivity extends AppCompatActivity {
         List<String> DeletableMarkers = new ArrayList<>();
         for (String key : AllBusMarker.keySet()) {
             if (!UpdatedKeys.contains(key)) {
-                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && AllMarkerAnimator.get(key) != null) {
-                    AllMarkerAnimator.get(key).cancel();
+                ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
+
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && objectAnimator != null) {
+                    objectAnimator.cancel();
                 }
-                AllBusMarker.get(key).remove();
+
+                Marker marker = AllBusMarker.get(key);
+                if (marker == null)
+                    continue;
+
+                marker.remove();
                 DeletableMarkers.add(key);
             }
         }
@@ -1307,6 +1318,8 @@ public class MainActivity extends AppCompatActivity {
     private void CreateAllBusMarker(String TripId, MarkerOptions option) {
         if (IsMapInitialized) {
             Marker NewMarker = googleMap.addMarker(option);
+            if (NewMarker == null)
+                return;
             NewMarker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Bus, TripId));
             NewMarker.setZIndex(Float.MAX_VALUE);
             AllBusMarker.put(TripId, NewMarker);
@@ -1319,8 +1332,10 @@ public class MainActivity extends AppCompatActivity {
             AllMarkerAnimator = new HashMap<>();
         }
 
-        if(AllMarkerAnimator.containsKey(TripId) && AllMarkerAnimator.get(TripId) != null) {
-            AllMarkerAnimator.get(TripId).cancel();
+        ObjectAnimator objectAnimator = AllMarkerAnimator.get(TripId);
+
+        if(AllMarkerAnimator.containsKey(TripId) && objectAnimator != null) {
+            objectAnimator.cancel();
         }
 
         TypeEvaluator<LatLng> typeEvaluator = latLngInterpolator::interpolate;
@@ -1394,7 +1409,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (backStack.size() == 0) {
+        if (backStack.isEmpty()) {
             finish();
         } else {
             RestorePrevState();
@@ -1456,10 +1471,18 @@ public class MainActivity extends AppCompatActivity {
         if (AllBusMarker != null) {
             List<String> DeletableMarkers = new ArrayList<>();
             for (String key : AllBusMarker.keySet()) {
-                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && AllMarkerAnimator.get(key) != null) {
-                    AllMarkerAnimator.get(key).cancel();
+                ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
+
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && objectAnimator != null) {
+                    objectAnimator.cancel();
                 }
-                AllBusMarker.get(key).remove();
+
+                Marker marker = AllBusMarker.get(key);
+
+                if (marker == null)
+                    continue;
+
+                marker.remove();
                 DeletableMarkers.add(key);
             }
             for (String key : DeletableMarkers) {
@@ -1534,7 +1557,7 @@ public class MainActivity extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
-                    if (result.getData() != null) {
+                    if (result.getData() != null && result.getData().getExtras() != null) {
                         TrackBus(result.getData().getExtras().getString("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
                         backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null, null, null));
                     }
@@ -1545,7 +1568,7 @@ public class MainActivity extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
-                    if (result.getData() != null) {
+                    if (result.getData() != null && result.getData().getExtras() != null) {
                         TrackBus(result.getData().getExtras().getString("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
                         backStack.add(new BackStack(null, null, null, null, null, false, null, null, result.getData().getExtras().getString("BusType"), null));
                     }
@@ -1556,7 +1579,7 @@ public class MainActivity extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
-                    if (result.getData() != null) {
+                    if (result.getData() != null && result.getData().getExtras() != null) {
                         TrackBus(result.getData().getExtras().getString("TrackId"), result.getData().getExtras().getString("Date"));
                         backStack.add(new BackStack(null, null, null, null, null, false, null, null, null, new SwitchBackStack(result.getData().getExtras().getString("TripId"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getString("CurrentStopId"), result.getData().getExtras().getString("Date"))));
                     }
@@ -1578,9 +1601,6 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 case R.id.PrivacyButton:
                     ShowPrivacySettings();
-                    return true;
-                case R.id.DatabaseButton:
-                    ExportDatabase();
                     return true;
                 default:
                     return false;
@@ -1641,25 +1661,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void ExportDatabase() {
-        Toast.makeText(this,"Exportálás......", Toast.LENGTH_SHORT).show();
-
-        try {
-            File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "export.sql");
-            File database =  new File(this.getFilesDir() + "/Database", "NewGTFS.db");
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                FileUtils.copy(new FileInputStream(database), new FileOutputStream(f));
-            }
-
-            Toast.makeText(this,"Kész!", Toast.LENGTH_SHORT).show();
-        } catch (
-            Exception e
-        ) {
-            Toast.makeText(this,"Hiba! " + e.toString(), Toast.LENGTH_SHORT).show();
-        }
-    }
-
     public void OnSearchResultClick(SearchResult searchResult) {
         searchView.hide();
 
@@ -1711,7 +1712,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             addresses = gcd.getFromLocation(latLng.latitude, latLng.longitude, 1);
 
-            if (addresses != null && addresses.size() > 0) {
+            if (addresses != null && !addresses.isEmpty()) {
                 return addresses.get(0).getAddressLine(0).split(",")[1];
             } else {
                 return latLng.latitude + ", " + latLng.longitude;
@@ -1880,9 +1881,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20 + BottomInset;
             }
-
-        } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-
         }
 
         fragmentView.setLayoutParams(params);

@@ -5,9 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScroller;
@@ -32,7 +29,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -222,7 +218,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         GTFSRProvider GTFSRProvider_ = new GTFSRProvider(this.getActivity());
 
         UpdateLoop = Executors.newScheduledThreadPool(1);
-        UpdateLoop.scheduleAtFixedRate(() -> GetIncomingBuses(GTFSRProvider_), 0, 10, TimeUnit.SECONDS);
+        UpdateLoop.scheduleWithFixedDelay(() -> GetIncomingBuses(GTFSRProvider_), 0, 10, TimeUnit.SECONDS);
     }
 
     @Override
@@ -465,7 +461,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                         }
 
                         if (list != null) {
-                            Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+                            list.sort((o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
 
                             BusList = new IncomingBusRespModel[list.size()];
                             list.toArray(BusList);
@@ -482,7 +478,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                                 list.addAll(Arrays.asList(NDm.GetOfflineDepartureTimes(element.getId(), SelectedDate, SelectedTime)));
                             }
 
-                            Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+                            list.sort((o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
 
                             BusList = new IncomingBusRespModel[list.size()];
                             list.toArray(BusList);
@@ -518,7 +514,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                     }
 
                     if (list != null) {
-                        Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+                        list.sort((o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
 
                         BusList = new IncomingBusRespModel[list.size()];
                         list.toArray(BusList);
@@ -553,7 +549,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                             list.addAll(Arrays.asList(NDm.GetOfflineDepartureTimes(element.getId(), CurrentDate, CurrentTime)));
                         }
 
-                        Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+                        list.sort((o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
 
                         BusList = new IncomingBusRespModel[list.size()];
                         list.toArray(BusList);
@@ -579,7 +575,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
                         if (Bj != null) {
                             if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
-                                Boolean IsBusStarted = GTFSRProvider_.getIsBusHasStarted(incomingBusRespModel.getLineId() + "");
+                                Boolean IsBusStarted = GTFSRProvider_.getIsBusHasStarted(incomingBusRespModel.getLineId());
                                 if (IsBusStarted == null) {
                                     IsBusStarted = false;
                                 } else {
@@ -608,6 +604,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 return;
             }
 
+            if (mainActivity == null) {
+                return;
+            }
+
             if (BusList != null && BusList.length > 0) {
                 NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
 
@@ -628,31 +628,22 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                         InBusFragment = null;
                     }
                 } else {
-                    if (mainActivity != null) {
-                        IncomingBusRespModel[] finalBusList = BusList;
-                        mainActivity.runOnUiThread(() -> {
-                            if (InBusFragment != null) {
-                                InBusFragment.UpdateList(finalBusList);
-                            }
+                    IncomingBusRespModel[] finalBusList = BusList;
+                    mainActivity.runOnUiThread(() -> {
+                        if (InBusFragment != null) {
+                            InBusFragment.UpdateList(finalBusList);
+                        }
 
-                        });
-                    }
+                    });
                 }
             } else {
                 InBusFragment = null;
-                if (mainActivity != null) {
-                    NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
-                    if (DateTimeSelected && !NDm.GetBusDatabaseValidDate(SelectedDate)) {
-                        InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.DatabaseNotContain), -1);
-                        getChildFragmentManager().beginTransaction()
-                                .replace(R.id.BusListFragment, Fragment)
-                                .commit();
-                    } else {
-                        InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptyList), -1);
-                        getChildFragmentManager().beginTransaction()
-                                .replace(R.id.BusListFragment, Fragment)
-                                .commit();
-                    }
+                NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
+                if (DateTimeSelected && !NDm.GetBusDatabaseValidDate(SelectedDate)) {
+                    InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.DatabaseNotContain), -1);
+                    getChildFragmentManager().beginTransaction()
+                            .replace(R.id.BusListFragment, Fragment)
+                            .commit();
                 } else {
                     InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptyList), -1);
                     getChildFragmentManager().beginTransaction()
@@ -663,19 +654,14 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
             BusPositionRespModel[] BusPositions = GTFSRProvider_.getALLBusLocation();
             if (BusPositions != null) {
-                if (mainActivity != null) {
-                    mainActivity.runOnUiThread(() -> mainActivity.BusPositionMarkers(BusPositions));
-                }
+                mainActivity.runOnUiThread(() -> mainActivity.BusPositionMarkers(BusPositions));
             } else {
-                if (mainActivity != null) {
-                    mainActivity.runOnUiThread(() -> mainActivity.BusPositionMarkers(new BusPositionRespModel[0]));
-                }
+                mainActivity.runOnUiThread(() -> mainActivity.BusPositionMarkers(new BusPositionRespModel[0]));
             }
 
 
         } catch (Exception e) {
             Log.e("Update bus list error", e.toString());
-            e.printStackTrace();
         }
     }
 }

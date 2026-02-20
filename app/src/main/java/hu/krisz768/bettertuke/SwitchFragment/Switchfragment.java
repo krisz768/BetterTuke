@@ -16,17 +16,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.maps.model.LatLng;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -40,16 +36,12 @@ import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.HelperProvider;
-import hu.krisz768.bettertuke.IncomingBusFragment.BottomSheetIncomingBusFragment;
-import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusListFragment;
-import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusStopSelectorAdapter;
 import hu.krisz768.bettertuke.InfoFragment;
 import hu.krisz768.bettertuke.LoadingFragment;
 import hu.krisz768.bettertuke.MainActivity;
 import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
-import hu.krisz768.bettertuke.TrackBusFragment.TrackBusListFragment;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
@@ -278,7 +270,7 @@ public class Switchfragment extends Fragment {
         GTFSRProvider GTFSRProvider_ = new GTFSRProvider(this.getActivity());
 
         UpdateLoop = Executors.newScheduledThreadPool(1);
-        UpdateLoop.scheduleAtFixedRate(() -> GetBusPosition(GTFSRProvider_), 0, 5, TimeUnit.SECONDS);
+        UpdateLoop.scheduleWithFixedDelay(() -> GetBusPosition(GTFSRProvider_), 0, 5, TimeUnit.SECONDS);
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -379,11 +371,14 @@ public class Switchfragment extends Fragment {
             }
         } catch (Exception e) {
             Log.e("Update bus pos error", e.toString());
-            e.printStackTrace();
         }
     }
 
     private void GetIncomingBuses(String Time) {
+        if (getContext() == null) {
+            return;
+        }
+
         NewGTFSDatabase NDm = new NewGTFSDatabase(getContext());
 
         FragmentActivity mainActivity = (FragmentActivity)getActivity();
@@ -403,7 +398,7 @@ public class Switchfragment extends Fragment {
                     list.addAll(Arrays.asList(NDm.GetOfflineDepartureTimes(element.getId(), Date, Time)));
                 }
 
-                Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+                list.sort((o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
 
                 BusList = new IncomingBusRespModel[list.size()];
                 list.toArray(BusList);
@@ -425,7 +420,7 @@ public class Switchfragment extends Fragment {
                 }
 
                 if (list != null) {
-                    Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+                    list.sort((o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
 
                     BusList = new IncomingBusRespModel[list.size()];
                     list.toArray(BusList);
@@ -443,7 +438,7 @@ public class Switchfragment extends Fragment {
                     list.addAll(Arrays.asList(NDm.GetOfflineDepartureTimes(element.getId(), Date == null ? CurrentDate : Date, Time)));
                 }
 
-                Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+                list.sort((o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
 
                 BusList = new IncomingBusRespModel[list.size()];
                 list.toArray(BusList);
@@ -479,7 +474,7 @@ public class Switchfragment extends Fragment {
                     SimpleDateFormat Sdf2 = new SimpleDateFormat("m", Locale.US);
 
                     if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
-                        Boolean IsBusStarted = GTFSRProvider_.getIsBusHasStarted(incomingBusRespModel.getLineId() + "");
+                        Boolean IsBusStarted = GTFSRProvider_.getIsBusHasStarted(incomingBusRespModel.getLineId());
                         if (IsBusStarted == null) {
                             IsBusStarted = false;
                         } else {
@@ -503,10 +498,12 @@ public class Switchfragment extends Fragment {
             }
         }
 
-        for (IncomingBusRespModel incomingBusRespModel : BusList) {
-            String newName = NDm.GetBusNameByStop(incomingBusRespModel.getLineId(),incomingBusRespModel.getArriveStop());
-            if (newName != null) {
-                incomingBusRespModel.setLineName(newName);
+        if (BusList != null) {
+            for (IncomingBusRespModel incomingBusRespModel : BusList) {
+                String newName = NDm.GetBusNameByStop(incomingBusRespModel.getLineId(), incomingBusRespModel.getArriveStop());
+                if (newName != null) {
+                    incomingBusRespModel.setLineName(newName);
+                }
             }
         }
 

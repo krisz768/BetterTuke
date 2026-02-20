@@ -3,10 +3,10 @@ package hu.krisz768.bettertuke.models;
 import java.io.Serializable;
 
 public class SwitchBackStack implements Serializable {
-    private String TripID;
-    private String StopID;
-    private String CurrentStopID;
-    private String Date;
+    private final String TripID;
+    private final String StopID;
+    private final String CurrentStopID;
+    private final String Date;
 
     public SwitchBackStack(String tripID, String stopID, String currentStopID, String date) {
         TripID = tripID;

@@ -13,7 +13,7 @@ public class IncomingBusRespModel implements Serializable {
     private boolean AtStop;
     private boolean Started;
     private boolean Miss;
-    private String ArriveStop;
+    private final String ArriveStop;
 
     public IncomingBusRespModel(String lineNum, String lineName, Date arriveTime, String LineId, int remainingMin, boolean AtStop, String ArriveStop) {
         LineNum = lineNum;

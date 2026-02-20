@@ -1,7 +1,5 @@
 package hu.krisz768.bettertuke.ActiveBusFragment;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,23 +7,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
-import hu.krisz768.bettertuke.ActiveBusActivity;
 import hu.krisz768.bettertuke.HelperProvider;
-import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusListAdapter;
-import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusListFragment;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.ActiveBusTypeRespModel;
-import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 
 public class BusTypeListAdapter extends RecyclerView.Adapter<BusTypeListAdapter.ViewHolder> {
-    private ActiveBusTypeRespModel[] BusList;
+    private final ActiveBusTypeRespModel[] BusList;
     private final BusTypeListFragment ClickCallBack;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

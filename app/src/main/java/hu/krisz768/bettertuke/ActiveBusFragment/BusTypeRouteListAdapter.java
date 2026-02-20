@@ -1,29 +1,25 @@
 package hu.krisz768.bettertuke.ActiveBusFragment;
 
 import android.graphics.Color;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 import hu.krisz768.bettertuke.Database.LineInfoRouteInfo;
-import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.ActiveBusTypeRespModel;
 
 public class BusTypeRouteListAdapter  extends RecyclerView.Adapter<BusTypeRouteListAdapter.ViewHolder> {
-    private ActiveBusTypeRespModel BusData;
+    private final ActiveBusTypeRespModel BusData;
     private final BusTypeRouteListFragment ClickCallBack;
-    private ArrayList<LineInfoRouteInfo> Data;
+    private final ArrayList<LineInfoRouteInfo> Data;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView Name;
@@ -59,6 +55,9 @@ public class BusTypeRouteListAdapter  extends RecyclerView.Adapter<BusTypeRouteL
         this.ClickCallBack = ClickCallBack;
 
         Data = new ArrayList<>();
+
+        if (ClickCallBack.getContext() == null)
+            return;
 
         NewGTFSDatabase db = new NewGTFSDatabase(ClickCallBack.getContext());
 

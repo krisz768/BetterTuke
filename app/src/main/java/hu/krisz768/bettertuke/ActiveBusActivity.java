@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
@@ -20,7 +19,6 @@ import java.util.Locale;
 import hu.krisz768.bettertuke.ActiveBusFragment.BusTypeListFragment;
 import hu.krisz768.bettertuke.ActiveBusFragment.BusTypeRouteListFragment;
 import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
-import hu.krisz768.bettertuke.ScheduleFragment.ScheduleBusListFragment;
 import hu.krisz768.bettertuke.api_interface.models.ActiveBusTypeRespModel;
 
 public class ActiveBusActivity extends AppCompatActivity {
@@ -69,9 +67,7 @@ public class ActiveBusActivity extends AppCompatActivity {
     }
 
     private void ListBuses () {
-        if (Data == null) {
-
-        } else {
+        if (Data != null) {
             BusTypeListFragment Fragment = BusTypeListFragment.newInstance(Data);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.ActiveBusFragmentContainer, Fragment)

@@ -3,10 +3,6 @@ package hu.krisz768.bettertuke.NewGTFS;
 import android.content.Context;
 import android.util.Log;
 
-import hu.krisz768.bettertuke.Gtfs.GTFSContentLength;
-import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseDownload;
-import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
-
 public class NewGTFSDatabaseManager {
     private final Context ctx;
 
@@ -37,10 +33,10 @@ public class NewGTFSDatabaseManager {
             String Current = NewGTFSDatabase.GetDatabaseVersion(ctx).trim();
             String Online = OnlineVersion.Version.trim();
 
-            if (Online.equals("") || OnlineVersion.Error) {
+            if (Online.isEmpty() || OnlineVersion.Error) {
                 return false;
             }
-            if (Current == null || Current.equals("Err")) {
+            if (Current.equals("Err")) {
                 return true;
             } else return !Current.equals(Online);
         } catch (Exception e) {

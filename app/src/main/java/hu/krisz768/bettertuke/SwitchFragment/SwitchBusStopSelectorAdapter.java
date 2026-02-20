@@ -22,7 +22,6 @@ public class SwitchBusStopSelectorAdapter  extends RecyclerView.Adapter<Recycler
     private String SelectedStop;
     private final Switchfragment callback;
     private final String[] BusStopNames;
-
     public static class StopViewHolder extends RecyclerView.ViewHolder {
         private final Button button;
 

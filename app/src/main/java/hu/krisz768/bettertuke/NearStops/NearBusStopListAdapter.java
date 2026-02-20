@@ -1,8 +1,6 @@
 package hu.krisz768.bettertuke.NearStops;
 
 import android.graphics.Color;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,13 +8,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-import hu.krisz768.bettertuke.BusShortcutCreatorActivity;
-import hu.krisz768.bettertuke.Database.BusNum;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.LineInfoRouteInfo;
 import hu.krisz768.bettertuke.HelperProvider;
@@ -116,14 +111,17 @@ public class NearBusStopListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
         this.NearBuses = new ArrayList<>();
 
+        if (Callback.getContext() == null)
+            return;
+
         NewGTFSDatabase db = new NewGTFSDatabase(Callback.getContext());
 
-        for (int i = 0; i < NearBuses.length; i++) {
-            LineInfoRouteInfo temp = db.GetBusLineRouteInfoById(NearBuses[i].getTripId());
+        for (BusPositionRespModel nearBus : NearBuses) {
+            LineInfoRouteInfo temp = db.GetBusLineRouteInfoById(nearBus.getTripId());
 
             NewGTFSDatabase NDm = new NewGTFSDatabase(Callback.getContext());
 
-            String newName = NDm.GetBusNameByStop(NearBuses[i].getTripId(),NearBuses[i].getStopId());
+            String newName = NDm.GetBusNameByStop(nearBus.getTripId(), nearBus.getStopId());
             if (newName != null) {
                 temp.setLineName(newName);
             }
@@ -144,7 +142,7 @@ public class NearBusStopListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         if (viewType == 0) {
             View view = LayoutInflater.from(viewGroup.getContext())
                     .inflate(R.layout.near_stop_recview, viewGroup, false);

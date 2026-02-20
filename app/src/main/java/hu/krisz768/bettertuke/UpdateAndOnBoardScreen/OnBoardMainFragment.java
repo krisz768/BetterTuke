@@ -120,11 +120,7 @@ public class OnBoardMainFragment extends Fragment {
         }
 
         PageText.setText(String.format("%d/%d", CurrentPage + 1, NUM_PAGES));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            PageProgress.setProgress((100/(NUM_PAGES-1))*(CurrentPage), true);
-        } else {
-            PageProgress.setProgress((100/(NUM_PAGES-1))*(CurrentPage));
-        }
+        PageProgress.setProgress((100 / (NUM_PAGES - 1)) * (CurrentPage), true);
 
         if (CurrentPage == 2 && !IsDatabaseDownloaded) {
             LockButtons();

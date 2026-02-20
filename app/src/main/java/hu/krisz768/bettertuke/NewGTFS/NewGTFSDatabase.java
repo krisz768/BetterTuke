@@ -4,19 +4,13 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -252,7 +246,6 @@ public class NewGTFSDatabase {
 
             Cursor cursor = Sld.rawQuery("SELECT t.trip_id, t.shape_id, r.route_short_name, substr(t.trip_headsign, length(r.route_short_name)+2) as trip_headsign, st.arrival_time, st2.arrival_time AS start_time FROM trips AS t INNER JOIN routes AS r ON t.route_id = r.route_id INNER JOIN stop_times AS st ON st.trip_id = t.trip_id INNER JOIN stop_times AS st2 ON st2.trip_id = t.trip_id INNER JOIN calendar_dates AS cd ON cd.service_id = t.service_id WHERE st.stop_id = '" + StopId + "' AND cd.date = '" + Date + "' AND st2.stop_sequence = 1 ORDER BY st.arrival_time;", null);
 
-            //log("SELECT t.route_id, t.shape_id, r.route_short_name, t.trip_headsign, st.arrival_time, st2.arrival_time AS start_time FROM trips AS t INNER JOIN routes AS r ON t.route_id = r.route_id INNER JOIN stop_times AS st ON st.trip_id = t.trip_id INNER JOIN stop_times AS st2 ON st2.trip_id = t.trip_id INNER JOIN calendar_dates AS cd ON cd.service_id = t.service_id WHERE st.stop_id = '" + StopId + "' AND cd.date = '" + Date + "' AND st2.stop_sequence = 1 ORDER BY st.arrival_time;");
             while (cursor.moveToNext()) {
 
                 Calendar calendar = Calendar.getInstance();
@@ -276,7 +269,7 @@ public class NewGTFSDatabase {
             }
             cursor.close();
 
-            Collections.sort(Lines, (incomingBusRespModel, t1) -> incomingBusRespModel.getRemainingMin() - t1.getRemainingMin());
+            Lines.sort((incomingBusRespModel, t1) -> incomingBusRespModel.getRemainingMin() - t1.getRemainingMin());
 
             IncomingBusRespModel[] ret = new IncomingBusRespModel[Lines.size()];
 
@@ -380,7 +373,6 @@ public class NewGTFSDatabase {
         } catch (Exception e) {
             log(e.toString());
             return null;
-
         }
     }
 
@@ -419,19 +411,16 @@ public class NewGTFSDatabase {
         } catch (Exception e) {
             log(e.toString());
             return null;
-
         }
     }
 
     public boolean IsStopInBusRoute(String trip_id, String StopId) {
         try {
             Cursor cursor = Sld.rawQuery("SELECT trip_id FROM stop_times WHERE trip_id = '" + trip_id + "' AND stop_id = '" + StopId + "';", null);
-            while (cursor.moveToNext()) {
-                return true;
-            }
+            boolean ret = cursor.moveToNext();
             cursor.close();
 
-            return false;
+            return ret;
         } catch (Exception e) {
             log(e.toString());
             return false;
@@ -615,23 +604,6 @@ public class NewGTFSDatabase {
 
     public static void DeleteDatabase(Context Ctx) {
         File Database = new File(Ctx.getFilesDir() + "/Database", "NewGTFS.db");
-        /*if (Database.exists()) {
-            File out = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/test.sql");
-            int bytesum = 0;
-            int byteread = 0;
-            InputStream inStream = new FileInputStream(Database);
-            FileOutputStream fs = new FileOutputStream(out);
-            Log.d("ifExists", "copyFile: " + fs);
-            byte[] buffer = new byte[1444];
-            while ((byteread = inStream.read(buffer)) != -1) {
-                bytesum += byteread;
-                fs.write(buffer, 0, byteread);
-            }
-            inStream.close();
-            fs.close();
-        }*/
-
-
 
         try {
             Database.delete();
@@ -641,7 +613,6 @@ public class NewGTFSDatabase {
     }
 
     public void InsertRoutes(String fileContent) {
-        log("NewGTFS Start Routes");
         String[] Lines = fileContent.split("\n");
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO routes (route_id, agency_id, route_short_name, route_long_name, route_type, route_color, route_text_color) VALUES (?, ?, ?, ?, ?, ?, ?);");
@@ -668,7 +639,6 @@ public class NewGTFSDatabase {
     }
 
     public void InsertCalendar(String fileContent) {
-        log("NewGTFS Start Calendar");
         String[] Lines = fileContent.split("\n");
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO calendar (service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (?,?,?,?,?,?,?,?,?,?)");
         Sld.beginTransaction();
@@ -698,7 +668,6 @@ public class NewGTFSDatabase {
     }
 
     public void InsertCalendarDates(String fileContent) {
-        log("NewGTFS Start CalendarDates");
         String[] Lines = fileContent.split("\n");
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO calendar_dates (service_id, date, exception_type) VALUES (?,?,?)");
@@ -721,7 +690,6 @@ public class NewGTFSDatabase {
     }
 
     public void InsertShapes(String fileContent) {
-        log("NewGTFS Start Shapes");
         String[] Lines = fileContent.split("\n");
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO shapes (shape_id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled) VALUES (?,?,?,?,?)");
@@ -746,7 +714,6 @@ public class NewGTFSDatabase {
     }
 
     public void InsertStopTimes(String fileContent) {
-        log("NewGTFS Start StopTimes");
         String[] Lines = fileContent.split("\n");
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO stop_times (trip_id, arrival_time, departure_time, stop_id, stop_sequence, stop_headsign) VALUES (?,?,?,?,?,?)");
@@ -772,12 +739,11 @@ public class NewGTFSDatabase {
     }
 
     public void InsertStops(String fileContent) {
-        log("NewGTFS Start Stops");
         String[] Lines = fileContent.split("\n");
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO stops (stop_id, stop_code, stop_name, stop_desc, stop_lat, stop_lon, zone_id, stop_url, location_type, stop_timezone, wheelchair_boarding) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
         for (int i = 1; i< Lines.length; i++) {
-            String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", 0-1);
+            String[] Data= Lines[i].split(",(?=(?:[^']*'[^']*')*[^']*$)", -1);
 
             try {
                 stmt.bindString(1, Data[0]);
@@ -803,7 +769,6 @@ public class NewGTFSDatabase {
     }
 
     public void InsertFeedInfo(String fileContent) {
-        log("NewGTFS Start FeedInfo");
         String[] Lines = fileContent.split("\n");
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO feed_info (feed_publisher_name, feed_publisher_url, feed_lang, feed_start_date, feed_end_date, feed_version) VALUES (?,?,?,?,?,?)");
@@ -829,7 +794,6 @@ public class NewGTFSDatabase {
     }
 
     public void InsertTrips(String fileContent) {
-        log("NewGTFS Start Trips");
         String[] Lines = fileContent.split("\n");
         Sld.beginTransaction();
         SQLiteStatement stmt = Sld.compileStatement("INSERT INTO trips (route_id, service_id, trip_id, trip_headsign, trip_short_name, direction_id, shape_id) VALUES (?,?,?,?,?,?,?)");
@@ -862,7 +826,7 @@ public class NewGTFSDatabase {
             Cursor cursor = Sld.rawQuery("SELECT substr(t.stop_headsign, length(r.route_short_name)+2) FROM stop_times AS t INNER JOIN trips AS tr ON t.trip_id = tr.trip_id INNER JOIN routes AS r ON r.route_id = tr.route_id WHERE t.trip_id = '" + TripId + "' AND t.stop_id = '" + StopId + "';", null);
             while(cursor.moveToNext()) {
                 ret = cursor.getString(0);
-                if (ret.equals("")) {
+                if (ret.isEmpty()) {
                     ret = null;
                 }
             }

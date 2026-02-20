@@ -13,15 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import hu.krisz768.bettertuke.ActiveBusActivity;
-import hu.krisz768.bettertuke.IncomingBusFragment.IncomingBusListAdapter;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.ActiveBusTypeRespModel;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link BusTypeListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class BusTypeListFragment extends Fragment {
     private static final String ARG_DATA = "DATA";
 
