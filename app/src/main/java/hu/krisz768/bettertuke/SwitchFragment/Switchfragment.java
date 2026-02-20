@@ -211,7 +211,7 @@ public class Switchfragment extends Fragment {
                         scrollPosition = SelectedPlaceStopsArray.length;
                     } else {
                         for (int i = 0; i < SelectedPlaceStopsArray.length; i++) {
-                            if (SelectedPlaceStopsArray[i].getId().equals(StopID)) {
+                            if (SelectedPlaceStopsArray[i].getId().equals(CurrentStopID)) {
                                 scrollPosition = i;
                                 break;
                             }
@@ -344,6 +344,7 @@ public class Switchfragment extends Fragment {
                 if (!BusLeft) {
                     GetIncomingBuses(Sdf2.format(calendar.getTime()));
                 } else {
+                    Log.e("TAG", "GetBusPosition: 1");
                     DisplayInfoFragmentBusLeft();
                 }
             } else {
@@ -372,6 +373,7 @@ public class Switchfragment extends Fragment {
                 if (calendar.getTime().after(CurrentTime) || Date != null) {
                     GetIncomingBuses(Sdf2.format(calendar.getTime()));
                 } else {
+                    Log.e("TAG", "GetBusPosition: 2");
                     DisplayInfoFragmentBusLeft();
                 }
             }
@@ -498,6 +500,13 @@ public class Switchfragment extends Fragment {
                 } else {
                     incomingBusRespModel.setMiss(true);
                 }
+            }
+        }
+
+        for (IncomingBusRespModel incomingBusRespModel : BusList) {
+            String newName = NDm.GetBusNameByStop(incomingBusRespModel.getLineId(),incomingBusRespModel.getArriveStop());
+            if (newName != null) {
+                incomingBusRespModel.setLineName(newName);
             }
         }
 

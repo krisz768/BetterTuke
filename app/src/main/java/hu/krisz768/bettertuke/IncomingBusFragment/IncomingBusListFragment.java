@@ -3,6 +3,9 @@ package hu.krisz768.bettertuke.IncomingBusFragment;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -60,6 +63,18 @@ public class IncomingBusListFragment extends Fragment {
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         Recv.setLayoutManager(mLayoutManager);
         Recv.setAdapter(Ibla);
+
+        /*ViewCompat.setOnApplyWindowInsetsListener(view, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Recv.setPadding(
+                    Recv.getPaddingLeft(),
+                    Recv.getPaddingTop(),
+                    Recv.getPaddingRight(),
+                    insets.bottom
+            );
+
+            return windowInsets;
+        });*/
 
         return view;
     }

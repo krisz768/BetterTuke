@@ -53,11 +53,13 @@ public class BottomSheetTrackBusFragment extends Fragment {
     private ImageView Wifi;
     private ImageView Usb;
     private TextView BusText;
+    private HashMap<String, BusStops> mStopList;
     private boolean BusAttributesVisible = false;
     private ScheduledExecutorService UpdateLoop;
     private TrackBusRespModel RecentBusPosition;
     private boolean IsOldDataWarnDisplayed = false;
     private boolean FirstDataLoose = false;
+    private boolean FirstBusUpdate = true;
 
     public BottomSheetTrackBusFragment() {
 
@@ -79,6 +81,12 @@ public class BottomSheetTrackBusFragment extends Fragment {
         if (getArguments() != null) {
             mStop = getArguments().getString(STOP);
             mBusLine = (BusLine) getArguments().getSerializable(LINEOBJ);
+        }
+
+        mStopList = MainActivity.busStops;
+
+        if (mStopList == null) {
+            mStopList = BusStops.GetAllStops(this.getContext());
         }
     }
 
@@ -222,6 +230,27 @@ public class BottomSheetTrackBusFragment extends Fragment {
 
                     activity.runOnUiThread(this::hideBusAttributes);
 
+                    if (FirstBusUpdate) {
+                        BusStops SelectedStop = null;
+                        BusStops FirstStop = null;
+
+                        for (BusStops busStops : mStopList.values()) {
+                            if (busStops.getId().equals(mStop)) {
+                                SelectedStop = busStops;
+                            }
+                            if (busStops.getId().equals(mBusLine.getStops()[0].getStopId())) {
+                                FirstStop = busStops;
+                            }
+                        }
+
+                        final BusStops FSelectedStop = SelectedStop;
+                        final BusStops FFirstStop = FirstStop;
+
+                        if (SelectedStop != null && FirstStop != null) {
+                            activity.runOnUiThread(() -> ((MainActivity)activity).ZoomClose(new LatLng(FSelectedStop.getGpsLatitude(), FSelectedStop.getGpsLongitude()), new LatLng(FFirstStop.getGpsLatitude(), FFirstStop.getGpsLongitude())));
+                        }
+                    }
+
                     if (mBusLine.getCTrip() != null) {
                         Calendar Now = Calendar.getInstance();
                         int CurrentHour = Now.get(Calendar.HOUR_OF_DAY);
@@ -277,6 +306,8 @@ public class BottomSheetTrackBusFragment extends Fragment {
             Log.e("Update bus pos error", e.toString());
             e.printStackTrace();
         }
+
+        FirstBusUpdate = false;
     }
 
     private void findBusAttributes(View view)

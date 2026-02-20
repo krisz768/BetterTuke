@@ -293,7 +293,7 @@ public class GTFSDatabase {
     public void InsertStops(String fileContent) {
         String[] Lines = fileContent.split("\n");
         Sld.beginTransaction();
-        SQLiteStatement stmt = Sld.compileStatement("INSERT INTO stops (stop_id, stop_name, stop_desc, stop_lat, stop_lon, parent_station) VALUES (?,?,?,?,?,?)");
+        SQLiteStatement stmt = Sld.compileStatement("INSERT INTO stops (stop_id, stop_name, stop_desc, stop_lat, stop_lon, location_type, parent_station) VALUES (?,?,?,?,?,?,?)");
         for (int i = 1; i< Lines.length; i++) {
             String[] Data= Lines[i].split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)", -1);
 
@@ -304,6 +304,7 @@ public class GTFSDatabase {
                 stmt.bindString(4, Data[3]);
                 stmt.bindString(5, Data[4]);
                 stmt.bindString(6, Data[5]);
+                stmt.bindString(7, Data[6]);
 
                 stmt.executeInsert();
                 stmt.clearBindings();

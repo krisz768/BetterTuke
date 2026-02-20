@@ -96,7 +96,7 @@ public class TrackBusListFragment extends Fragment {
     }
 
     public void scrollSmoothTo() {
-        if (mBusPosition != null) {
+        if (mBusPosition != null && Recv.canScrollVertically(1)) {
             for (int i = 0; i < mLine.getStops().length; i++) {
                 if (mLine.getStops()[i].getOrder() == mBusPosition.getStopNumber()) {
                     int scrollPosition = i;

@@ -49,6 +49,13 @@ public class NewGTFSDatabaseManager {
         }
     }
 
+    public boolean IsDatabaseValid() {
+        int TripCount = NewGTFSDatabase.GetTripCount(ctx);
+        int StopCount = NewGTFSDatabase.GetStopCount(ctx);
+
+        return TripCount != 0 && StopCount != 0;
+    }
+
     private void log (String msg) {
         Log.e("NewGTFSInterface", msg);
     }

@@ -567,6 +567,52 @@ public class NewGTFSDatabase {
         }
     }
 
+    public static int GetTripCount(Context Ctx) {
+        try
+        {
+            String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "NewGTFS.db")).getAbsolutePath();
+            NewGTFSDatabaseHelper Dbh = new NewGTFSDatabaseHelper(Ctx, DATABASEFILE);
+            SQLiteDatabase Sld = Dbh.getReadableDatabase();
+
+            Cursor cursor = Sld.rawQuery("SELECT count(trip_id) FROM trips WHERE 1;", null);
+            int count = 0;
+            while(cursor.moveToNext()) {
+                count = cursor.getInt(0);
+            }
+            cursor.close();
+
+            Sld.close();
+            Dbh.close();
+            return count;
+        } catch (Exception e) {
+            Log.e("DatabaseManager", e.toString());
+            return 0;
+        }
+    }
+
+    public static int GetStopCount(Context Ctx) {
+        try
+        {
+            String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "NewGTFS.db")).getAbsolutePath();
+            NewGTFSDatabaseHelper Dbh = new NewGTFSDatabaseHelper(Ctx, DATABASEFILE);
+            SQLiteDatabase Sld = Dbh.getReadableDatabase();
+
+            Cursor cursor = Sld.rawQuery("SELECT count(stop_id) FROM stops WHERE 1;", null);
+            int count = 0;
+            while(cursor.moveToNext()) {
+                count = cursor.getInt(0);
+            }
+            cursor.close();
+
+            Sld.close();
+            Dbh.close();
+            return count;
+        } catch (Exception e) {
+            Log.e("DatabaseManager", e.toString());
+            return 0;
+        }
+    }
+
     public static void DeleteDatabase(Context Ctx) {
         File Database = new File(Ctx.getFilesDir() + "/Database", "NewGTFS.db");
         /*if (Database.exists()) {
@@ -816,6 +862,9 @@ public class NewGTFSDatabase {
             Cursor cursor = Sld.rawQuery("SELECT substr(t.stop_headsign, length(r.route_short_name)+2) FROM stop_times AS t INNER JOIN trips AS tr ON t.trip_id = tr.trip_id INNER JOIN routes AS r ON r.route_id = tr.route_id WHERE t.trip_id = '" + TripId + "' AND t.stop_id = '" + StopId + "';", null);
             while(cursor.moveToNext()) {
                 ret = cursor.getString(0);
+                if (ret.equals("")) {
+                    ret = null;
+                }
             }
             cursor.close();
 

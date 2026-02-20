@@ -169,7 +169,7 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         NewGTFSDatabaseManager NgtfsDatabaseManager = new NewGTFSDatabaseManager(ctx);
-        if (NgtfsDatabaseManager.CheckForUpdate()){
+        if (NgtfsDatabaseManager.CheckForUpdate() || !NgtfsDatabaseManager.IsDatabaseValid()){
             AddLog("Updating new gtfs...");
             StartUpdate(true, UpdateGTFS);
         } else {
