@@ -1075,10 +1075,12 @@ public class MainActivity extends AppCompatActivity {
         if (AllBusMarker != null) {
             List<String> DeletableMarkers = new ArrayList<>();
             for (String key : AllBusMarker.keySet()) {
-                ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key)) {
+                    ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
 
-                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && objectAnimator != null) {
-                    objectAnimator.cancel();
+                    if (objectAnimator != null) {
+                        objectAnimator.cancel();
+                    }
                 }
 
                 Marker marker = AllBusMarker.get(key);
@@ -1296,10 +1298,12 @@ public class MainActivity extends AppCompatActivity {
         List<String> DeletableMarkers = new ArrayList<>();
         for (String key : AllBusMarker.keySet()) {
             if (!UpdatedKeys.contains(key)) {
-                ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key)) {
+                    ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
 
-                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && objectAnimator != null) {
-                    objectAnimator.cancel();
+                    if (objectAnimator != null) {
+                        objectAnimator.cancel();
+                    }
                 }
 
                 Marker marker = AllBusMarker.get(key);
@@ -1471,10 +1475,12 @@ public class MainActivity extends AppCompatActivity {
         if (AllBusMarker != null) {
             List<String> DeletableMarkers = new ArrayList<>();
             for (String key : AllBusMarker.keySet()) {
-                ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key)) {
+                    ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
 
-                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key) && objectAnimator != null) {
-                    objectAnimator.cancel();
+                    if (objectAnimator != null) {
+                        objectAnimator.cancel();
+                    }
                 }
 
                 Marker marker = AllBusMarker.get(key);
