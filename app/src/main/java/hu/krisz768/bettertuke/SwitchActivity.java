@@ -11,6 +11,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.appbar.MaterialToolbar;
+
 import hu.krisz768.bettertuke.SwitchFragment.Switchfragment;
 
 public class SwitchActivity extends AppCompatActivity {
@@ -42,6 +44,9 @@ public class SwitchActivity extends AppCompatActivity {
             CurrentStopID = b.getString("CurrentStopId");
             Date = b.getString("Date");
         }
+
+        MaterialToolbar materialToolbar = findViewById(R.id.topAppBar);
+        materialToolbar.setNavigationOnClickListener(v -> finish());
 
         InitFragment();
     }
