@@ -1,54 +1,57 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
 android {
-    namespace 'hu.krisz768.bettertuke'
-    compileSdk 34
+    namespace = 'hu.krisz768.bettertuke'
+    compileSdk = 37
 
     defaultConfig {
-        applicationId "hu.krisz768.bettertuke"
-        minSdk 23
-        targetSdk 34
-        versionCode 53
-        versionName "2.0.2"
+        applicationId = "hu.krisz768.bettertuke"
+        minSdk = 24
+        targetSdk = 37
+        versionCode = 84
+        versionName = "3.1"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
-        viewBinding true
+        viewBinding = true
+        buildConfig = true
     }
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.12.0-alpha02'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.5'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.7.5'
+    implementation 'androidx.appcompat:appcompat:1.8.0'
+    implementation 'com.google.android.material:material:1.14.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.2'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.10.2'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.10.2'
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
-    implementation 'com.google.android.gms:play-services-location:21.0.1'
-    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
-    implementation 'androidx.core:core-splashscreen:1.0.1'
-    implementation 'com.google.android.gms:play-services-ads:22.6.0'
-    implementation("com.google.android.ump:user-messaging-platform:2.1.0")
+    implementation 'com.google.android.gms:play-services-location:21.4.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0'
+    implementation 'androidx.core:core-splashscreen:1.2.0'
+    implementation 'com.google.android.gms:play-services-ads:25.5.0'
+    implementation("com.google.android.ump:user-messaging-platform:4.0.0")
+    implementation 'org.mobilitydata:gtfs-realtime-bindings:0.2.0'
+    implementation 'com.google.android.play:app-update:2.1.0'
+    implementation 'androidx.activity:activity-ktx:1.13.0'
+    implementation 'androidx.fragment:fragment:1.9.1'
+    // Foldable posture (tabletop / "Flex mode") detection
+    implementation 'androidx.window:window:1.5.1'
+    implementation 'androidx.window:window-java:1.5.1'
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 }

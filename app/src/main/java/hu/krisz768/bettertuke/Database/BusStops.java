@@ -5,14 +5,17 @@ import android.content.Context;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import hu.krisz768.bettertuke.Gtfs.GTFSDatabase;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
+
 public class BusStops implements Serializable {
-    private final int Id;
+    private final String Id;
     private final String Place;
-    private final float GpsLongitude;
-    private final float GpsLatitude;
+    private float GpsLongitude;
+    private float GpsLatitude;
     private final String StopNum;
 
-    public BusStops(int id, String place, float gpsLongitude, float gpsLatitude, String stopNum) {
+    public BusStops(String id, String place, float gpsLongitude, float gpsLatitude, String stopNum) {
         Id = id;
         Place = place;
         GpsLongitude = gpsLongitude;
@@ -20,7 +23,7 @@ public class BusStops implements Serializable {
         StopNum = stopNum;
     }
 
-    public int getId() {
+    public String getId() {
         return Id;
     }
 
@@ -35,6 +38,11 @@ public class BusStops implements Serializable {
         return -1;
     }
 
+    public void SetCoords(float GpsLongitude, float GpsLatitude) {
+        this.GpsLongitude = GpsLongitude;
+        this.GpsLatitude = GpsLatitude;
+    }
+
     public float getGpsLongitude() {
         return GpsLongitude;
     }
@@ -47,9 +55,26 @@ public class BusStops implements Serializable {
         return StopNum;
     }
 
-    public static HashMap<Integer, BusStops> GetAllStops(Context ctx) {
-        DatabaseManager Dm = new DatabaseManager(ctx);
+    public static HashMap<String, BusStops> GetAllStops(Context ctx) {
+        NewGTFSDatabase Dm = new NewGTFSDatabase(ctx);
+        GTFSDatabase GDm = new GTFSDatabase(ctx);
 
-        return Dm.GetAllBusStops();
+        HashMap<String, BusStops> Stops = Dm.GetAllBusStops();
+
+        // The more precise coordinates of the other database, loaded with one query (this runs on
+        // the main thread when the main screen starts)
+        HashMap<Long, float[]> Coords = GDm.GetAllStopCoords();
+        for (BusStops Stop : Stops.values()) {
+            try {
+                float[] coord = Coords.get(Long.parseLong(Stop.getId().substring(2)));
+                if (coord != null) {
+                    Stop.SetCoords(coord[1], coord[0]);
+                }
+            } catch (Exception ignored) {
+                // Not a numeric id, there are no other coordinates for it
+            }
+        }
+
+        return Stops;
     }
 }

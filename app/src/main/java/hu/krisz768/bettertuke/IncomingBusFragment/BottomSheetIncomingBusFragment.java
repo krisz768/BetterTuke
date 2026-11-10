@@ -29,7 +29,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,14 +41,15 @@ import java.util.concurrent.TimeUnit;
 import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.InfoFragment;
 import hu.krisz768.bettertuke.LoadingFragment;
 import hu.krisz768.bettertuke.MainActivity;
+import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
-import hu.krisz768.bettertuke.api_interface.TukeServerApi;
+import hu.krisz768.bettertuke.api_interface.models.BusPositionRespModel;
 import hu.krisz768.bettertuke.api_interface.models.IncomingBusRespModel;
 import hu.krisz768.bettertuke.models.IncomBusBackStack;
 
@@ -57,12 +57,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     private static final String PLACE = "Place";
     private static final String STOP = "Stop";
     private static final String STARTMODE = "StartMode";
-    private static final String PLACELIST = "PlaceList";
-    private static final String STOPLIST = "StopList";
     private int mPlace;
-    private volatile int mStop;
+    private volatile String mStop;
     private HashMap<Integer, BusPlaces> mPlaceList;
-    private HashMap<Integer, BusStops> mStopList;
+    private HashMap<String, BusStops> mStopList;
     private IncomBusBackStack mStartMode;
     private IncomingBusStopSelectorAdapter Ibssa;
     private IncomingBusListFragment InBusFragment;
@@ -75,28 +73,33 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     public BottomSheetIncomingBusFragment() {
 
     }
-    public static BottomSheetIncomingBusFragment newInstance(int Place, int Stop, IncomBusBackStack StartMode, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList) {
+    public static BottomSheetIncomingBusFragment newInstance(int Place, String Stop, IncomBusBackStack StartMode) {
         BottomSheetIncomingBusFragment fragment = new BottomSheetIncomingBusFragment();
         Bundle args = new Bundle();
         args.putInt(PLACE, Place);
-        args.putInt(STOP, Stop);
-        args.putSerializable(PLACELIST, PlaceList);
-        args.putSerializable(STOPLIST, StopList);
+        args.putString(STOP, Stop);
         args.putSerializable(STARTMODE, StartMode);
         fragment.setArguments(args);
         return fragment;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mPlace = getArguments().getInt(PLACE);
-            mStop = getArguments().getInt(STOP);
-            mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
-            mStopList = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPLIST);
+            mStop = getArguments().getString(STOP);
             mStartMode = (IncomBusBackStack) getArguments().getSerializable(STARTMODE);
+        }
+
+        mPlaceList = MainActivity.GetBusPlaces(requireContext());
+        mStopList = MainActivity.GetBusStops(requireContext());
+
+        if (mPlaceList == null) {
+            mPlaceList = BusPlaces.getAllBusPlaces(this.getContext());
+        }
+        if (mStopList == null) {
+            mStopList = BusStops.GetAllStops(this.getContext());
         }
     }
 
@@ -146,7 +149,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         if (getContext() != null){
             UserDatabase userDatabase = new UserDatabase(getContext());
 
-            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
+            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, mStop)) {
                 FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
             } else {
                 FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
@@ -162,25 +165,35 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 mAdView.setVisibility(View.GONE);
             }
 
-            if (mStop == -1) {
+            if (mStop.equals("-1")) {
                 FavButton.setVisibility(View.GONE);
                 ScheduleButton.setVisibility(View.GONE);
             }
 
             FavButton.setOnClickListener(view12 -> {
-                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
-                    userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop));
+                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, mStop)) {
+                    userDatabase.DeleteFavorite(UserDatabase.FavoriteType.Stop, mStop);
                     FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
                 } else {
                     String StopNum = "1";
                     for (BusStops busStops : SelectedPlaceStopsArray) {
-                        if (busStops.getId() == mStop) {
+                        if (busStops.getId().equals(mStop)) {
                             StopNum = busStops.getStopNum();
                             break;
                         }
                     }
 
-                    userDatabase.AddFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop),  getString(R.string.BusStopNameWithNum, BusStopName.getText().toString().trim(), StopNum.trim()));
+                    String StopName;
+
+                    String DirectionText = HelperProvider.GetStopDirectionString(getContext(),mStop);
+
+                    if (DirectionText.equals("-") || DirectionText.isEmpty() || DirectionText.equals(" ")) {
+                        StopName = StopNum.trim();
+                    } else {
+                        StopName = DirectionText;
+                    }
+
+                    userDatabase.AddFavorite(UserDatabase.FavoriteType.Stop, mStop,  getString(R.string.BusStopNameWithNum, BusStopName.getText().toString().trim(), StopName));
                     FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
                 }
             });
@@ -202,10 +215,10 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             }
         }
 
-        TukeServerApi serverApi = new TukeServerApi(this.getActivity());
+        GTFSRProvider GTFSRProvider_ = new GTFSRProvider(this.getActivity());
 
         UpdateLoop = Executors.newScheduledThreadPool(1);
-        UpdateLoop.scheduleAtFixedRate(() -> GetIncomingBuses(serverApi), 0, 10, TimeUnit.SECONDS);
+        UpdateLoop.scheduleWithFixedDelay(() -> GetIncomingBuses(GTFSRProvider_), 0, 10, TimeUnit.SECONDS);
     }
 
     @Override
@@ -226,7 +239,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     public void OnSelectDateClick() {
         MaterialDatePicker<Long> DatePicker = MaterialDatePicker.Builder.datePicker().setTitleText(getString(R.string.SelectDate)).setSelection((new Date()).getTime()).build();
         DatePicker.addOnPositiveButtonClickListener(selection -> {
-            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd", Locale.US);
             sdf1.setTimeZone(TimeZone.getTimeZone("UTC"));
             SelectedDate = sdf1.format(new Date(selection));
 
@@ -249,7 +262,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
             SelectedTime = String.format("%02d", TimePicker.getHour()) + ":" + String.format("%02d", TimePicker.getMinute());
 
-            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd", Locale.US);
             String CurrentDate = sdf1.format(new Date());
 
             DateTimeSelected = !SelectedDate.equals(CurrentDate) || CurrentHour != TimePicker.getHour() || (CurrentMinute != TimePicker.getMinute() && CurrentMinute != TimePicker.getMinute() - 1);
@@ -273,8 +286,8 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             new Thread(() -> {
                 ResetList();
 
-                TukeServerApi serverApi = new TukeServerApi(getActivity());
-                GetIncomingBuses(serverApi);
+                GTFSRProvider GTFSRProvider_ = new GTFSRProvider(getActivity());
+                GetIncomingBuses(GTFSRProvider_);
             }).start();
         });
 
@@ -282,7 +295,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void OnStopClick(int Id) {
+    public void OnStopClick(String Id) {
         if (getActivity() != null){
             ((MainActivity)getActivity()).ChangeStop(Id);
         }
@@ -297,7 +310,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             ImageView FavButton = getView().findViewById(R.id.StopFavoriteButton);
             ImageView ScheduleButton = getView().findViewById(R.id.StopScheduleButton);
 
-            if (mStop == -1) {
+            if (mStop.equals("-1")) {
                 FavButton.setVisibility(View.GONE);
                 ScheduleButton.setVisibility(View.GONE);
             } else {
@@ -305,7 +318,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 ScheduleButton.setVisibility(View.VISIBLE);
 
                 UserDatabase userDatabase = new UserDatabase(getContext());
-                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop))) {
+                if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, mStop)) {
                     FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOn));
                 } else {
                     FavButton.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.FaviconOff));
@@ -314,8 +327,8 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         }
 
         new Thread(() -> {
-            TukeServerApi serverApi = new TukeServerApi(getActivity());
-            GetIncomingBuses(serverApi);
+            GTFSRProvider GTFSRProvider_ = new GTFSRProvider(getActivity());
+            GetIncomingBuses(GTFSRProvider_);
         }).start();
     }
 
@@ -331,7 +344,12 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             TextView DateText = view.findViewById(R.id.BusStopDate);
             if (DateText != null) {
                 if (DateTimeSelected) {
-                    DateText.setText(getString(R.string.IncBusAnotherDay, SelectedDate.replace("-", ". ") + ". " + SelectedTime));
+                    StringBuilder str = new StringBuilder(SelectedDate);
+
+                    str.insert(6, ". ");
+                    str.insert(4, ". ");
+
+                    DateText.setText(getString(R.string.IncBusAnotherDay, str + ". " + SelectedTime));
                 } else {
                     Calendar Now = Calendar.getInstance();
 
@@ -383,11 +401,11 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
                     int scrollPosition = 0;
 
-                    if (mStop == -1) {
+                    if (mStop.equals("-1")) {
                         scrollPosition = SelectedPlaceStopsArray.length;
                     } else {
                         for (int i = 0; i < SelectedPlaceStopsArray.length; i++) {
-                            if (SelectedPlaceStopsArray[i].getId() == mStop) {
+                            if (SelectedPlaceStopsArray[i].getId().equals(mStop)) {
                                 scrollPosition = i;
                                 break;
                             }
@@ -412,9 +430,9 @@ public class BottomSheetIncomingBusFragment extends Fragment {
         }
     }
 
-    private void GetIncomingBuses(TukeServerApi serverApi) {
+    private void GetIncomingBuses(GTFSRProvider GTFSRProvider_) {
         try {
-            final int SendStopId = mStop;
+            final String SendStopId = mStop;
             final String SendDate = SelectedDate;
             final String SendTime = SelectedTime;
             final boolean SendCustom = DateTimeSelected;
@@ -422,43 +440,87 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             IncomingBusRespModel[] BusList = null;
 
             MainActivity mainActivity = (MainActivity)getActivity();
+            SimpleDateFormat sdf3 = new SimpleDateFormat("yyyyMMdd", Locale.US);
 
             if (DateTimeSelected) {
                 if (mainActivity != null) {
-                    if (mStop == -1) {
-                        ArrayList<IncomingBusRespModel> list = new ArrayList<>();
-                        DatabaseManager Dm = new DatabaseManager(mainActivity);
+                    if (mStop.equals("-1")) {
+                        ArrayList<IncomingBusRespModel> list = null;
+                        if (sdf3.format(new Date()).equals(SelectedDate)) {
+                            list = new ArrayList<>();
 
-                        for (BusStops element : SelectedPlaceStopsArray) {
-                            list.addAll(Arrays.asList(Dm.GetOfflineDepartureTimes(element.getId(), SelectedDate, SelectedTime)));
+                            for (BusStops element : SelectedPlaceStopsArray) {
+                                IncomingBusRespModel[] Data = GTFSRProvider_.getNextIncomingBuses(element.getId(), SelectedDate, SelectedTime);
+                                if (Data != null) {
+                                    list.addAll(Arrays.asList(Data));
+                                } else {
+                                    list = null;
+                                    break;
+                                }
+                            }
                         }
 
-                        Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+                        if (list != null) {
+                            list.sort((o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
 
-                        BusList = new IncomingBusRespModel[list.size()];
-                        list.toArray(BusList);
+                            BusList = new IncomingBusRespModel[list.size()];
+                            list.toArray(BusList);
+                        } else {
+                            if(HelperProvider.displayOfflineText() && sdf3.format(new Date()).equals(SelectedDate)) {
+                                mainActivity.runOnUiThread(() -> Toast.makeText(mainActivity,R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
+                                HelperProvider.setOfflineTextDisplayed();
+                            }
+
+                            list = new ArrayList<>();
+                            NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
+
+                            for (BusStops element : SelectedPlaceStopsArray) {
+                                list.addAll(Arrays.asList(NDm.GetOfflineDepartureTimes(element.getId(), SelectedDate, SelectedTime)));
+                            }
+
+                            list.sort((o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+
+                            BusList = new IncomingBusRespModel[list.size()];
+                            list.toArray(BusList);
+                        }
                     } else {
-                        DatabaseManager Dm = new DatabaseManager(mainActivity);
-                        BusList = Dm.GetOfflineDepartureTimes(SendStopId, SelectedDate, SelectedTime);
+                        if (sdf3.format(new Date()).equals(SelectedDate)) {
+                            BusList = GTFSRProvider_.getNextIncomingBuses(SendStopId, SelectedDate, SelectedTime);
+                        }
+
+                        if (BusList == null) {
+                            if(HelperProvider.displayOfflineText() && sdf3.format(new Date()).equals(SelectedDate)) {
+                                mainActivity.runOnUiThread(() -> Toast.makeText(mainActivity,R.string.OfflineDataWarning, Toast.LENGTH_LONG).show());
+                                HelperProvider.setOfflineTextDisplayed();
+                            }
+
+                            NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
+                            BusList = NDm.GetOfflineDepartureTimes(SendStopId, SelectedDate, SelectedTime);
+                        }
                     }
                 }
             } else {
-                if (mStop == -1) {
+                if (mStop.equals("-1")) {
                     ArrayList<IncomingBusRespModel> list = new ArrayList<>();
 
                     for (BusStops element : SelectedPlaceStopsArray) {
-                        IncomingBusRespModel[] Data = serverApi.getNextIncomingBuses(element.getId());
+                        IncomingBusRespModel[] Data = GTFSRProvider_.getNextIncomingBuses(element.getId());
                         if (Data != null) {
                             list.addAll(Arrays.asList(Data));
+                        } else {
+                            list = null;
+                            break;
                         }
                     }
 
-                    Collections.sort(list, (o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+                    if (list != null) {
+                        list.sort((o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
 
-                    BusList = new IncomingBusRespModel[list.size()];
-                    list.toArray(BusList);
+                        BusList = new IncomingBusRespModel[list.size()];
+                        list.toArray(BusList);
+                    }
                 } else {
-                    BusList = serverApi.getNextIncomingBuses(mStop);
+                    BusList = GTFSRProvider_.getNextIncomingBuses(mStop);
                 }
             }
 
@@ -474,20 +536,33 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                     HelperProvider.setOfflineTextDisplayed();
                 }
                 if (mainActivity != null) {
-                    DatabaseManager Dm = new DatabaseManager(mainActivity);
-
-                    SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                    SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd", Locale.US);
                     SimpleDateFormat Sdf2 = new SimpleDateFormat("HH:mm", Locale.US);
                     String CurrentDate = sdf1.format(new Date());
                     String CurrentTime = Sdf2.format(new Date());
 
-                    BusList = Dm.GetOfflineDepartureTimes(SendStopId, CurrentDate, CurrentTime);
+                    if (mStop.equals("-1")) {
+                        ArrayList<IncomingBusRespModel> list = new ArrayList<>();
+                        NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
+
+                        for (BusStops element : SelectedPlaceStopsArray) {
+                            list.addAll(Arrays.asList(NDm.GetOfflineDepartureTimes(element.getId(), CurrentDate, CurrentTime)));
+                        }
+
+                        list.sort((o1, o2) -> o1.getArriveTime().compareTo(o2.getArriveTime()));
+
+                        BusList = new IncomingBusRespModel[list.size()];
+                        list.toArray(BusList);
+                    } else {
+                        NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
+
+                        BusList = NDm.GetOfflineDepartureTimes(SendStopId, CurrentDate, CurrentTime);
+                    }
                 }
             }
 
             SimpleDateFormat Sdf = new SimpleDateFormat("H", Locale.US);
             SimpleDateFormat Sdf2 = new SimpleDateFormat("m", Locale.US);
-            SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
             if (!DateTimeSelected || sdf3.format(new Date()).equals(SelectedDate)) {
                 if (BusList != null) {
@@ -500,7 +575,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
 
                         if (Bj != null) {
                             if (Bj.getDepartureHour() < Integer.parseInt(Sdf.format(currentTime)) || (Bj.getDepartureHour() == Integer.parseInt(Sdf.format(currentTime)) && Bj.getDepartureMinute() <= Integer.parseInt(Sdf2.format(currentTime)))) {
-                                Boolean IsBusStarted = serverApi.getIsBusHasStarted(incomingBusRespModel.getLineId());
+                                Boolean IsBusStarted = GTFSRProvider_.getIsBusHasStarted(incomingBusRespModel.getLineId());
                                 if (IsBusStarted == null) {
                                     IsBusStarted = false;
                                 } else {
@@ -508,6 +583,7 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                                         Calendar ArrTime = Calendar.getInstance();
                                         ArrTime.setTime(incomingBusRespModel.getArriveTime());
 
+                                        ArrTime.add(Calendar.MINUTE, 1);
                                         if (ArrTime.after(Now)) {
                                             incomingBusRespModel.setMiss(true);
                                         }
@@ -524,11 +600,24 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                 }
             }
 
-            if(SendStopId != mStop || !SendDate.equals(SelectedDate) || !SendTime.equals(SelectedTime) || SendCustom != DateTimeSelected) {
+            if(!SendStopId.equals(mStop) || !SendDate.equals(SelectedDate) || !SendTime.equals(SelectedTime) || SendCustom != DateTimeSelected) {
+                return;
+            }
+
+            if (mainActivity == null) {
                 return;
             }
 
             if (BusList != null && BusList.length > 0) {
+                NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
+
+                for (IncomingBusRespModel incomingBusRespModel : BusList) {
+                    String newName = NDm.GetBusNameByStop(incomingBusRespModel.getLineId(),incomingBusRespModel.getArriveStop());
+                    if (newName != null) {
+                        incomingBusRespModel.setLineName(newName);
+                    }
+                }
+
                 if (InBusFragment == null) {
                     try {
                         InBusFragment = IncomingBusListFragment.newInstance(BusList, SelectedDate, DateTimeSelected);
@@ -539,31 +628,22 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                         InBusFragment = null;
                     }
                 } else {
-                    if (mainActivity != null) {
-                        IncomingBusRespModel[] finalBusList = BusList;
-                        mainActivity.runOnUiThread(() -> {
-                            if (InBusFragment != null) {
-                                InBusFragment.UpdateList(finalBusList);
-                            }
+                    IncomingBusRespModel[] finalBusList = BusList;
+                    mainActivity.runOnUiThread(() -> {
+                        if (InBusFragment != null) {
+                            InBusFragment.UpdateList(finalBusList);
+                        }
 
-                        });
-                    }
+                    });
                 }
             } else {
                 InBusFragment = null;
-                if (mainActivity != null) {
-                    DatabaseManager Dm = new DatabaseManager(mainActivity);
-                    if (DateTimeSelected && !Dm.GetBusDatabaseValidDate(SelectedDate)) {
-                        InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.DatabaseNotContain), -1);
-                        getChildFragmentManager().beginTransaction()
-                                .replace(R.id.BusListFragment, Fragment)
-                                .commit();
-                    } else {
-                        InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptyList), -1);
-                        getChildFragmentManager().beginTransaction()
-                                .replace(R.id.BusListFragment, Fragment)
-                                .commit();
-                    }
+                NewGTFSDatabase NDm = new NewGTFSDatabase(mainActivity);
+                if (DateTimeSelected && !NDm.GetBusDatabaseValidDate(SelectedDate)) {
+                    InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.DatabaseNotContain), -1);
+                    getChildFragmentManager().beginTransaction()
+                            .replace(R.id.BusListFragment, Fragment)
+                            .commit();
                 } else {
                     InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptyList), -1);
                     getChildFragmentManager().beginTransaction()
@@ -571,9 +651,17 @@ public class BottomSheetIncomingBusFragment extends Fragment {
                             .commit();
                 }
             }
+
+            BusPositionRespModel[] BusPositions = GTFSRProvider_.getALLBusLocation();
+            if (BusPositions != null) {
+                mainActivity.runOnUiThread(() -> mainActivity.BusPositionMarkers(BusPositions));
+            } else {
+                mainActivity.runOnUiThread(() -> mainActivity.BusPositionMarkers(new BusPositionRespModel[0]));
+            }
+
+
         } catch (Exception e) {
             Log.e("Update bus list error", e.toString());
-            e.printStackTrace();
         }
     }
 }

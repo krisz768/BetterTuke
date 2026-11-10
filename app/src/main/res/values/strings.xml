@@ -62,8 +62,8 @@
     <string name="DatabaseNotContain">The database does not contain data for this date.</string>
     <string name="IncBusAnotherDay" translatable="false">%1$s</string>
     <string name="DatabaseError">Error: this busline is not included in the database.</string>
-    <string name="DelayStringWithSec">&#160;%1$d seconds</string>
-    <string name="DelayStringWithSecOneSecond">&#160;%1$d second</string>
+    <string name="DelayStringWithSec">&#160;%1$d seconds, %2$d km/h</string>
+    <string name="DelayStringWithSecOneSecond">&#160;%1$d second, %2$d km/h</string>
     <string name="TrackOldDataWarm">Outdated information</string>
     <string name="AllStopButton">All</string>
     <string name="DisableAdMenu">Disable ads</string>
@@ -89,4 +89,20 @@
     <string name="OnBoardPrevButtonDesc">Previous button</string>
     <string name="PrivacyButton">Privacy options</string>
     <string name="PrivacySettingsNotAvailable">Not available</string>
+    <string name="UpdateReadyToInstall">An update has just been downloaded.</string>
+    <string name="UpdateReadyToInstallButton">INSTALL</string>
+    <string name="StopShortcutIcon">Stop</string>
+    <string name="BusShortcutIcon">Bus line</string>
+    <string name="ActiveBuses">Active buses</string>
+    <string name="InternetError">Please connect to the internet.</string>
+    <string name="BusTypeIcon">Bus type icon</string>
+    <string name="BusTypeRec" translatable="false">%1$s (%2$d)</string>
+    <string name="NearBuses">Nearby buses:</string>
+    <string name="SwitchBusActivityTitle">Transfer options:</string>
+    <string name="SwitchTimeString">%1$s (%2$s minutes)</string>
+    <string name="SwitchTimeStringOneMinute">%1$s (%2$s minute)</string>
+    <string name="BusLeftStop">The bus left the stop.</string>
+    <string name="ScheduleSelectLineHint">Select a line to see the timetable</string>
+    <string name="ActiveBusSelectTypeHint">Select a bus type to see its buses</string>
+    <string name="ShortcutSelectStopHint">Select a stop from the list</string>
 </resources>

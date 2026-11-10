@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hu.krisz768.bettertuke.MainActivity;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.Favorite;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
@@ -119,7 +120,13 @@ public class SearchViewFragment extends Fragment {
         List<SearchResult> searchResultList = new ArrayList<>();
 
         for (Favorite favorite : favorites) {
-            searchResultList.add(new SearchResult(SearchResult.SearchType.FavStop, "", favorite.getData()));
+            NewGTFSDatabase Dm = new NewGTFSDatabase(getContext());
+
+            String StopName = Dm.GetStopName(favorite.getData());
+
+            if (!(StopName.isEmpty() || StopName.equals("Err"))) {
+                searchResultList.add(new SearchResult(SearchResult.SearchType.FavStop, "", favorite.getData()));
+            }
         }
 
         SearchResult[] searchResults = new SearchResult[searchResultList.size()];

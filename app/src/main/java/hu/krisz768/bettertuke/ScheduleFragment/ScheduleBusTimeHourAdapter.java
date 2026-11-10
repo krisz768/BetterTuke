@@ -99,7 +99,7 @@ public class ScheduleBusTimeHourAdapter extends RecyclerView.Adapter<RecyclerVie
 
         public void setData(BusVariation variation, Context ctx) {
             Legend.setText(variation.getCode());
-            if (variation.getDirection().equals("O")) {
+            if (variation.getDirection().equals("0")) {
                 Drawable arrow = ContextCompat.getDrawable(ctx, R.drawable.right_arrow);
                 if (arrow != null) {
                     arrow.setTint(Desc.getCurrentTextColor());

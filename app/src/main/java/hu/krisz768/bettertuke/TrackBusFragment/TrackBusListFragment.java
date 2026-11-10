@@ -27,13 +27,11 @@ import hu.krisz768.bettertuke.api_interface.models.TrackBusRespModel;
 
 public class TrackBusListFragment extends Fragment {
     private static final String STOP = "Stop";
-    private static final String PLACELIST = "PlaceList";
-    private static final String STOPLIST = "StopList";
     private static final String LINES = "LineInfo";
     private static final String POSITION = "BusPosition";
-    private int mStop;
+    private String mStop;
     private HashMap<Integer, BusPlaces> mPlaceList;
-    private HashMap<Integer, BusStops> mStopList;
+    private HashMap<String, BusStops> mStopList;
     private BusLine mLine;
     private TrackBusRespModel mBusPosition;
     private TrackBusListAdapter Tbla;
@@ -43,13 +41,11 @@ public class TrackBusListFragment extends Fragment {
 
     }
 
-    public static TrackBusListFragment newInstance(BusLine LineInfo, int Stop, HashMap<Integer, BusPlaces> PlaceList, HashMap<Integer, BusStops> StopList, TrackBusRespModel BusPosition) {
+    public static TrackBusListFragment newInstance(BusLine LineInfo, String Stop, TrackBusRespModel BusPosition) {
         TrackBusListFragment fragment = new TrackBusListFragment();
         Bundle args = new Bundle();
         args.putSerializable(LINES, LineInfo);
-        args.putInt(STOP, Stop);
-        args.putSerializable(PLACELIST, PlaceList);
-        args.putSerializable(STOPLIST, StopList);
+        args.putString(STOP, Stop);
         args.putSerializable(POSITION, BusPosition);
         fragment.setArguments(args);
         return fragment;
@@ -61,11 +57,12 @@ public class TrackBusListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mLine = (BusLine) getArguments().getSerializable(LINES);
-            mStop = getArguments().getInt(STOP);
-            mPlaceList = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACELIST);
-            mStopList = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPLIST);
+            mStop = getArguments().getString(STOP);
             mBusPosition = (TrackBusRespModel) getArguments().getSerializable(POSITION);
         }
+
+        mPlaceList = MainActivity.GetBusPlaces(requireContext());
+        mStopList = MainActivity.GetBusStops(requireContext());
     }
 
     @Override
@@ -99,7 +96,7 @@ public class TrackBusListFragment extends Fragment {
     }
 
     public void scrollSmoothTo() {
-        if (mBusPosition != null) {
+        if (mBusPosition != null && Recv.canScrollVertically(1)) {
             for (int i = 0; i < mLine.getStops().length; i++) {
                 if (mLine.getStops()[i].getOrder() == mBusPosition.getStopNumber()) {
                     int scrollPosition = i;
@@ -140,7 +137,7 @@ public class TrackBusListFragment extends Fragment {
         }
     }
 
-    public void OnStopClick(int Id) {
+    public void OnStopClick(String Id) {
         BusStops busStops = mStopList.get(Id);
 
         if(getActivity() != null && busStops != null){
@@ -152,7 +149,7 @@ public class TrackBusListFragment extends Fragment {
         if (mBusPosition != null) {
             for (int i = 0; i < mLine.getStops().length; i++) {
                 if (mLine.getStops()[i].getOrder() == mBusPosition.getStopNumber()) {
-                    if (mLine.getStops()[i].getStopId() == Id){
+                    if (mLine.getStops()[i].getStopId().equals(Id)){
                         if(getActivity() != null){
                             ((MainActivity) getActivity()).SetUserTouchedMap(false);
                         }
@@ -164,6 +161,12 @@ public class TrackBusListFragment extends Fragment {
             if(getActivity() != null){
                 ((MainActivity) getActivity()).SetUserTouchedMap(false);
             }
+        }
+    }
+
+    public void OnSwitchClick(String StopID) {
+        if(getActivity() != null){
+            ((MainActivity) getActivity()).OpenSwitchActivity(mLine.getLineId(), StopID, StopID, mLine.getDate());
         }
     }
 }

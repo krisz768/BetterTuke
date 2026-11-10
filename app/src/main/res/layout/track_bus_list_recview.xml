@@ -56,4 +56,16 @@
         android:layout_marginTop="6dp"
         app:layout_constraintStart_toEndOf="@+id/TrackBusStopTime"
         app:layout_constraintTop_toBottomOf="@+id/TrackBusStopName" />
+
+
+    <Button
+        android:id="@+id/TrackBusSwitchIcon"
+        style="?attr/materialIconButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:icon="@drawable/sharp_arrow_split_24"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

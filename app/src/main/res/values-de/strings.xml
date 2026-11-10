@@ -55,8 +55,8 @@
     <string name="AllLines">Alle Buslinien</string>
     <string name="DatabaseNotContain">Die Datenbank enthält keine Daten für dieses Datum.</string>
     <string name="DatabaseError">Fehler: Die Datenbank enthält diese Buslinie nicht.</string>
-    <string name="DelayStringWithSec">&#160;%1$d Sekunden</string>
-    <string name="DelayStringWithSecOneSecond">&#160;%1$d Sekunde</string>
+    <string name="DelayStringWithSec">&#160;%1$d Sekunden, %2$d km/h</string>
+    <string name="DelayStringWithSecOneSecond">&#160;%1$d Sekunde, %2$d km/h</string>
     <string name="TrackOldDataWarm">Veraltete Informationen</string>
     <string name="AllStopButton">Alle</string>
     <string name="DisableAdMenu">Werbung ausschalten</string>
@@ -82,4 +82,19 @@
     <string name="OnBoardPrevButtonDesc">Vorheriger Button</string>
     <string name="PrivacyButton">Datenschutz-Optionen</string>
     <string name="PrivacySettingsNotAvailable">Nicht verfügbar</string>
+    <string name="UpdateReadyToInstall">" Update heruntergeladen"</string>
+    <string name="UpdateReadyToInstallButton">" INSTALLIEREN"</string>
+    <string name="StopShortcutIcon">Haltestelle</string>
+    <string name="BusShortcutIcon">Buslinie</string>
+    <string name="ActiveBuses">Aktive Busse</string>
+    <string name="InternetError">Bitte stellen Sie eine Verbindung zum Internet her.</string>
+    <string name="BusTypeIcon">Symbol für den Bustyp</string>
+    <string name="NearBuses">Busse in der Nähe:</string>
+    <string name="SwitchBusActivityTitle">Transfermöglichkeiten:</string>
+    <string name="SwitchTimeString">%1$s (%2$s Minuten)</string>
+    <string name="SwitchTimeStringOneMinute">%1$s (%2$s Minute)</string>
+    <string name="BusLeftStop">" Der Bus fuhr von der Haltestelle ab."</string>
+    <string name="ScheduleSelectLineHint">Wähle eine Linie, um den Fahrplan zu sehen</string>
+    <string name="ActiveBusSelectTypeHint">Wähle einen Bustyp, um seine Busse zu sehen</string>
+    <string name="ShortcutSelectStopHint">Wähle eine Haltestelle aus der Liste</string>
 </resources>

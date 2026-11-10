@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hu.krisz768.bettertuke.Database.BusNum;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.ScheduleActivity;
 import hu.krisz768.bettertuke.UserDatabase.Favorite;
@@ -27,20 +27,23 @@ import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
 
 public class ScheduleBusListFragment extends Fragment {
     private static final String STOPID= "StopId";
-    private static final String SCROLLPOSITION= "ScrollPosition";
-    private int mStopId;
+    private String mStopId;
+    // Scroll position of the list when a line was opened, restored when coming back from the back stack
     private Parcelable mScrollPosition;
     private RecyclerView.LayoutManager mLayoutManager;
+    private RecyclerView mRecyclerView;
+    // Line shown in the detail pane (two-pane mode), highlighted in the list
+    private String mSelectedLine;
+    private boolean mScrollToSelectedLine = false;
 
     public ScheduleBusListFragment() {
 
     }
 
-    public static ScheduleBusListFragment newInstance(int StopId, Parcelable ScrollPosition) {
+    public static ScheduleBusListFragment newInstance(String StopId) {
         ScheduleBusListFragment fragment = new ScheduleBusListFragment();
         Bundle args = new Bundle();
-        args.putInt(STOPID, StopId);
-        args.putParcelable(SCROLLPOSITION, ScrollPosition);
+        args.putString(STOPID, StopId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -49,8 +52,7 @@ public class ScheduleBusListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mStopId = getArguments().getInt(STOPID);
-            mScrollPosition = getArguments().getParcelable(SCROLLPOSITION);
+            mStopId = getArguments().getString(STOPID);
         }
     }
 
@@ -63,13 +65,13 @@ public class ScheduleBusListFragment extends Fragment {
             return view;
         }
 
-        DatabaseManager Dm = new DatabaseManager(getContext());
+        NewGTFSDatabase NDm = new NewGTFSDatabase(getContext());
         BusNum[] busNums;
-        if (mStopId == -1) {
-            busNums = Dm.GetActiveBusLines();
+        if (mStopId.equals("-1")) {
+            busNums = NDm.GetActiveBusLines();
         } else{
-            busNums = Dm.GetActiveBusLinesFromStop(mStopId);
-            String StopName = Dm.GetStopName(mStopId);
+            busNums = NDm.GetActiveBusLinesFromStop(mStopId);
+            String StopName = NDm.GetStopName(mStopId);
             String StopNum = HelperProvider.GetStopDirectionString(getContext(), mStopId);
 
             ((TextView)view.findViewById(R.id.ScheduleTargetText)).setText(getString(R.string.BusStopNameWithNum, StopName.trim(), StopNum));
@@ -96,10 +98,14 @@ public class ScheduleBusListFragment extends Fragment {
         ScheduleBusListAdapter Sbla = new ScheduleBusListAdapter(busNums, favoriteBusNum, getContext(), this);
 
         RecyclerView BusLineRecv = view.findViewById(R.id.ScheduleBusLineRec);
+        mRecyclerView = BusLineRecv;
         mLayoutManager = new LinearLayoutManager(getActivity());
         BusLineRecv.setLayoutManager(mLayoutManager);
         BusLineRecv.setAdapter(Sbla);
-        mLayoutManager.onRestoreInstanceState(mScrollPosition);
+        if (mScrollPosition != null) {
+            mLayoutManager.onRestoreInstanceState(mScrollPosition);
+        }
+        ScrollToSelectedLineIfRequested();
 
         ItemTouchHelper.Callback callback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
             @Override
@@ -140,11 +146,52 @@ public class ScheduleBusListFragment extends Fragment {
         return view;
     }
 
+    public void SetSelectedLine(String Line) {
+        if (Line == null ? mSelectedLine == null : Line.equals(mSelectedLine)) {
+            return;
+        }
+
+        mSelectedLine = Line;
+        if (mRecyclerView != null && mRecyclerView.getAdapter() != null) {
+            mRecyclerView.getAdapter().notifyItemRangeChanged(0, mRecyclerView.getAdapter().getItemCount());
+        }
+    }
+
+    // Scrolls the list to the selected line (e.g. the screen was opened on a line)
+    public void ScrollToSelectedLine() {
+        mScrollToSelectedLine = true;
+        ScrollToSelectedLineIfRequested();
+    }
+
+    private void ScrollToSelectedLineIfRequested() {
+        if (!mScrollToSelectedLine || mSelectedLine == null || mRecyclerView == null || !(mRecyclerView.getAdapter() instanceof ScheduleBusListAdapter)) {
+            return;
+        }
+        mScrollToSelectedLine = false;
+
+        int position = ((ScheduleBusListAdapter) mRecyclerView.getAdapter()).GetPosition(mSelectedLine);
+        if (position >= 0) {
+            mRecyclerView.scrollToPosition(position);
+        }
+    }
+
+    public String GetSelectedLine() {
+        return mSelectedLine;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mRecyclerView = null;
+    }
+
     public void OnLineClick(String Line) {
-        mLayoutManager.onSaveInstanceState();
         ScheduleActivity activity = (ScheduleActivity) getActivity();
         if (activity != null) {
-            activity.runOnUiThread(() -> (activity).selectLine(Line, mLayoutManager.onSaveInstanceState()));
+            activity.runOnUiThread(() -> {
+                mScrollPosition = mLayoutManager.onSaveInstanceState();
+                activity.selectLine(Line);
+            });
         }
     }
 }

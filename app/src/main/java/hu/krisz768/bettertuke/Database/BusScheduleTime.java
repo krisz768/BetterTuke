@@ -6,9 +6,9 @@ public class BusScheduleTime {
     private int Hour;
     private int Minute;
     private final String LineCode;
-    private final int LineId;
+    private final String LineId;
 
-    public BusScheduleTime(int hour, int minute, String lineCode, int lineId) {
+    public BusScheduleTime(int hour, int minute, String lineCode, String lineId) {
         Hour = hour;
         Minute = minute;
         LineCode = lineCode;
@@ -27,7 +27,7 @@ public class BusScheduleTime {
         return LineCode;
     }
 
-    public int getLineId() {
+    public String getLineId() {
         return LineId;
     }
 

@@ -6,15 +6,17 @@ import hu.krisz768.bettertuke.Database.BusLine;
 
 public class BackStack {
     private final Integer CurrentPlace;
-    private final Integer CurrentStop;
-    private final Integer CurrentBusTrack;
+    private final String CurrentStop;
+    private final String CurrentBusTrack;
     private final ScheduleBackStack scheduleBackStack;
     private final boolean IsBackButtonCollapse;
     private final LatLng SelectedPlace;
     private final BusLine busLine;
     private final IncomBusBackStack IncomBusMode;
+    private final String ActiveBusType;
+    private final SwitchBackStack switchBackStack;
 
-    public BackStack(Integer currentPlace, Integer currentStop, Integer currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace, IncomBusBackStack IncomBusMode) {
+    public BackStack(Integer currentPlace, String currentStop, String currentBusTrack, BusLine busLine, ScheduleBackStack scheduleBackStack, boolean IsBackButtonCollapse, LatLng SelectedPlace, IncomBusBackStack IncomBusMode, String activeBusType, SwitchBackStack switchBackStack) {
         CurrentPlace = currentPlace;
         CurrentStop = currentStop;
         CurrentBusTrack = currentBusTrack;
@@ -23,17 +25,19 @@ public class BackStack {
         this.IsBackButtonCollapse = IsBackButtonCollapse;
         this.SelectedPlace = SelectedPlace;
         this.IncomBusMode = IncomBusMode;
+        ActiveBusType = activeBusType;
+        this.switchBackStack = switchBackStack;
     }
 
     public Integer getCurrentPlace() {
         return CurrentPlace;
     }
 
-    public Integer getCurrentStop() {
+    public String getCurrentStop() {
         return CurrentStop;
     }
 
-    public Integer getCurrentBusTrack() {
+    public String getCurrentBusTrack() {
         return CurrentBusTrack;
     }
 
@@ -55,5 +59,13 @@ public class BackStack {
 
     public IncomBusBackStack getIncomBusMode() {
         return IncomBusMode;
+    }
+
+    public String getActiveBusType() {
+        return ActiveBusType;
+    }
+
+    public SwitchBackStack getSwitchBackStack() {
+        return switchBackStack;
     }
 }

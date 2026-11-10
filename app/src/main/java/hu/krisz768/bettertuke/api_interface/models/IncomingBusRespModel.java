@@ -1,25 +1,28 @@
 package hu.krisz768.bettertuke.api_interface.models;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 
 public class IncomingBusRespModel implements Serializable {
     private final String LineNum;
-    private final String LineName;
-    private final Date ArriveTime;
-    private final int LineId;
-    private final int RemainingMin;
-    private final boolean AtStop;
+    private String LineName;
+    private Date ArriveTime;
+    private final String LineId;
+    private int RemainingMin;
+    private boolean AtStop;
     private boolean Started;
     private boolean Miss;
+    private final String ArriveStop;
 
-    public IncomingBusRespModel(String lineNum, String lineName, Date arriveTime, int LineId, int remainingMin, boolean AtStop) {
+    public IncomingBusRespModel(String lineNum, String lineName, Date arriveTime, String LineId, int remainingMin, boolean AtStop, String ArriveStop) {
         LineNum = lineNum;
         LineName = lineName;
         ArriveTime = arriveTime;
         this.LineId = LineId;
         RemainingMin = remainingMin;
         this.AtStop = AtStop;
+        this.ArriveStop = ArriveStop;
     }
 
     public void setStarted(boolean started) {
@@ -48,7 +51,7 @@ public class IncomingBusRespModel implements Serializable {
 
     public boolean isStarted() { return Started;}
 
-    public int getLineId() {
+    public String getLineId() {
         return LineId;
     }
 
@@ -58,5 +61,27 @@ public class IncomingBusRespModel implements Serializable {
 
     public boolean isAtStop() {
         return AtStop;
+    }
+
+    public void setDelay(int Delay) {
+        RemainingMin += Delay;
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(ArriveTime);
+        calendar.add(Calendar.MINUTE, Delay);
+
+        ArriveTime = calendar.getTime();
+    }
+
+    public void setLineName(String lineName) {
+        LineName = lineName;
+    }
+
+    public void setAtStop () {
+        AtStop = true;
+    }
+
+    public String getArriveStop() {
+        return ArriveStop;
     }
 }

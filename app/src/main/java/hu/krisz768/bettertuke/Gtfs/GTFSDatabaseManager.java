@@ -1,6 +1,5 @@
 package hu.krisz768.bettertuke.Gtfs;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
@@ -24,6 +23,9 @@ public class GTFSDatabaseManager {
             String Current = userDatabase.GetPreference("GTFS-cl");
             String Online = contentLength.ContentLength;
 
+            if (contentLength.Error || contentLength.ContentLength.isEmpty()) {
+                return false;
+            }
             if (Current == null) {
                 return true;
             } else return !Current.equals(Online);

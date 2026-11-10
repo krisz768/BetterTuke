@@ -8,20 +8,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 import java.util.Date;
 
-import hu.krisz768.bettertuke.Database.DatabaseManager;
+import hu.krisz768.bettertuke.Gtfs.GTFSDatabase;
 import hu.krisz768.bettertuke.Gtfs.GTFSDatabaseManager;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabaseManager;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
-import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
+    // How long the splash screen may cover the app while the database is checked. The window of the
+    // activity is not drawn while the splash screen is kept, and touching the screen then causes an
+    // ANR ("no focused window") after 5 seconds, e.g. when the update check is slow on a bad network.
+    private static final long MAX_SPLASH_SCREEN_MS = 2000;
+
     private Date StartTime;
+    private volatile boolean KeepSplashScreen = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +39,10 @@ public class SplashActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
-        splashScreen.setKeepOnScreenCondition(() -> true );
+        splashScreen.setKeepOnScreenCondition(() -> KeepSplashScreen);
+        // Shown after the splash screen if the check takes longer
+        setContentView(R.layout.fragment_loading);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> KeepSplashScreen = false, MAX_SPLASH_SCREEN_MS);
 
         AddLog("init...");
 
@@ -71,46 +82,33 @@ public class SplashActivity extends AppCompatActivity {
     private void CheckForUpdates() {
         AddLog("Check is database exist...\n(" + (new File(getFilesDir() + "/Database", "track.db")).getAbsolutePath() + ")");
 
-        TukeServerApi serverApi = new TukeServerApi(this);
         Context ctx = getApplicationContext();
 
-        if (DatabaseManager.IsDatabaseExist(this)) {
-            AddLog("Database exist, checking for update...");
-            String Version = DatabaseManager.GetDatabaseVersion(ctx);
+        boolean UpdateGTFS = false;
 
-            AddLog("Database version = " + Version);
+        GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
+        if (gtfsDatabaseManager.CheckForUpdate()){
+            AddLog("Updating gtfs...");
+            UpdateGTFS = true;
+        }
 
-            String OnlineVersion = serverApi.getServerDatabaseVersion();
+        NewGTFSDatabaseManager NgtfsDatabaseManager = new NewGTFSDatabaseManager(ctx);
+        if (NgtfsDatabaseManager.CheckForUpdate() || !NgtfsDatabaseManager.IsDatabaseValid()){
+            AddLog("Updating new gtfs...");
+            StartUpdate(true, UpdateGTFS);
+        } else {
+            if (UpdateGTFS) {
+                StartUpdate(false, true);
+            } else {
+                AddLog("Database is up to date!");
 
-            AddLog("Server database version = " + OnlineVersion);
-
-            if (OnlineVersion.equals("Err") && !Version.equals("Err")) {
-                AddLog("Server error, using existing database...");
-
-                runOnUiThread(() -> Toast.makeText(ctx, R.string.DatabaseVersionCheckFail, Toast.LENGTH_LONG).show());
+                // Databases downloaded by older versions have no indexes yet
+                new NewGTFSDatabase(ctx).CreateIndexes();
+                new GTFSDatabase(ctx).CreateIndexes();
 
                 StartMain();
-            } else {
-                if (Version.equals(OnlineVersion) && !OnlineVersion.equals("Err") && DatabaseManager.IsDatabaseValid(ctx)) {
-                    GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
-                    if (gtfsDatabaseManager.CheckForUpdate()){
-                        AddLog("Updating gtfs...");
-                        StartUpdate(false, true);
-                    } else {
-                        AddLog("Database is up to date!");
-                        StartMain();
-                    }
-                } else {
-                    AddLog("Database version does not match! Updating....");
-
-                    GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
-                    StartUpdate(true, gtfsDatabaseManager.CheckForUpdate());
-                }
             }
-        } else  {
-            AddLog("Database not found, attempt to download...");
-            GTFSDatabaseManager gtfsDatabaseManager = new GTFSDatabaseManager(ctx);
-            StartUpdate(true, gtfsDatabaseManager.CheckForUpdate());
+
         }
     }
 

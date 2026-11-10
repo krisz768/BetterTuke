@@ -2150,6 +2150,50 @@
 			"usb": 0
 		},
 		{
+			"platenumber": "LMG129",
+			"type": "Volvo Alfa Cívis 18",
+			"propulsion": 0,
+			"articulated": 1,
+			"lowfloor": 1,
+			"doors": 4,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
+		},
+		{
+			"platenumber": "LMG136",
+			"type": "Volvo Alfa Cívis 18",
+			"propulsion": 0,
+			"articulated": 1,
+			"lowfloor": 1,
+			"doors": 4,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
+		},
+		{
+			"platenumber": "LMG137",
+			"type": "Volvo Alfa Cívis 18",
+			"propulsion": 0,
+			"articulated": 1,
+			"lowfloor": 1,
+			"doors": 4,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
+		},
+		{
+			"platenumber": "LMG139",
+			"type": "Volvo Alfa Cívis 18",
+			"propulsion": 0,
+			"articulated": 1,
+			"lowfloor": 1,
+			"doors": 4,
+			"airconditioner": 1,
+			"wifi": 0,
+			"usb": 0
+		},
+		{
 			"platenumber": "SDZ767",
 			"type": "BYD K9U",
 			"propulsion": 1,

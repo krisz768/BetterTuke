@@ -13,15 +13,19 @@ import android.widget.TextView;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
 import hu.krisz768.bettertuke.MainActivity;
+import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
+import hu.krisz768.bettertuke.api_interface.models.BusPositionRespModel;
 
 public class BottomSheetNearStops extends Fragment {
     private static final String LATITUDE = "Latitude";
@@ -30,14 +34,21 @@ public class BottomSheetNearStops extends Fragment {
     private static final String PLACES = "Places";
     private double mLatitude;
     private double mLongitude;
-    private HashMap<Integer, BusStops> mStops;
+    private HashMap<String, BusStops> mStops;
     private HashMap<Integer, BusPlaces> mPlaces;
+    private ScheduledExecutorService UpdateLoop;
+    private BusPositionRespModel[] BusList = null;
+    private int BusFavCount;
+    private  BusPlaces[] busPlacesList = null;
+    private int FavPlaceCount;
+    private boolean IsDataDisplayed = false;
+
 
     public BottomSheetNearStops() {
 
     }
 
-    public static BottomSheetNearStops newInstance(double Latitude, double Longitude, HashMap<Integer, BusStops> Stops, HashMap<Integer, BusPlaces> Places) {
+    public static BottomSheetNearStops newInstance(double Latitude, double Longitude, HashMap<String, BusStops> Stops, HashMap<Integer, BusPlaces> Places) {
         BottomSheetNearStops fragment = new BottomSheetNearStops();
         Bundle args = new Bundle();
 
@@ -49,12 +60,107 @@ public class BottomSheetNearStops extends Fragment {
         return fragment;
     }
 
+    private void StartNewUpdateThread() {
+        if (UpdateLoop != null) {
+            if (!UpdateLoop.isShutdown()){
+                return;
+            }
+        }
+
+        GTFSRProvider GTFSRProvider_ = new GTFSRProvider(this.getActivity());
+
+        UpdateLoop = Executors.newScheduledThreadPool(1);
+        UpdateLoop.scheduleWithFixedDelay(() -> GetRealTimeData(GTFSRProvider_), 0, 10, TimeUnit.SECONDS);
+    }
+
+    private void GetRealTimeData(GTFSRProvider GTFSRProvider_) {
+        BusPositionRespModel[] BusPositions = GTFSRProvider_.getALLBusLocation();
+        MainActivity mainActivity = (MainActivity)getActivity();
+
+        if (BusPositions != null) {
+            if (mainActivity != null) {
+                mainActivity.runOnUiThread(() -> mainActivity.BusPositionMarkers(BusPositions));
+            }
+
+            Location location = new Location("");
+            location.setLongitude(mLongitude);
+            location.setLatitude(mLatitude);
+
+            List<BusPositionRespModel> NearBusList = new ArrayList<>();
+
+            for (BusPositionRespModel mBus : BusPositions) {
+                Location BusLocation = new Location("");
+                BusLocation.setLatitude(mBus.getGpsLatitude());
+                BusLocation.setLongitude(mBus.getGpsLongitude());
+
+                if (location.distanceTo(BusLocation) < 500) {
+                    NearBusList.add(mBus);
+                }
+            }
+
+            List<BusPositionRespModel> FavBusList = new ArrayList<>();
+
+            if (getContext() != null){
+                UserDatabase userDatabase = new UserDatabase(getContext());
+
+                for (int i = 0; i < NearBusList.size(); i++) {
+                    if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Line, NearBusList.get(i).getLineNum())) {
+                        FavBusList.add(NearBusList.get(i));
+                        NearBusList.remove(i);
+                        i--;
+                    }
+                }
+            }
+
+            NearBusList.sort((busPlaces, t1) -> {
+                Location StopLocation1 = new Location("");
+                StopLocation1.setLatitude(busPlaces.getGpsLatitude());
+                StopLocation1.setLongitude(busPlaces.getGpsLongitude());
+
+                Location StopLocation2 = new Location("");
+                StopLocation2.setLatitude(t1.getGpsLatitude());
+                StopLocation2.setLongitude(t1.getGpsLongitude());
+
+                return Math.round(location.distanceTo(StopLocation1) - location.distanceTo(StopLocation2));
+            });
+
+            FavBusList.sort((busPlaces, t1) -> {
+                Location StopLocation1 = new Location("");
+                StopLocation1.setLatitude(busPlaces.getGpsLatitude());
+                StopLocation1.setLongitude(busPlaces.getGpsLongitude());
+
+                Location StopLocation2 = new Location("");
+                StopLocation2.setLatitude(t1.getGpsLatitude());
+                StopLocation2.setLongitude(t1.getGpsLongitude());
+
+                return Math.round(location.distanceTo(StopLocation1) - location.distanceTo(StopLocation2));
+            });
+
+            NearBusList.addAll(0, FavBusList);
+
+            BusList = new BusPositionRespModel[NearBusList.size()];
+            NearBusList.toArray(BusList);
+
+            BusFavCount = FavBusList.size();
+
+        } else {
+            if (mainActivity != null) {
+                mainActivity.runOnUiThread(() -> mainActivity.BusPositionMarkers(new BusPositionRespModel[0]));
+            }
+
+            BusList = new BusPositionRespModel[0];
+            BusFavCount = 0;
+        }
+
+        DisplayResult();
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mStops = (HashMap<Integer, BusStops>) getArguments().getSerializable(STOPS);
+            mStops = (HashMap<String, BusStops>) getArguments().getSerializable(STOPS);
             mPlaces = (HashMap<Integer, BusPlaces>) getArguments().getSerializable(PLACES);
             mLatitude = getArguments().getDouble(LATITUDE);
             mLongitude = getArguments().getDouble(LONGITUDE);
@@ -74,7 +180,23 @@ public class BottomSheetNearStops extends Fragment {
 
         GetNearestPlaces();
 
+        StartNewUpdateThread();
+
         return view;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        UpdateLoop.shutdown();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        StartNewUpdateThread();
     }
 
     private void GetStreetName(View view) {
@@ -118,7 +240,7 @@ public class BottomSheetNearStops extends Fragment {
                 for (int i = 0; i < NearBusPlacesList.size(); i++) {
                     for (BusStops mStop : mStops.values()) {
                         if (NearBusPlacesList.get(i).getId() == mStop.getPlace()) {
-                            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, Integer.toString(mStop.getId()))) {
+                            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, mStop.getId())) {
                                 FavNearBusPlacesList.add(NearBusPlacesList.get(i));
                                 NearBusPlacesList.remove(i);
                                 i--;
@@ -129,7 +251,7 @@ public class BottomSheetNearStops extends Fragment {
                 }
             }
 
-            Collections.sort(NearBusPlacesList, (busPlaces, t1) -> {
+            NearBusPlacesList.sort((busPlaces, t1) -> {
                 Location StopLocation1 = new Location("");
                 StopLocation1.setLatitude(busPlaces.getGpsLatitude());
                 StopLocation1.setLongitude(busPlaces.getGpsLongitude());
@@ -141,7 +263,7 @@ public class BottomSheetNearStops extends Fragment {
                 return Math.round(location.distanceTo(StopLocation1) - location.distanceTo(StopLocation2));
             });
 
-            Collections.sort(FavNearBusPlacesList, (busPlaces, t1) -> {
+            FavNearBusPlacesList.sort((busPlaces, t1) -> {
                 Location StopLocation1 = new Location("");
                 StopLocation1.setLatitude(busPlaces.getGpsLatitude());
                 StopLocation1.setLongitude(busPlaces.getGpsLongitude());
@@ -155,24 +277,34 @@ public class BottomSheetNearStops extends Fragment {
 
             NearBusPlacesList.addAll(0, FavNearBusPlacesList);
 
-            BusPlaces[] busPlaces = new BusPlaces[NearBusPlacesList.size()];
-            NearBusPlacesList.toArray(busPlaces);
+            busPlacesList = new BusPlaces[NearBusPlacesList.size()];
+            NearBusPlacesList.toArray(busPlacesList);
 
-            int FavNum = FavNearBusPlacesList.size();
+            FavPlaceCount = FavNearBusPlacesList.size();
 
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> {
-                    try {
-                        NearBusStopListFragment NearStopFragment = NearBusStopListFragment.newInstance(busPlaces, FavNum);
-                        getChildFragmentManager().beginTransaction()
-                                .replace(R.id.NearStopListFragment, NearStopFragment)
-                                .commit();
-                    } catch (Exception ignored) {
-
-                    }
-                });
-            }
+            DisplayResult();
 
         }).start();
+    }
+
+    private void DisplayResult() {
+        if (BusList == null || busPlacesList == null && !IsDataDisplayed) {
+            return;
+        }
+
+        IsDataDisplayed = true;
+
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(() -> {
+                try {
+                    NearBusStopListFragment NearStopFragment = NearBusStopListFragment.newInstance(busPlacesList, FavPlaceCount, BusList, BusFavCount);
+                    getChildFragmentManager().beginTransaction()
+                            .replace(R.id.NearStopListFragment, NearStopFragment)
+                            .commit();
+                } catch (Exception ignored) {
+
+                }
+            });
+        }
     }
 }

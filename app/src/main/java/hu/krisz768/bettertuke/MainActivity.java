@@ -1,14 +1,23 @@
 package hu.krisz768.bettertuke;
 
+import androidx.activity.BackEventCompat;
+import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentContainerView;
+import androidx.window.layout.WindowMetricsCalculator;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
@@ -19,6 +28,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -32,9 +42,8 @@ import android.util.Property;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Toast;
-import android.window.OnBackInvokedCallback;
-import android.window.OnBackInvokedDispatcher;
 
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -54,12 +63,22 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.OnTokenCanceledListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.color.utilities.DynamicColor;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.search.SearchBar;
 import com.google.android.material.search.SearchView;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.appupdate.AppUpdateOptions;
+import com.google.android.play.core.install.InstallStateUpdatedListener;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.InstallStatus;
+import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.android.ump.ConsentForm;
 import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
@@ -77,19 +96,21 @@ import hu.krisz768.bettertuke.Database.BusLine;
 import hu.krisz768.bettertuke.Database.BusNum;
 import hu.krisz768.bettertuke.Database.BusPlaces;
 import hu.krisz768.bettertuke.Database.BusStops;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.IncomingBusFragment.BottomSheetIncomingBusFragment;
 import hu.krisz768.bettertuke.NearStops.BottomSheetNearStops;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.SearchFragment.SearchViewFragment;
 import hu.krisz768.bettertuke.TrackBusFragment.BottomSheetTrackBusFragment;
 import hu.krisz768.bettertuke.UserDatabase.Favorite;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
+import hu.krisz768.bettertuke.api_interface.models.BusPositionRespModel;
 import hu.krisz768.bettertuke.models.BackStack;
 import hu.krisz768.bettertuke.models.IncomBusBackStack;
 import hu.krisz768.bettertuke.models.LatLngInterpolator;
 import hu.krisz768.bettertuke.models.MarkerDescriptor;
 import hu.krisz768.bettertuke.models.ScheduleBackStack;
 import hu.krisz768.bettertuke.models.SearchResult;
+import hu.krisz768.bettertuke.models.SwitchBackStack;
 
 public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
@@ -98,27 +119,62 @@ public class MainActivity extends AppCompatActivity {
     private SearchView searchView;
     private SearchViewFragment Svf;
     private Integer CurrentPlace = -1;
-    private Integer CurrentStop = -1;
-    private Integer CurrentBusTrack = -1;
+    private String CurrentStop = "-1";
+    private String CurrentBusTrack = "-1";
     private BusLine busLine;
     private LatLng SelectedPlace;
     private IncomBusBackStack IncomBusMode = new IncomBusBackStack("", "", false);
     private GoogleMap googleMap;
-    private HashMap<Integer, BusPlaces> busPlaces;
-    private HashMap<Integer, BusStops> busStops;
+    public static HashMap<Integer, BusPlaces> busPlaces;
+    public static  HashMap<String, BusStops> busStops;
+
+    // The lists are loaded in onCreate. Screens restored after the process was killed (without
+    // MainActivity being created) load them on demand.
+    public static synchronized HashMap<String, BusStops> GetBusStops(Context ctx) {
+        if (busStops == null) {
+            busStops = BusStops.GetAllStops(ctx.getApplicationContext());
+        }
+        return busStops;
+    }
+
+    public static synchronized HashMap<Integer, BusPlaces> GetBusPlaces(Context ctx) {
+        if (busPlaces == null) {
+            busPlaces = BusPlaces.getAllBusPlaces(ctx.getApplicationContext());
+        }
+        return busPlaces;
+    }
     private final List<BackStack> backStack = new ArrayList<>();
     private boolean smallMarkerMode = false;
     private boolean IsBackButtonHalfExpanded = true;
     private Marker BusMarker;
+    private HashMap<String, Marker> AllBusMarker;
     private boolean UserTouchedMap = false;
     private ObjectAnimator MarkerAnimator;
+    private HashMap<String,ObjectAnimator> AllMarkerAnimator;
     private Integer ShortcutType;
     private String ShortcutData;
     private boolean OnStartFragmentError = false;
     private boolean IsMapInitialized = false;
-    private OnBackInvokedCallback onBackPressedCallback;
     private ConsentInformation consentInformation;
     private final AtomicBoolean isMobileAdsInitializeCalled = new AtomicBoolean(false);
+    private ActivityResultLauncher activityResultLauncher;
+    private AppUpdateManager appUpdateManager;
+    private int MapTopPadding = 0;
+    private int BottomInset = 0;
+
+    // Phone: draggable bottom sheet over the map.
+    // SidePanel (tablet, unfolded foldable): the screen is split 50/50, the draggable bottom sheet is
+    // on the start half, the map with the search bar on the end half.
+    // Tabletop (foldable half opened with a horizontal fold, "Flex mode"): the map is on the top half,
+    // the bottom sheet fills the whole width below the fold and can not be moved or closed.
+    private enum LayoutMode {
+        Phone,
+        SidePanel,
+        Tabletop
+    }
+
+    private LayoutMode CurrentLayoutMode = LayoutMode.Phone;
+    private TabletopPostureTracker PostureTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,7 +194,29 @@ public class MainActivity extends AppCompatActivity {
         busStops = BusStops.GetAllStops(this);
         busPlaces = BusPlaces.getAllBusPlaces(this);
 
+        EdgeToEdge.enable(this);
+
         setContentView(R.layout.activity_main);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.MainActivityViewLayout), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            boolean insetsChanged = MapTopPadding != systemBars.top || BottomInset != systemBars.bottom;
+            MapTopPadding = systemBars.top;
+            BottomInset = systemBars.bottom;
+
+            // Keep the search bar, buttons and bottom sheet out from under side system bars and
+            // cutouts (e.g. the 3-button navigation bar is on the side in landscape)
+            Insets sides = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(sides.left, 0, sides.right, 0);
+
+            UpdatePanelLayout();
+            if (insetsChanged) {
+                // The sizes depend on the insets, which may arrive after a configuration change
+                SetBottomsheetParamsAfterLayout();
+            }
+
+            return insets;
+        });
 
         View bottomSheet = findViewById(R.id.standard_bottom_sheet);
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
@@ -149,15 +227,70 @@ public class MainActivity extends AppCompatActivity {
 
         SetupSearchView();
 
-        findViewById(R.id.ShowScheduleButton).setOnClickListener(view -> ShowSchedule(-1, null, null, null, false));
+        findViewById(R.id.ShowScheduleButton).setOnClickListener(view -> ShowSchedule("-1", null, null, null, false));
 
         findViewById(R.id.PosButton).setOnClickListener(view -> SelectPosUserPos());
+
+        UserDatabase userDatabase = new UserDatabase(this);
+        String AllBusVisible = userDatabase.GetPreference("AllBusVisible");
+        findViewById(R.id.AllBusVisibilityToggle).setOnClickListener(view -> ToggleAllBusVisibility());
+        if (AllBusVisible == null || AllBusVisible.equals("true")) {
+            ((FloatingActionButton)findViewById(R.id.AllBusVisibilityToggle)).setImageResource(R.drawable.baseline_disabled_visible_24);
+        }
 
         findViewById(R.id.PosButton).setVisibility(View.GONE);
 
         InitializeConsentWindow();
 
         SetupGoogleMap();
+
+        CheckForUpdates();
+
+        // Tabletop posture ("Flex mode") of foldables: map on the top half, sheet on the bottom half
+        PostureTracker = new TabletopPostureTracker(this, this::ApplyLayoutMode);
+
+        ApplyLayoutMode();
+
+        UpdateBackCallback();
+    }
+
+    private void CheckForUpdates () {
+        activityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartIntentSenderForResult(),
+                (ActivityResultCallback<ActivityResult>) result -> {
+                    if (result.getResultCode() != RESULT_OK) {
+
+                    }
+                });
+        appUpdateManager = AppUpdateManagerFactory.create(this);
+        Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+        appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
+                appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        activityResultLauncher,
+                        AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build());
+            }
+        });
+
+        InstallStateUpdatedListener listener = state -> {
+            if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                popupSnackbarForCompleteUpdate();
+            }
+        };
+
+        appUpdateManager.registerListener(listener);
+
+    }
+
+    private void popupSnackbarForCompleteUpdate() {
+        Snackbar snackbar =
+                Snackbar.make(
+                        findViewById(R.id.MainActivityViewLayout),
+                        R.string.UpdateReadyToInstall,
+                        Snackbar.LENGTH_INDEFINITE);
+        snackbar.setAction(R.string.UpdateReadyToInstallButton, view -> appUpdateManager.completeUpdate());
+        snackbar.show();
     }
 
     private void InitializeConsentWindow() {
@@ -211,9 +344,31 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        SetupBottomSheet();
+        View bottomSheet = findViewById(R.id.standard_bottom_sheet);
 
-        final FragmentContainerView fragmentView = findViewById(R.id.fragmentContainerView2);
+        // E.g. folding / unfolding: switch between the bottom sheet and the side panel layout
+        ApplyLayoutMode();
+
+        /*bottomSheet.post(() -> {
+            SetupBottomSheet();
+
+            bottomSheetBehavior.setHideable(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+        });*/
+
+        bottomSheet.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                bottomSheet.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                SetupBottomSheet();
+
+                if (!IsFixedPanel()) {
+                    bottomSheetBehavior.setHideable(IsSheetHideable());
+                }
+            }
+        });
+
+
+        /*final FragmentContainerView fragmentView = findViewById(R.id.fragmentContainerView2);
 
         ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
         if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
@@ -241,12 +396,10 @@ public class MainActivity extends AppCompatActivity {
             params.height = Math.round(displayHeight * bottomSheetBehavior.getHalfExpandedRatio());
         }
 
-        fragmentView.setLayoutParams(params);
-
-        bottomSheetBehavior.setHideable(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+        fragmentView.setLayoutParams(params);*/
     }
 
-    public void ChangeStop(int Id) {
+    public void ChangeStop(String Id) {
         AddBackStack();
 
         CurrentStop = Id;
@@ -303,12 +456,12 @@ public class MainActivity extends AppCompatActivity {
 
             if (ShortcutType != null && ShortcutData != null) {
                 if (ShortcutType == 0) {
-                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
                     Date date = new Date();
 
-                    ShowSchedule(-1, ShortcutData, "O", formatter.format(date),true);
+                    ShowSchedule("-1", ShortcutData, "V", formatter.format(date),true);
                 } else {
-                    SelectStop(Integer.parseInt(ShortcutData), false);
+                    SelectStop(ShortcutData, false);
                     GetClosestStop = false;
                 }
             }
@@ -360,8 +513,17 @@ public class MainActivity extends AppCompatActivity {
             googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
 
-        bottomSheetBehavior.setHideable(true);
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        if (IsFixedPanel()) {
+            // The panel stays visible, show the hint in it instead of the GPS loading screen
+            if (!getSupportFragmentManager().isStateSaved()) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentContainerView2, InfoFragment.newInstance(getString(R.string.GPSHint), -1))
+                        .commit();
+            }
+        } else {
+            bottomSheetBehavior.setHideable(true);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
 
         Toast.makeText(this, R.string.GPSHint, Toast.LENGTH_LONG).show();
     }
@@ -373,23 +535,30 @@ public class MainActivity extends AppCompatActivity {
         if (Md.getType() == MarkerDescriptor.Types.Stop) {
             SelectStop(Md.getId(), true);
         } else if (Md.getType() == MarkerDescriptor.Types.Place) {
-            SelectPlace(Md.getId());
+            SelectPlace(Integer.parseInt(Md.getId()));
         } else if (Md.getType() == MarkerDescriptor.Types.Bus){
-            ZoomTo(BusMarker.getPosition());
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
-            UserTouchedMap = false;
+            if (!Md.getId().equals("-1")) {
+                Date now = new Date();
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
+
+                TrackBus(Md.getId(), formatter.format(now));
+            } else {
+                ZoomTo(BusMarker.getPosition());
+                SetSheetState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                UserTouchedMap = false;
+            }
         } else {
             ZoomTo(SelectedPlace);
         }
     }
 
-    public void SelectStop(int StopId, boolean SaveBack) {
+    public void SelectStop(String StopId, boolean SaveBack) {
         if (SaveBack) {
             AddBackStack();
         }
 
-        if (CurrentBusTrack != -1) {
-            CurrentBusTrack = -1;
+        if (!CurrentBusTrack.equals("-1")) {
+            CurrentBusTrack = "-1";
             busLine = null;
         }
 
@@ -414,8 +583,8 @@ public class MainActivity extends AppCompatActivity {
     public void SelectPlace(int PlaceId) {
         AddBackStack();
 
-        if (CurrentBusTrack != -1) {
-            CurrentBusTrack = -1;
+        if (!CurrentBusTrack.equals("-1")) {
+            CurrentBusTrack = "-1";
             busLine = null;
         }
 
@@ -425,7 +594,7 @@ public class MainActivity extends AppCompatActivity {
 
         CurrentPlace = PlaceId;
 
-        List<Integer> StopIds = new ArrayList<>();
+        List<String> StopIds = new ArrayList<>();
 
         for (BusStops value : busStops.values()) {
             if (value.getPlace() == CurrentPlace) {
@@ -438,8 +607,8 @@ public class MainActivity extends AppCompatActivity {
         int FavId = Integer.MAX_VALUE;
 
         for (int i = 0; i < StopIds.size(); i++) {
-            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, StopIds.get(i).toString())) {
-                int tFavId = userDatabase.GetId(StopIds.get(i).toString(), UserDatabase.FavoriteType.Stop);
+            if (userDatabase.IsFavorite(UserDatabase.FavoriteType.Stop, StopIds.get(i))) {
+                int tFavId = userDatabase.GetId(StopIds.get(i), UserDatabase.FavoriteType.Stop);
                 if (FavId > tFavId) {
                     CurrentStop = StopIds.get(i);
                     FavId = tFavId;
@@ -459,10 +628,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void ZoomToMarker() {
-        if (CurrentStop == -1 && CurrentPlace == -1)
+        if (CurrentStop.equals("-1") && CurrentPlace == -1)
             return;
 
-        if (CurrentStop == -1)  {
+        if (CurrentStop.equals("-1"))  {
             BusPlaces CurrentPlaceObject = busPlaces.get(CurrentPlace);
 
             if (CurrentPlaceObject != null) {
@@ -502,6 +671,36 @@ public class MainActivity extends AppCompatActivity {
             CreateBusMarker(BusMarkerOption);
         }
 
+        UserDatabase userDatabase = new UserDatabase(this);
+
+        String AllBusVisible = userDatabase.GetPreference("AllBusVisible");
+
+        Mode CurrentMode = DetermineMode();
+
+        if ((CurrentMode != Mode.IncBus && CurrentMode != Mode.NearStops) || !(AllBusVisible == null || AllBusVisible.equals("true"))) {
+            AllBusMarker = null;
+        }
+        if (AllBusMarker != null) {
+            HashMap<String, Marker> allBusMarker = AllBusMarker;
+            AllBusMarker = new HashMap<>();
+            for (String busMarker : allBusMarker.keySet()) {
+                BitmapDescriptor BusBitmap;
+                if (!smallMarkerMode) {
+                    BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.AllBusSmallLabel));
+                } else {
+                    BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.GetBusBitmap(busMarker, "-",this));
+                }
+
+                Marker marker = allBusMarker.get(busMarker);
+
+                if (marker == null)
+                    continue;
+
+                MarkerOptions BusMarkerOption = new MarkerOptions().position(new LatLng(marker.getPosition().latitude, marker.getPosition().longitude)).icon(BusBitmap);
+                CreateAllBusMarker(busMarker, BusMarkerOption);
+            }
+        }
+
         BitmapDescriptor StopSelected = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopSelected));
         BitmapDescriptor StopNotSelected = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapStopNotSelected));
         BitmapDescriptor Place;
@@ -511,13 +710,13 @@ public class MainActivity extends AppCompatActivity {
             Place = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapPlace));
         }
 
-        if (CurrentBusTrack == -1) {
+        if (CurrentBusTrack.equals("-1")) {
             if (SelectedPlace != null) {
                 BitmapDescriptor PlaceSelected = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.LocationPin));
 
                 Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(SelectedPlace.latitude, SelectedPlace.longitude)).icon(PlaceSelected));
                 assert marker != null;
-                marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.PinPoint, -1));
+                marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.PinPoint, "-1"));
                 marker.setZIndex(Float.MAX_VALUE);
             }
 
@@ -527,7 +726,7 @@ public class MainActivity extends AppCompatActivity {
                         if (busStop.getPlace() == CurrentPlace) {
 
                             BitmapDescriptor icon;
-                            if ((busStop.getId() == CurrentStop || CurrentStop == -1) && SelectedPlace == null) {
+                            if ((busStop.getId().equals(CurrentStop) || CurrentStop.equals("-1")) && SelectedPlace == null) {
                                 icon = StopSelected;
                             } else {
                                 icon = StopNotSelected;
@@ -541,7 +740,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(busPlace.getGpsLatitude(), busPlace.getGpsLongitude())).icon(Place));
                     assert marker != null;
-                    marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Place, busPlace.getId()));
+                    marker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Place, Integer.toString(busPlace.getId())));
                 }
             }
         } else {
@@ -551,7 +750,7 @@ public class MainActivity extends AppCompatActivity {
                     continue;
                 }
                 BitmapDescriptor icon;
-                if (CurrentStop == busStop.getId()) {
+                if (CurrentStop.equals(busStop.getId())) {
                     icon = StopSelected;
                 } else {
                     icon = StopNotSelected;
@@ -574,7 +773,7 @@ public class MainActivity extends AppCompatActivity {
             lineOptions.width(12);
 
             TypedValue typedValue = new TypedValue();
-            getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+            getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
             ContextCompat.getColor(this, typedValue.resourceId);
 
             lineOptions.color(ContextCompat.getColor(this, typedValue.resourceId));
@@ -629,7 +828,7 @@ public class MainActivity extends AppCompatActivity {
         Favorite[] favoriteStops = userDatabase.GetFavorites(UserDatabase.FavoriteType.Stop);
 
         float Closest = Float.MAX_VALUE;
-        int ClosestId = -1;
+        String ClosestId = "-1";
         BusStops ClosestStop = null;
 
         for (BusStops busStop : busStops.values()) {
@@ -645,14 +844,14 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if (ClosestId != -1) {
+        if (!ClosestId.equals("-1")) {
             SelectStop(ClosestId, false);
             ZoomClose(new LatLng(ClosestStop.getGpsLatitude(), ClosestStop.getGpsLongitude()), new LatLng(location.getLatitude(), location.getLongitude()));
             return;
         }
 
         for (Favorite favoriteStop : favoriteStops) {
-            BusStops busStop = busStops.get(Integer.parseInt(favoriteStop.getData()));
+            BusStops busStop = busStops.get(favoriteStop.getData());
 
             if (busStop == null) {
                 continue;
@@ -670,7 +869,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if (ClosestId != -1) {
+        if (!ClosestId.equals("-1")) {
             SelectStop(ClosestId, false);
             ZoomClose(new LatLng(ClosestStop.getGpsLatitude(), ClosestStop.getGpsLongitude()), new LatLng(location.getLatitude(), location.getLongitude()));
         } else {
@@ -694,10 +893,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void ZoomClose(LatLng location, LatLng location2) {
+    public void ZoomClose(LatLng location, LatLng location2) {
         try {
             LatLng First = new LatLng(Math.min(location.latitude, location2.latitude), Math.min(location.longitude, location2.longitude));
             LatLng Second = new LatLng(Math.max(location.latitude, location2.latitude), Math.max(location.longitude, location2.longitude));
+
+            Location _location1 = new Location("");
+            _location1.setLongitude(location.longitude);
+            _location1.setLatitude(location.latitude);
+
+            Location _location2 = new Location("");
+            _location2.setLongitude(location2.longitude);
+            _location2.setLatitude(location2.latitude);
+
+            if (_location1.distanceTo(_location2) < 150) {
+                ZoomTo(location);
+                return;
+            }
 
             LatLngBounds Bounds = new LatLngBounds(First, Second);
 
@@ -740,70 +952,34 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                    ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
-                    ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
-
-                    if (newState == BottomSheetBehavior.STATE_HALF_EXPANDED) {
-                        IsBackButtonHalfExpanded = true;
-
-                        params.height = Math.round(bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio());
-
-                        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                            if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, 0);
-                            }
-                            params2.bottomMargin = dp20;
-                        } else {
-                            if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, params.height);
-                            }
-                            params2.bottomMargin = params.height + dp20;
-                        }
-                        DisableBack();
-                    } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-                        params.height = bottomSheet.getHeight();
-                        EnableBack();
-                    } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                            if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, 0);
-                            }
-                            params2.bottomMargin = dp20;
-                        } else {
-                            if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, bottomSheetBehavior.getPeekHeight());
-                            }
-                            params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20;
-                        }
-                        EnableBack();
-                    } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                        EnableBack();
-                    }
-
-                    fragmentView.setLayoutParams(params);
-                    ScheduleButton.setLayoutParams(params2);
+                    SetBottomsheetParams(newState);
                 }
 
                 @Override
                 public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                    if (IsFixedPanel()) {
+                        return;
+                    }
+
                     ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
                     ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
 
-                    if (((bottomSheet.getMeasuredHeight()-bottomSheetBehavior.getPeekHeight())*slideOffset)+bottomSheetBehavior.getPeekHeight() < bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio()) {
-                        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                            if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, 0);
-                            }
-                            params2.bottomMargin = dp20;
+                    float CalculatedHalfExpanded = bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio();
+                    float CalculatedCurrent = ((bottomSheet.getMeasuredHeight()-(bottomSheetBehavior.getPeekHeight()+BottomInset))*slideOffset)+bottomSheetBehavior.getPeekHeight() + BottomInset;
+
+                    if (CalculatedCurrent < CalculatedHalfExpanded) {
+                        if (IsSheetBesideMap()) {
+                            SetMapPadding((dp20 * 4) + MapTopPadding, BottomInset);
+                            params2.bottomMargin = dp20 + BottomInset;
                         } else {
-                            int CalculatedHeight = Math.round(((bottomSheet.getMeasuredHeight()-bottomSheetBehavior.getPeekHeight())*slideOffset)+bottomSheetBehavior.getPeekHeight());
-                            if(IsMapInitialized) {
-                                googleMap.setPadding(0, dp20 * 4, 0, CalculatedHeight);
-                            }
+                            int CalculatedHeight = Math.round(((bottomSheet.getMeasuredHeight()-(bottomSheetBehavior.getPeekHeight() + BottomInset))*slideOffset)+bottomSheetBehavior.getPeekHeight() + BottomInset);
+                            SetMapPadding((dp20 * 4) + MapTopPadding, CalculatedHeight);
                             params2.bottomMargin = CalculatedHeight + dp20;
                         }
+                    } else if (slideOffset != 1){
+                        params.height = Math.round(((bottomSheet.getMeasuredHeight()-(bottomSheetBehavior.getPeekHeight() + BottomInset))*slideOffset)+bottomSheetBehavior.getPeekHeight() + BottomInset);
                     } else {
-                        params.height = Math.round(bottomSheetBehavior.getPeekHeight() + ((bottomSheet.getMeasuredHeight() - bottomSheetBehavior.getPeekHeight()) * slideOffset));
+                        params.height = bottomSheet.getHeight() - BottomInset;
                     }
 
                     fragmentView.setLayoutParams(params);
@@ -821,7 +997,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
-                params2.bottomMargin = dp20;
+                params2.bottomMargin = dp20 + BottomInset;
                 ScheduleButton.setLayoutParams(params2);
             } else {
                 ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
@@ -834,7 +1010,7 @@ public class MainActivity extends AppCompatActivity {
                     .replace(R.id.fragmentContainerView2, InBusFragment)
                     .commit();
         } else {
-            int height = (int) Math.floor(displayMetrics.heightPixels / 2.35);
+            int height = (int) Math.floor(displayMetrics.heightPixels - BottomInset / 2.35);
 
             float Ratio = 0.425F;
 
@@ -853,51 +1029,54 @@ public class MainActivity extends AppCompatActivity {
             bottomSheetBehavior.setFitToContents(false);
             bottomSheetBehavior.setHalfExpandedRatio(Ratio);
 
-            ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
+            SetBottomsheetParams();
+            /*ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
 
             if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, 0);
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, 0);
                     }
-                    params2.bottomMargin = dp20;
+                    params2.bottomMargin = dp20 + BottomInset;
                 } else {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, height);
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, height);
                     }
                     params2.bottomMargin = height + dp20;
+
+                    Log.e("TESZT4", "SetupBott " + height);
                 }
 
                 ScheduleButton.setLayoutParams(params2);
             } else if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED){
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, 0);
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, 0);
                     }
-                    params2.bottomMargin = dp20;
+                    params2.bottomMargin = dp20 + BottomInset;
                 } else {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, height);
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, height + BottomInset);
                     }
-                    params2.bottomMargin = height + dp20;
+                    params2.bottomMargin = height + dp20 + BottomInset;
                 }
 
                 ScheduleButton.setLayoutParams(params2);
             } else if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED){
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, 0);
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, 0);
                     }
-                    params2.bottomMargin = dp20;
+                    params2.bottomMargin = dp20 + BottomInset;
                 } else {
                     if(IsMapInitialized) {
-                        googleMap.setPadding(0, dp20 * 4, 0, bottomSheetBehavior.getPeekHeight());
+                        googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, bottomSheetBehavior.getPeekHeight() + BottomInset);
                     }
-                    params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20;
+                    params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20 + BottomInset;
                 }
 
                 ScheduleButton.setLayoutParams(params2);
-            }
+            }*/
         }
     }
 
@@ -905,7 +1084,7 @@ public class MainActivity extends AppCompatActivity {
         BottomSheetSetNormalParams(65);
 
         try{
-            BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, IncomBusMode, busPlaces, busStops);
+            BottomSheetIncomingBusFragment InBusFragment = BottomSheetIncomingBusFragment.newInstance(CurrentPlace, CurrentStop, IncomBusMode);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainerView2, InBusFragment)
                     .commit();
@@ -915,12 +1094,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void TrackBus(int Id, String Date) {
-        if (!(busLine != null && busLine.getCTrip() != null && busLine.getCTrip().getLineId() == Id)) {
+    public void TrackBus(String Id, String Date) {
+        if (!(busLine != null && busLine.getCTrip() != null && busLine.getCTrip().getLineId().equals(Id))) {
             AddBackStack();
         }
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
         Date parsedDate = null;
 
         try {
@@ -956,11 +1135,36 @@ public class MainActivity extends AppCompatActivity {
             BusMarker = null;
         }
 
+        if (AllBusMarker != null) {
+            List<String> DeletableMarkers = new ArrayList<>();
+            for (String key : AllBusMarker.keySet()) {
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key)) {
+                    ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
+
+                    if (objectAnimator != null) {
+                        objectAnimator.cancel();
+                    }
+                }
+
+                Marker marker = AllBusMarker.get(key);
+
+                if (marker == null)
+                    continue;
+
+                marker.remove();
+                DeletableMarkers.add(key);
+            }
+            for (String key : DeletableMarkers) {
+                AllBusMarker.remove(key);
+            }
+        }
+
         boolean ZoomToFirst = true;
 
         for (int i = 0; i < busLine.getStops().length; i++) {
-            if (busLine.getStops()[i].getStopId() == CurrentStop) {
+            if (busLine.getStops()[i].getStopId().equals(CurrentStop)) {
                 ZoomToFirst = false;
+
             }
         }
 
@@ -977,6 +1181,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void BottomSheetSetNormalParams(int HeaderInDp) {
         IsBackButtonHalfExpanded = bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED;
+        UpdateBackCallback();
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -1011,15 +1216,17 @@ public class MainActivity extends AppCompatActivity {
         bottomSheetBehavior.setHalfExpandedRatio(Ratio);
 
         bottomSheetBehavior.setMaxHeight(-1);
-        bottomSheetBehavior.setHideable(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+        if (!IsFixedPanel()) {
+            bottomSheetBehavior.setHideable(IsSheetHideable());
+        }
 
         bottomSheetBehavior.setPeekHeight(HeaderInPx);
 
         if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+            SetSheetState(BottomSheetBehavior.STATE_HALF_EXPANDED);
         }
 
-        final View Fc = findViewById(R.id.fragmentContainerView2);
+        /*final View Fc = findViewById(R.id.fragmentContainerView2);
         final FloatingActionButton ScheduleButton = findViewById(R.id.ShowScheduleButton);
 
         ViewGroup.LayoutParams params = Fc.getLayoutParams();
@@ -1033,23 +1240,40 @@ public class MainActivity extends AppCompatActivity {
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             if(IsMapInitialized) {
-                googleMap.setPadding(0, dp20 * 4, 0, 0);
+                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, 0);
             }
             params2.bottomMargin = dp20;
         } else {
             if(IsMapInitialized) {
-                googleMap.setPadding(0, dp20 * 4, 0, height);
+                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, height);
             }
             params2.bottomMargin = height + dp20;
         }
         Fc.setLayoutParams(params);
-        ScheduleButton.setLayoutParams(params2);
+        ScheduleButton.setLayoutParams(params2);*/
+        SetBottomsheetParamsAfterLayout();
+    }
+
+    // The max height / peek height set above only take effect on the next layout pass, so the
+    // bottom sheet's measured height is stale right now. If the state doesn't change (e.g. it is
+    // already EXPANDED), no BottomSheetCallback fires to fix the sizes later, so wait for the layout.
+    private void SetBottomsheetParamsAfterLayout() {
+        View bottomSheet = findViewById(R.id.standard_bottom_sheet);
+
+        bottomSheet.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                v.removeOnLayoutChangeListener(this);
+                v.post(() -> SetBottomsheetParams());
+            }
+        });
+        bottomSheet.requestLayout();
     }
 
     private void ShowBottomSheetTrackBus() {
         BottomSheetSetNormalParams(90);
 
-        BottomSheetTrackBusFragment TrackBusFragment = BottomSheetTrackBusFragment.newInstance( CurrentStop, busPlaces, busStops, busLine);
+        BottomSheetTrackBusFragment TrackBusFragment = BottomSheetTrackBusFragment.newInstance( CurrentStop, busLine);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragmentContainerView2, TrackBusFragment)
                 .commit();
@@ -1069,7 +1293,7 @@ public class MainActivity extends AppCompatActivity {
                     boolean ZoomToLast = true;
 
                     for (int i = 0; i < busLine.getStops().length; i++) {
-                        if (busLine.getStops()[i].getStopId() == CurrentStop) {
+                        if (busLine.getStops()[i].getStopId().equals(CurrentStop)) {
                             ZoomToLast = false;
                         }
                     }
@@ -1116,6 +1340,99 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void BusPositionMarkers(BusPositionRespModel[] Positions) {
+        Mode CurrenMode = DetermineMode();
+
+        if (CurrenMode != Mode.IncBus && CurrenMode != Mode.NearStops) {
+            return;
+        }
+
+        UserDatabase userDatabase = new UserDatabase(this);
+
+        String AllBusVisible = userDatabase.GetPreference("AllBusVisible");
+        if (!(AllBusVisible == null || AllBusVisible.equals("true"))) {
+            return;
+        }
+
+        if (AllBusMarker == null) {
+            AllBusMarker = new HashMap<>();
+        }
+
+        List<String> UpdatedKeys = new ArrayList<>();
+        for (BusPositionRespModel Position : Positions) {
+
+            UpdatedKeys.add(Position.getTripId());
+            if (!AllBusMarker.containsKey(Position.getTripId())) {
+                BitmapDescriptor BusBitmap;
+                if (!smallMarkerMode) {
+                    BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.AllBusSmallLabel));
+                    HelperProvider.GetBusBitmap(Position.getTripId(), Position.getLineNum(), this);
+                } else {
+                    BusBitmap = BitmapDescriptorFactory.fromBitmap(HelperProvider.GetBusBitmap(Position.getTripId(), Position.getLineNum(), this));
+                }
+                MarkerOptions BusMarkerOption = new MarkerOptions().position(new LatLng(Position.getGpsLatitude(), Position.getGpsLongitude())).icon(BusBitmap);
+                CreateAllBusMarker(Position.getTripId(), BusMarkerOption);
+            } else {
+                animateALlMarker(Position.getTripId(), AllBusMarker.get(Position.getTripId()), new LatLng(Position.getGpsLatitude(), Position.getGpsLongitude()), new LatLngInterpolator.Linear());
+            }
+        }
+
+        List<String> DeletableMarkers = new ArrayList<>();
+        for (String key : AllBusMarker.keySet()) {
+            if (!UpdatedKeys.contains(key)) {
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key)) {
+                    ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
+
+                    if (objectAnimator != null) {
+                        objectAnimator.cancel();
+                    }
+                }
+
+                Marker marker = AllBusMarker.get(key);
+                if (marker == null)
+                    continue;
+
+                marker.remove();
+                DeletableMarkers.add(key);
+            }
+        }
+        for (String key : DeletableMarkers) {
+            AllBusMarker.remove(key);
+        }
+    }
+
+    private void CreateAllBusMarker(String TripId, MarkerOptions option) {
+        if (IsMapInitialized) {
+            Marker NewMarker = googleMap.addMarker(option);
+            if (NewMarker == null)
+                return;
+            NewMarker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Bus, TripId));
+            NewMarker.setZIndex(Float.MAX_VALUE);
+            AllBusMarker.put(TripId, NewMarker);
+        }
+
+    }
+
+    private void animateALlMarker(String TripId, Marker marker, LatLng finalPosition, final LatLngInterpolator latLngInterpolator) {
+        if (AllMarkerAnimator == null) {
+            AllMarkerAnimator = new HashMap<>();
+        }
+
+        ObjectAnimator objectAnimator = AllMarkerAnimator.get(TripId);
+
+        if(AllMarkerAnimator.containsKey(TripId) && objectAnimator != null) {
+            objectAnimator.cancel();
+        }
+
+        TypeEvaluator<LatLng> typeEvaluator = latLngInterpolator::interpolate;
+        Property<Marker, LatLng> property = Property.of(Marker.class, LatLng.class, "position");
+        ObjectAnimator markerAnimator = ObjectAnimator.ofObject(marker, property, typeEvaluator, finalPosition);
+        markerAnimator.setDuration(500);
+        markerAnimator.start();
+
+        AllMarkerAnimator.put(TripId, markerAnimator);
+    }
+
     private void animateMarker(Marker marker, LatLng finalPosition, final LatLngInterpolator latLngInterpolator) {
         if(MarkerAnimator != null) {
             MarkerAnimator.cancel();
@@ -1129,6 +1446,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void ZoomTo(LatLng Position) {
+        // E.g. a marker of a place that is not selected anymore
+        if (Position == null) {
+            return;
+        }
+
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(Position).zoom(15).build();
 
@@ -1143,77 +1465,174 @@ public class MainActivity extends AppCompatActivity {
         }
 
         assert BusMarker != null;
-        BusMarker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Bus, -1));
+        BusMarker.setTag(new MarkerDescriptor(MarkerDescriptor.Types.Bus, "-1"));
         BusMarker.setZIndex(Float.MAX_VALUE);
     }
 
+    // Whether the bottom sheet content is partly visible (the side panel counts as such too, its
+    // list can always be scrolled to the current item)
     public boolean IsBottomSheetHalfExpanded() {
-        return bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED;
+        return IsFixedPanel() || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED;
     }
 
-    private void SetupBackButton() {
-        onBackPressedCallback = this::DoBack;
+    // ---- Back navigation / predictive back ----
 
-        OnBackPressedCallback onBackPressedCallbackOld = new OnBackPressedCallback(true) {
+    private enum BackAction {
+        // Nothing to go back to inside the app: the callback is disabled and the system handles
+        // back (with the predictive back-to-home animation)
+        None,
+        // Close the search view (on Android 13+ the SearchView handles its own predictive back)
+        Search,
+        // Collapsed / hidden bottom sheet -> half expanded
+        ExpandSheet,
+        // Expanded bottom sheet -> half expanded
+        CollapseSheet,
+        // Go back to the previous bottom sheet mode stored in backStack
+        PreviousMode
+    }
+
+    private OnBackPressedCallback MainBackCallback;
+    private BackAction GestureBackAction = BackAction.None;
+    private boolean IsBackGestureInProgress = false;
+    // Predictive back between bottom sheet modes (the sheet content shrinks while swiping)
+    private PredictiveBackContentAnimation ModeBackAnimation;
+
+    private void SetupBackButton() {
+        ModeBackAnimation = new PredictiveBackContentAnimation(findViewById(R.id.fragmentContainerView2), true);
+
+        MainBackCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackStarted(@NonNull BackEventCompat backEvent) {
+                ModeBackAnimation.CompletePending();
+
+                IsBackGestureInProgress = true;
+                GestureBackAction = DetermineBackAction();
+
+                if (GestureBackAction == BackAction.CollapseSheet) {
+                    bottomSheetBehavior.startBackProgress(backEvent);
+                } else if (GestureBackAction == BackAction.PreviousMode) {
+                    ModeBackAnimation.Start();
+                }
+            }
+
+            @Override
+            public void handleOnBackProgressed(@NonNull BackEventCompat backEvent) {
+                if (GestureBackAction == BackAction.CollapseSheet) {
+                    bottomSheetBehavior.updateBackProgress(backEvent);
+                } else if (GestureBackAction == BackAction.PreviousMode) {
+                    ModeBackAnimation.Update(backEvent);
+                }
+            }
+
             @Override
             public void handleOnBackPressed() {
-                DoBack();
+                boolean fromGesture = IsBackGestureInProgress;
+                BackAction action;
+
+                if (fromGesture) {
+                    action = GestureBackAction;
+                } else {
+                    // Button navigation / no gesture events
+                    ModeBackAnimation.CompletePending();
+                    action = DetermineBackAction();
+                }
+
+                IsBackGestureInProgress = false;
+                GestureBackAction = BackAction.None;
+
+                DoBack(action, fromGesture);
+            }
+
+            @Override
+            public void handleOnBackCancelled() {
+                if (GestureBackAction == BackAction.CollapseSheet) {
+                    bottomSheetBehavior.cancelBackProgress();
+                } else if (GestureBackAction == BackAction.PreviousMode) {
+                    ModeBackAnimation.Cancel();
+                }
+
+                IsBackGestureInProgress = false;
+                GestureBackAction = BackAction.None;
             }
         };
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            getOnBackPressedDispatcher().addCallback(onBackPressedCallbackOld);
+        getOnBackPressedDispatcher().addCallback(this, MainBackCallback);
+    }
+
+    private BackAction DetermineBackAction() {
+        if (searchView != null && searchView.isShowing()) {
+            return BackAction.Search;
+        }
+
+        int state = bottomSheetBehavior.getState();
+
+        // The fixed panel of the large screen / tabletop layouts can not be collapsed / expanded
+        if (!IsFixedPanel() && (state == BottomSheetBehavior.STATE_HIDDEN || state == BottomSheetBehavior.STATE_COLLAPSED) && !CurrentStop.equals("-1")) {
+            return BackAction.ExpandSheet;
+        }
+
+        if (!IsFixedPanel() && state == BottomSheetBehavior.STATE_EXPANDED && IsBackButtonHalfExpanded) {
+            return BackAction.CollapseSheet;
+        }
+
+        if (!backStack.isEmpty()) {
+            return BackAction.PreviousMode;
+        }
+
+        return BackAction.None;
+    }
+
+    // Has to be called whenever something DetermineBackAction() depends on changes. The system only
+    // shows the back-to-home animation if no back callback is enabled when the gesture starts.
+    private void UpdateBackCallback() {
+        if (MainBackCallback != null) {
+            MainBackCallback.setEnabled(DetermineBackAction() != BackAction.None);
         }
     }
 
-    private void DoBack() {
-        if (searchView.isShowing()) {
-            searchView.hide();
-            return;
+    private void DoBack(BackAction action, boolean fromGesture) {
+        switch (action) {
+            case Search:
+                searchView.hide();
+                break;
+            case ExpandSheet:
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                break;
+            case CollapseSheet:
+                if (fromGesture) {
+                    // Scale the sheet back to normal while it slides down
+                    bottomSheetBehavior.cancelBackProgress();
+                }
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                break;
+            case PreviousMode:
+                if (fromGesture) {
+                    ModeBackAnimation.Finish(() -> {
+                        RestorePrevState();
+                        UpdateBackCallback();
+                    });
+                } else {
+                    RestorePrevState();
+                }
+                break;
+            case None:
+                // The callback should have been disabled, let the system handle back
+                MainBackCallback.setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+                return;
         }
 
-        if ((bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) && CurrentStop != -1) {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
-            return;
-        }
-
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED && IsBackButtonHalfExpanded) {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
-            return;
-        }
-
-        if (backStack.size() == 1 && !backStack.get(0).isBackButtonCollapse()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(onBackPressedCallback);
-            }
-        }
-
-        if (backStack.size() == 0) {
-            finish();
-        } else {
-            RestorePrevState();
-        }
+        UpdateBackCallback();
     }
 
-    private void EnableBack() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
-                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
-                    onBackPressedCallback
-            );
-        }
-    }
-
-    private void DisableBack() {
-        if (backStack.size() == 0) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(onBackPressedCallback);
-            }
-        }
+    private void PushBackStack(BackStack entry) {
+        backStack.add(entry);
+        UpdateBackCallback();
     }
 
     private void RestorePrevState() {
-        if (backStack.size() - 1 == -1) {
+        if (backStack.isEmpty()) {
+            UpdateBackCallback();
             return;
         }
 
@@ -1222,6 +1641,24 @@ public class MainActivity extends AppCompatActivity {
         ScheduleBackStack scheduleBackStack = PrevState.getScheduleBackStack();
         if (scheduleBackStack != null) {
             ShowSchedule(scheduleBackStack.getStopId(), scheduleBackStack.getLineNum(), scheduleBackStack.getDirection(), scheduleBackStack.getDate(), scheduleBackStack.isPreSelected());
+
+            backStack.remove(backStack.size() - 1);
+
+            RestorePrevState();
+            return;
+        }
+
+        if (PrevState.getActiveBusType() != null) {
+            ShowActiveBusActivity(PrevState.getActiveBusType());
+
+            backStack.remove(backStack.size() - 1);
+
+            RestorePrevState();
+            return;
+        }
+
+        if (PrevState.getSwitchBackStack() != null) {
+            OpenSwitchActivity(PrevState.getSwitchBackStack().getTripID(), PrevState.getSwitchBackStack().getStopID(), PrevState.getSwitchBackStack().getCurrentStopID(), PrevState.getSwitchBackStack().getDate());
 
             backStack.remove(backStack.size() - 1);
 
@@ -1246,6 +1683,30 @@ public class MainActivity extends AppCompatActivity {
             BusMarker = null;
         }
 
+        if (AllBusMarker != null) {
+            List<String> DeletableMarkers = new ArrayList<>();
+            for (String key : AllBusMarker.keySet()) {
+                if (AllMarkerAnimator != null && AllMarkerAnimator.containsKey(key)) {
+                    ObjectAnimator objectAnimator = AllMarkerAnimator.get(key);
+
+                    if (objectAnimator != null) {
+                        objectAnimator.cancel();
+                    }
+                }
+
+                Marker marker = AllBusMarker.get(key);
+
+                if (marker == null)
+                    continue;
+
+                marker.remove();
+                DeletableMarkers.add(key);
+            }
+            for (String key : DeletableMarkers) {
+                AllBusMarker.remove(key);
+            }
+        }
+
         switch (DetermineMode()) {
             case IncBus:
                 ShowBottomSheetIncomingBuses();
@@ -1264,14 +1725,16 @@ public class MainActivity extends AppCompatActivity {
         IsBackButtonHalfExpanded = PrevState.isBackButtonCollapse();
 
         MarkerRenderer();
+
+        UpdateBackCallback();
     }
 
     private Mode DetermineMode() {
-        if (CurrentStop == -1 && CurrentPlace == -1) {
+        if (CurrentStop.equals("-1") && CurrentPlace == -1) {
             return Mode.None;
         } else if (SelectedPlace != null) {
             return Mode.NearStops;
-        } else if (CurrentBusTrack != -1) {
+        } else if (!CurrentBusTrack.equals("-1")) {
             return Mode.TrackBus;
         } else {
             return Mode.IncBus;
@@ -1286,11 +1749,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void AddBackStack() {
-        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace, IncomBusMode));
-        EnableBack();
+        PushBackStack(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace, IncomBusMode, null, null));
     }
 
-    public void ShowSchedule(int StopId, String LineNum, String Direction, String Date, boolean PreSelected) {
+    public void ShowActiveBusActivity(String BusType) {
+        Intent AbIntent = new Intent(this, ActiveBusActivity.class);
+
+        if (BusType != null) {
+            AbIntent.putExtra("BusType", BusType);
+        }
+
+        ActiveBusResultLaunch.launch(AbIntent);
+    }
+
+    public void ShowSchedule(String StopId, String LineNum, String Direction, String Date, boolean PreSelected) {
         Intent scheduleIntent = new Intent(this, ScheduleActivity.class);
         scheduleIntent.putExtra("StopId", StopId);
         scheduleIntent.putExtra("LineNum", LineNum);
@@ -1304,35 +1776,63 @@ public class MainActivity extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
-                    if (result.getData() != null) {
-                        TrackBus(result.getData().getExtras().getInt("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
-                        backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getInt("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null));
+                    if (result.getData() != null && result.getData().getExtras() != null) {
+                        TrackBus(result.getData().getExtras().getString("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
+                        PushBackStack(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null, null, null));
                     }
                 }
             });
 
-    @SuppressLint("NonConstantResourceId")
+    ActivityResultLauncher<Intent> ActiveBusResultLaunch = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    if (result.getData() != null && result.getData().getExtras() != null) {
+                        TrackBus(result.getData().getExtras().getString("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
+                        PushBackStack(new BackStack(null, null, null, null, null, false, null, null, result.getData().getExtras().getString("BusType"), null));
+                    }
+                }
+            });
+
+    ActivityResultLauncher<Intent> switchResultLaunch = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    if (result.getData() != null && result.getData().getExtras() != null) {
+                        TrackBus(result.getData().getExtras().getString("TrackId"), result.getData().getExtras().getString("Date"));
+                        PushBackStack(new BackStack(null, null, null, null, null, false, null, null, null, new SwitchBackStack(result.getData().getExtras().getString("TripId"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getString("CurrentStopId"), result.getData().getExtras().getString("Date"))));
+                    }
+                }
+            });
+
     private void SetupSearchView() {
         searchView = findViewById(R.id.search_view);
         SearchBar searchBar = findViewById(R.id.search_bar);
 
         searchBar.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.AboutUsButton:
-                    ShowAbout();
-                    return true;
-                case R.id.PrivacyButton:
-                    ShowPrivacySettings();
-                    return true;
-                default:
-                    return false;
+            int itemId = item.getItemId();
+            if (itemId == R.id.AboutUsButton) {
+                ShowAbout();
+                return true;
+            } else if (itemId == R.id.ActiveBusButton) {
+                ShowActiveBusActivity(null);
+                return true;
+            } else if (itemId == R.id.PrivacyButton) {
+                ShowPrivacySettings();
+                return true;
             }
+            return false;
         });
+
+        /*Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        searchBar.setPadding(0, 1, 0,0);*/
 
         searchView.setupWithSearchBar(searchBar);
 
         searchView.addTransitionListener(
                 (searchView, previousState, newState) -> {
+                    UpdateBackCallback();
+
                     if (newState == SearchView.TransitionState.SHOWING) {
                         List<SearchResult> AllItemList = new ArrayList<>();
 
@@ -1340,7 +1840,7 @@ public class MainActivity extends AppCompatActivity {
                             AllItemList.add(new SearchResult(SearchResult.SearchType.Stop, busPlace.getName(), busPlace));
                         }
 
-                        DatabaseManager Dm = new DatabaseManager(this);
+                        NewGTFSDatabase Dm = new NewGTFSDatabase(this);
 
                         BusNum[] busNums = Dm.GetActiveBusLines();
 
@@ -1384,11 +1884,11 @@ public class MainActivity extends AppCompatActivity {
         searchView.hide();
 
         if (searchResult.getType() == SearchResult.SearchType.Line) {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
             Date date = new Date();
-            ShowSchedule(-1, ((BusNum) searchResult.getData()).getLineName(), "O", formatter.format(date), true);
+            ShowSchedule("-1", ((BusNum) searchResult.getData()).getLineName(), "V", formatter.format(date), true);
         } else if (searchResult.getType() == SearchResult.SearchType.FavStop) {
-            SelectStop((int) searchResult.getData(), true);
+            SelectStop((String) searchResult.getData(), true);
         } else if (searchResult.getType() == SearchResult.SearchType.Stop) {
             SelectPlace(((BusPlaces) searchResult.getData()).getId());
         }
@@ -1397,8 +1897,8 @@ public class MainActivity extends AppCompatActivity {
     private void OnMapLongClickListener(LatLng latLng) {
         AddBackStack();
 
-        if (CurrentBusTrack != -1) {
-            CurrentBusTrack = -1;
+        if (!CurrentBusTrack.equals("-1")) {
+            CurrentBusTrack = "-1";
             busLine = null;
         }
 
@@ -1431,13 +1931,36 @@ public class MainActivity extends AppCompatActivity {
         try {
             addresses = gcd.getFromLocation(latLng.latitude, latLng.longitude, 1);
 
-            if (addresses != null && addresses.size() > 0) {
+            if (addresses != null && !addresses.isEmpty()) {
                 return addresses.get(0).getAddressLine(0).split(",")[1];
             } else {
                 return latLng.latitude + ", " + latLng.longitude;
             }
         } catch (Exception e) {
             return latLng.latitude + ", " + latLng.longitude;
+        }
+    }
+
+    private void ToggleAllBusVisibility() {
+        UserDatabase userDatabase = new UserDatabase(this);
+
+        String AllBusVisible = userDatabase.GetPreference("AllBusVisible");
+        if (AllBusVisible == null || AllBusVisible.equals("true")) {
+            userDatabase.SetPreference("AllBusVisible", "false");
+            ((FloatingActionButton)findViewById(R.id.AllBusVisibilityToggle)).setImageResource(R.drawable.baseline_visibility_24);
+        } else {
+            userDatabase.SetPreference("AllBusVisible", "true");
+            ((FloatingActionButton)findViewById(R.id.AllBusVisibilityToggle)).setImageResource(R.drawable.baseline_disabled_visible_24);
+        }
+
+        if (DetermineMode() == Mode.IncBus) {
+            ShowBottomSheetIncomingBuses();
+            MarkerRenderer();
+        }
+
+        if (DetermineMode() == Mode.NearStops) {
+            ShowBottomSheetNearStops();
+            MarkerRenderer();
         }
     }
 
@@ -1474,6 +1997,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        UpdateBackCallback();
+
         if (OnStartFragmentError) {
             ShowBottomSheetIncomingBuses();
             OnStartFragmentError = false;
@@ -1481,7 +2006,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void CollapseBottomSheet() {
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        SetSheetState(BottomSheetBehavior.STATE_HALF_EXPANDED);
     }
 
     private void ShowAbout() {
@@ -1512,5 +2037,298 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, R.string.PrivacySettingsNotAvailable, Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void OpenSwitchActivity(String TripID, String StopID, String CurrentStopID, String Date) {
+        Intent SwitchIntent = new Intent(this, SwitchActivity.class);
+        SwitchIntent.putExtra("StopId", StopID);
+        SwitchIntent.putExtra("CurrentStopId", CurrentStopID);
+        SwitchIntent.putExtra("TripId", TripID);
+        SwitchIntent.putExtra("Date", Date);
+        switchResultLaunch.launch(SwitchIntent);
+    }
+
+
+    // ---- Large screen layout ----
+
+    // In the tabletop layout the sheet is always expanded and can not be moved
+    private boolean IsFixedPanel() {
+        return CurrentLayoutMode == LayoutMode.Tabletop;
+    }
+
+    // The sheet is next to the map (tablet split view, landscape phone): the map and its buttons
+    // don't have to move up with the sheet
+    private boolean IsSheetBesideMap() {
+        return CurrentLayoutMode == LayoutMode.SidePanel || getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+    }
+
+    // The sheet can be swiped away only on landscape phones, where it covers the map
+    private boolean IsSheetHideable() {
+        return CurrentLayoutMode == LayoutMode.Phone && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+    }
+
+    // Map padding. In the split view the start half of the map is covered by the sheet, so the
+    // camera centers on the other half.
+    private void SetMapPadding(int top, int bottom) {
+        if (!IsMapInitialized) {
+            return;
+        }
+
+        int left = 0;
+        int right = 0;
+
+        if (CurrentLayoutMode == LayoutMode.SidePanel) {
+            View panel = findViewById(R.id.coordinatorLayout);
+            View map = findViewById(R.id.map);
+
+            if (map.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL) {
+                right = Math.max(0, map.getRight() - panel.getLeft());
+            } else {
+                left = Math.max(0, panel.getRight() - map.getLeft());
+            }
+        }
+
+        googleMap.setPadding(left, top, right, bottom);
+    }
+
+    // Sheet state changes only apply to the phone layout
+    private void SetSheetState(int state) {
+        if (IsFixedPanel()) {
+            return;
+        }
+        bottomSheetBehavior.setState(state);
+    }
+
+    private LayoutMode DetermineLayoutMode() {
+        if (PostureTracker != null && PostureTracker.IsTabletop()) {
+            return LayoutMode.Tabletop;
+        }
+        if (ListDetailController.IsTwoPane(getResources().getConfiguration())) {
+            return LayoutMode.SidePanel;
+        }
+        return LayoutMode.Phone;
+    }
+
+    // Switches between the phone, the side panel and the tabletop layout if needed. Called on
+    // configuration changes (folding / unfolding) and on tabletop posture changes.
+    private void ApplyLayoutMode() {
+        LayoutMode mode = DetermineLayoutMode();
+        LayoutMode previous = CurrentLayoutMode;
+
+        if (mode == previous) {
+            // Same mode (the layout XML is the phone layout), only the sizes may have changed
+            UpdatePanelLayout();
+            if (IsFixedPanel()) {
+                SetBottomsheetParamsAfterLayout();
+            }
+            return;
+        }
+        CurrentLayoutMode = mode;
+
+        boolean fixed = IsFixedPanel();
+        boolean wasFixed = previous == LayoutMode.Tabletop;
+
+        findViewById(R.id.drag_handle).setVisibility(fixed ? View.GONE : View.VISIBLE);
+
+        if (fixed && !wasFixed) {
+            bottomSheetBehavior.setDraggable(false);
+            bottomSheetBehavior.setHideable(false);
+            bottomSheetBehavior.setFitToContents(false);
+            bottomSheetBehavior.setExpandedOffset(0);
+            bottomSheetBehavior.setMaxHeight(-1);
+            bottomSheetBehavior.setShouldRemoveExpandedCorners(false);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            IsBackButtonHalfExpanded = false;
+        } else if (!fixed && wasFixed) {
+            bottomSheetBehavior.setDraggable(true);
+            bottomSheetBehavior.setShouldRemoveExpandedCorners(true);
+            RestoreBottomSheet();
+        } else {
+            // Phone <-> split view: the sheet stays draggable, only its place changes
+            bottomSheetBehavior.setHideable(IsSheetHideable() || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN);
+        }
+
+        UpdatePanelLayout();
+        SetBottomsheetParamsAfterLayout();
+        UpdateBackCallback();
+    }
+
+    // Back to the bottom sheet after the side panel / tabletop layout (e.g. the foldable was folded)
+    private void RestoreBottomSheet() {
+        bottomSheetBehavior.setHideable(IsSheetHideable());
+
+        switch (DetermineMode()) {
+            case IncBus:
+            case NearStops:
+                BottomSheetSetNormalParams(65);
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                break;
+            case TrackBus:
+                BottomSheetSetNormalParams(90);
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                break;
+            default:
+                // Nothing selected yet (GPS loading screen), like after the start
+                int height = getResources().getDisplayMetrics().heightPixels / 10;
+                bottomSheetBehavior.setPeekHeight(height);
+                bottomSheetBehavior.setMaxHeight(height);
+                bottomSheetBehavior.setHideable(false);
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                break;
+        }
+    }
+
+    // Top and bottom edge of the fold in the coordinates of the root layout (tabletop posture only)
+    @Nullable
+    private int[] GetFoldPosition() {
+        Rect hinge = PostureTracker != null ? PostureTracker.GetHingeBounds() : null;
+        if (hinge == null) {
+            return null;
+        }
+
+        View root = findViewById(R.id.MainActivityViewLayout);
+        int[] location = new int[2];
+        root.getLocationInWindow(location);
+        int height = root.getHeight() > 0 ? root.getHeight() : getWindow().getDecorView().getHeight();
+
+        int top = Math.max(0, Math.min(height, hinge.top - location[1]));
+        int bottom = Math.max(top, Math.min(height, hinge.bottom - location[1]));
+        return new int[]{top, bottom};
+    }
+
+    // Position of the search bar and the bottom sheet / panel.
+    // The search view always fills the whole screen (also in the split view): the Material expand
+    // animation measures the search bar position from the search view's parent, so a search view
+    // that does not start at the parent's start edge animates to the wrong place.
+    private void UpdatePanelLayout() {
+        View root = findViewById(R.id.MainActivityViewLayout);
+        View coordinator = findViewById(R.id.coordinatorLayout);
+        View searchBarContainer = findViewById(R.id.search_bar_cont);
+
+        ConstraintLayout.LayoutParams sheetParams = (ConstraintLayout.LayoutParams) coordinator.getLayoutParams();
+        ConstraintLayout.LayoutParams barParams = (ConstraintLayout.LayoutParams) searchBarContainer.getLayoutParams();
+
+        // The sheet may use the whole width (no Material max width), in the split view its
+        // container is half of the screen
+        bottomSheetBehavior.setMaxWidth(-1);
+
+        sheetParams.setMarginStart(0);
+        sheetParams.topToBottom = ConstraintLayout.LayoutParams.UNSET;
+
+        if (CurrentLayoutMode == LayoutMode.SidePanel) {
+            // Current window width (the views may not be laid out with the new size yet)
+            int windowWidth = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(this).getBounds().width();
+            int contentWidth = Math.max(0, windowWidth - root.getPaddingLeft() - root.getPaddingRight());
+            int half = contentWidth / 2;
+
+            // Sheet on the start half, from the top (below the status bar) to the bottom
+            sheetParams.width = half;
+            sheetParams.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            sheetParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+            sheetParams.topToTop = ConstraintLayout.LayoutParams.UNSET;
+            sheetParams.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+            sheetParams.topMargin = MapTopPadding;
+
+            // Search bar on the map half
+            barParams.width = contentWidth - half;
+            barParams.startToStart = ConstraintLayout.LayoutParams.UNSET;
+            barParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+        } else {
+            barParams.width = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            barParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+            barParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+
+            sheetParams.width = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            sheetParams.startToStart = ConstraintLayout.LayoutParams.UNSET;
+
+            int[] fold = CurrentLayoutMode == LayoutMode.Tabletop ? GetFoldPosition() : null;
+
+            if (fold != null) {
+                // Tabletop: the sheet fills the whole width below the fold
+                sheetParams.height = 0;
+                sheetParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+                sheetParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+                sheetParams.topMargin = fold[1];
+            } else {
+                sheetParams.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
+                sheetParams.topToTop = ConstraintLayout.LayoutParams.UNSET;
+                sheetParams.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+                sheetParams.topMargin = MapTopPadding;
+            }
+        }
+
+        searchBarContainer.setLayoutParams(barParams);
+        coordinator.setLayoutParams(sheetParams);
+    }
+
+    public void SetBottomsheetParams() {
+        SetBottomsheetParams(bottomSheetBehavior.getState());
+    }
+
+    public void SetBottomsheetParams(int newState) {
+
+        View bottomSheet = findViewById(R.id.standard_bottom_sheet);
+        final FragmentContainerView fragmentView = findViewById(R.id.fragmentContainerView2);
+        final FloatingActionButton ScheduleButton = findViewById(R.id.ShowScheduleButton);
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+        int dp20 = Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                20,
+                displayMetrics
+        ));
+
+        ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
+        ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
+
+        int mapTop = (dp20 * 4) + MapTopPadding;
+        int[] fold = IsFixedPanel() ? GetFoldPosition() : null;
+
+        if (fold != null) {
+            // Tabletop: the sheet fills the part below the fold, the map and its buttons are above it
+            if (bottomSheet.getHeight() > 0) {
+                params.height = bottomSheet.getHeight() - BottomInset;
+            }
+
+            View map = findViewById(R.id.map);
+            int belowFold = Math.max(0, map.getBottom() - fold[0]);
+            params2.bottomMargin = belowFold + dp20;
+            SetMapPadding(mapTop, belowFold);
+        } else if (newState == BottomSheetBehavior.STATE_HALF_EXPANDED) {
+            IsBackButtonHalfExpanded = true;
+
+            params.height = Math.round(bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio());
+
+            if (IsSheetBesideMap()) {
+                SetMapPadding(mapTop, BottomInset);
+                params2.bottomMargin = dp20 + BottomInset;
+            } else {
+                SetMapPadding(mapTop, params.height);
+                params2.bottomMargin = params.height + dp20;
+            }
+
+        } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+            params.height = bottomSheet.getHeight() - BottomInset;
+
+            if (IsSheetBesideMap()) {
+                SetMapPadding(mapTop, BottomInset);
+                params2.bottomMargin = dp20 + BottomInset;
+            }
+        } else if (newState == BottomSheetBehavior.STATE_COLLAPSED || newState == BottomSheetBehavior.STATE_HIDDEN) {
+            if (IsSheetBesideMap()) {
+                SetMapPadding(mapTop, BottomInset);
+                params2.bottomMargin = dp20 + BottomInset;
+            } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                SetMapPadding(mapTop, bottomSheetBehavior.getPeekHeight() + BottomInset);
+                params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20 + BottomInset;
+            }
+        }
+
+        fragmentView.setLayoutParams(params);
+        ScheduleButton.setLayoutParams(params2);
+
+        UpdateBackCallback();
     }
 }

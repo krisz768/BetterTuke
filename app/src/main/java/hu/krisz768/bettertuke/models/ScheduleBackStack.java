@@ -4,10 +4,10 @@ public class ScheduleBackStack {
     private final String LineNum;
     private final String Direction;
     private final String Date;
-    private final int StopId;
+    private final String StopId;
     private final boolean PreSelected;
 
-    public ScheduleBackStack(String lineNum, String direction, String date, int stopId, boolean PreSelected) {
+    public ScheduleBackStack(String lineNum, String direction, String date, String stopId, boolean PreSelected) {
         LineNum = lineNum;
         Direction = direction;
         Date = date;
@@ -27,7 +27,7 @@ public class ScheduleBackStack {
         return Date;
     }
 
-    public int getStopId() {
+    public String getStopId() {
         return StopId;
     }
 

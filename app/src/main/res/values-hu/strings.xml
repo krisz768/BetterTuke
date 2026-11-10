@@ -54,8 +54,8 @@
     <string name="WifiOnBusIndicator">Wifi</string>
     <string name="DatabaseNotContain">Az adatbázis erre a napra nem tartalmaz adatokat.</string>
     <string name="DatabaseError">Hiba: Az adatbázis nem tartalmazza ezt a járatot.</string>
-    <string name="DelayStringWithSec">&#160;%1$d másodperc</string>
-    <string name="DelayStringWithSecOneSecond">&#160;%1$d másodperc</string>
+    <string name="DelayStringWithSec">&#160;%1$d másodperc, %2$d km/h</string>
+    <string name="DelayStringWithSecOneSecond">&#160;%1$d másodperc, %2$d km/h</string>
     <string name="TrackOldDataWarm">Elavult információk</string>
     <string name="AllStopButton">Összes</string>
     <string name="DisableAdMenu">Reklámok kikapcsolása</string>
@@ -81,4 +81,19 @@
     <string name="OnBoardPrevButtonDesc">Előző gomb</string>
     <string name="PrivacyButton">Adatvédelmi beállítások</string>
     <string name="PrivacySettingsNotAvailable">Nem elérhető</string>
+    <string name="UpdateReadyToInstall">Frissítés letöltve</string>
+    <string name="UpdateReadyToInstallButton">" TELEPÍTÉS"</string>
+    <string name="StopShortcutIcon">Megálló</string>
+    <string name="BusShortcutIcon">Vonal</string>
+    <string name="ActiveBuses">Aktív buszok</string>
+    <string name="InternetError">Kérlek kapcsolódj az internetre.</string>
+    <string name="BusTypeIcon">Busz típús ikon</string>
+    <string name="NearBuses">Közeli buszok:</string>
+    <string name="SwitchBusActivityTitle">Átszállási lehetőségek:</string>
+    <string name="SwitchTimeString">%1$s (%2$s perc)</string>
+    <string name="SwitchTimeStringOneMinute">%1$s (%2$s perc)</string>
+    <string name="BusLeftStop">A busz elhagyta a megállót.</string>
+    <string name="ScheduleSelectLineHint">Válassz egy járatot a menetrendhez</string>
+    <string name="ActiveBusSelectTypeHint">Válassz egy busztípust a járművek listájához</string>
+    <string name="ShortcutSelectStopHint">Válassz egy megállót a listából</string>
 </resources>

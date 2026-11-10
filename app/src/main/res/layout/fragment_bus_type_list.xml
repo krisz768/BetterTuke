@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ActiveBusFragment.BusTypeListFragment">
+
+    <TextView
+        android:id="@+id/BusTypeListTitle"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:layout_marginBottom="10dp"
+        android:text="@string/ActiveBuses"
+        android:textSize="24sp" />
+
+    <View
+        android:id="@+id/divider7"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider" />
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swiperefreshBusType"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/BusTypeListRec"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+</LinearLayout>

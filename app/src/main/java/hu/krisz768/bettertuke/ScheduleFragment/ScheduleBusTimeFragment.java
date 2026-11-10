@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,13 +39,13 @@ import java.util.TimeZone;
 
 import hu.krisz768.bettertuke.Database.BusScheduleTime;
 import hu.krisz768.bettertuke.Database.BusVariation;
-import hu.krisz768.bettertuke.Database.DatabaseManager;
 import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.InfoFragment;
+import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
+import hu.krisz768.bettertuke.NewGTFS.NewGTFSDatabase;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.ScheduleActivity;
 import hu.krisz768.bettertuke.UserDatabase.UserDatabase;
-import hu.krisz768.bettertuke.api_interface.TukeServerApi;
 
 public class ScheduleBusTimeFragment extends Fragment {
     private static final String LINENUM= "lineNum";
@@ -52,7 +53,7 @@ public class ScheduleBusTimeFragment extends Fragment {
     private static final String DIRECTION= "Direction";
     private static final String DATE= "Date";
     private String mLineNum;
-    private int mStopId;
+    private String mStopId;
     private String mDirection;
     private String mDate;
     private String SelectedDate;
@@ -83,11 +84,11 @@ public class ScheduleBusTimeFragment extends Fragment {
 
     }
 
-    public static ScheduleBusTimeFragment newInstance(String lineNum, int StopId, String Direction, String Date) {
+    public static ScheduleBusTimeFragment newInstance(String lineNum, String StopId, String Direction, String Date) {
         ScheduleBusTimeFragment fragment = new ScheduleBusTimeFragment();
         Bundle args = new Bundle();
         args.putString(LINENUM, lineNum);
-        args.putInt(STOPID, StopId);
+        args.putString(STOPID, StopId);
         args.putString(DIRECTION, Direction);
         args.putString(DATE, Date);
         fragment.setArguments(args);
@@ -99,7 +100,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mLineNum = getArguments().getString(LINENUM);
-            mStopId = getArguments().getInt(STOPID);
+            mStopId = getArguments().getString(STOPID);
             mDirection = getArguments().getString(DIRECTION);
             mDate = getArguments().getString(DATE);
         }
@@ -124,13 +125,13 @@ public class ScheduleBusTimeFragment extends Fragment {
             return view;
         }
 
-        DatabaseManager Dm = new DatabaseManager(getContext());
+        NewGTFSDatabase NDm = new NewGTFSDatabase(getContext());
 
         TextView StartPosText = view.findViewById(R.id.StartPosText);
-        if (mStopId == -1) {
+        if (mStopId.equals("-1")) {
             StartPosText.setText(getString(R.string.StartingDataFromStartingPosition));
         } else {
-            String StopName = Dm.GetStopName(mStopId);
+            String StopName = NDm.GetStopName(mStopId);
             String StopNum = HelperProvider.GetStopDirectionString(getContext(), mStopId);
             StartPosText.setText(getString(R.string.StartingDataFromStop, StopName.trim(), StopNum));
         }
@@ -140,23 +141,23 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
 
-        if (mStopId == -1) {
-            Variations = Dm.GetBusVariations(mLineNum);
+        if (mStopId.equals("-1")) {
+            Variations = NDm.GetBusVariations(mLineNum);
         } else {
-            Variations = Dm.GetBusVariationsFromStop(mLineNum, mStopId);
+            Variations = NDm.GetBusVariationsFromStop(mLineNum, mStopId);
         }
 
         boolean IsForwardWayDescTextSet = false;
         boolean IsBackWayDescTextSet = false;
         for (BusVariation variation : Variations) {
-            if (!IsForwardWayDescTextSet && variation.getDirection().equals("O")) {
+            if (!IsForwardWayDescTextSet && variation.getDirection().equals("0")) {
                 IsForwardWayDescTextSet = true;
                 WayDescStringForward = variation.getName();
                 if (SelectedWay.equals("O")) {
                     DescText.setText(variation.getName());
                 }
             }
-            if (!IsBackWayDescTextSet && !variation.getDirection().equals("O")) {
+            if (!IsBackWayDescTextSet && !variation.getDirection().equals("0")) {
                 IsBackWayDescTextSet = true;
                 WayDescStringBackwards = variation.getName();
                 if (!SelectedWay.equals("O")) {
@@ -169,12 +170,12 @@ public class ScheduleBusTimeFragment extends Fragment {
             TwoWay = true;
         }
 
-        if (!IsForwardWayDescTextSet && IsBackWayDescTextSet) {
-            DescText.setText(WayDescStringBackwards);
-            SelectedWay = "V";
+        if (IsForwardWayDescTextSet && !IsBackWayDescTextSet) {
+            DescText.setText(WayDescStringForward);
+            SelectedWay = "O";
         }
 
-        if (mStopId != -1 && !TwoWay) {
+        if (!mStopId.equals("-1") && !TwoWay) {
             BusLineTimeDirectionIcon.setVisibility(View.GONE);
         }
 
@@ -199,7 +200,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         });
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy. MM. dd.", Locale.US);
-        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyyMMdd", Locale.US);
         Date date = new Date();
         try {
             date = formatter2.parse(SelectedDate);
@@ -239,7 +240,25 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         ReloadSchedules(view);
 
+        // The number of minutes per row depends on the width of this pane, which changes e.g. when
+        // a foldable is folded / unfolded or the two-pane layout is toggled
+        view.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (right - left != oldRight - oldLeft) {
+                v.post(this::UpdateMaxPerLine);
+            }
+        });
+
         return view;
+    }
+
+    // Width available for the schedule: the width of this fragment (it may be only one pane of the
+    // screen), or the window width before the first layout
+    private int GetAvailableWidth(DisplayMetrics displayMetrics) {
+        View view = getView();
+        if (view != null && view.getWidth() > 0) {
+            return view.getWidth();
+        }
+        return displayMetrics.widthPixels;
     }
 
     @Override
@@ -257,7 +276,7 @@ public class ScheduleBusTimeFragment extends Fragment {
             return;
         }
 
-        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+        getContext().getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
         int colorPrimary = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
@@ -281,7 +300,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondaryContainer, typedValue, true);
         colorOnSecContainer = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
-        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorError, typedValue, true);
+        getContext().getTheme().resolveAttribute(android.R.attr.colorError, typedValue, true);
         int colorErr = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnError, typedValue, true);
@@ -352,7 +371,7 @@ public class ScheduleBusTimeFragment extends Fragment {
     }
 
     private void ShowDatePicker() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date date = new Date();
         try {
@@ -364,7 +383,7 @@ public class ScheduleBusTimeFragment extends Fragment {
         assert date != null;
         MaterialDatePicker<Long> DatePicker = MaterialDatePicker.Builder.datePicker().setTitleText(getString(R.string.SelectDate)).setSelection(date.getTime()).build();
         DatePicker.addOnPositiveButtonClickListener(selection -> {
-            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd", Locale.US);
             sdf1.setTimeZone(TimeZone.getTimeZone("UTC"));
             SelectedDate = sdf1.format(new Date(selection));
 
@@ -388,7 +407,7 @@ public class ScheduleBusTimeFragment extends Fragment {
             if (getContext() == null) {
                 return;
             }
-            DatabaseManager Dm = new DatabaseManager(getContext());
+            NewGTFSDatabase NDm = new NewGTFSDatabase(getContext());
 
             ScheduleActivity scheduleActivity = (ScheduleActivity) getActivity();
             if (scheduleActivity == null) {
@@ -397,22 +416,22 @@ public class ScheduleBusTimeFragment extends Fragment {
 
             scheduleActivity.runOnUiThread(() -> {
                 ImageView BusLineTimeDirectionIcon = view.findViewById(R.id.BusLineTimeDirectionIcon);
-                if (TwoWay && SelectedWay.equals("O")) {
+                if (TwoWay && SelectedWay.equals("V")) {
                     BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionForward));
-                } else if (TwoWay && SelectedWay.equals("V")){
+                } else if (TwoWay && SelectedWay.equals("O")){
                     BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionBackwards));
                 } else {
                     BusLineTimeDirectionIcon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.DirectionOneWay));
                 }
             });
 
-            if (mStopId == -1) {
-                CurrentLines = Dm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
+            if (mStopId.equals("-1")) {
+                CurrentLines = NDm.GetBusScheduleTimeFromStart(mLineNum, SelectedDate, SelectedWay);
             } else {
-                CurrentLines = Dm.GetBusScheduleTimeFromStop(mLineNum, SelectedDate, SelectedWay, mStopId);
+                CurrentLines = NDm.GetBusScheduleTimeFromStop(mLineNum, SelectedDate, SelectedWay, mStopId);
 
                 for (BusScheduleTime busScheduleTime : CurrentLines) {
-                    int StopDelta = Dm.GetBusLineStopTravelTimeById(Integer.toString(busScheduleTime.getLineId()), mStopId);
+                    int StopDelta = NDm.GetBusLineStopTravelTimeById(busScheduleTime.getLineId(), mStopId);
                     busScheduleTime.AdjustToStop(StopDelta);
                 }
             }
@@ -422,7 +441,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
                         try {
-                            if (Dm.GetBusDatabaseValidDate(SelectedDate)) {
+                            if (NDm.GetBusDatabaseValidDate(SelectedDate)) {
                                 InfoFragment Fragment = InfoFragment.newInstance(getResources().getString(R.string.EmptySchedule), -1);
 
                                 getChildFragmentManager().beginTransaction()
@@ -510,7 +529,6 @@ public class ScheduleBusTimeFragment extends Fragment {
 
             DisplayMetrics displayMetrics = new DisplayMetrics();
             scheduleActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            int width = displayMetrics.widthPixels;
 
             int ndp = Math.round(TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP,
@@ -530,6 +548,9 @@ public class ScheduleBusTimeFragment extends Fragment {
                 SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
 
                 if (Sbta == null) {
+                    // Read on the main thread: the width of the pane this fragment is in
+                    int width = GetAvailableWidth(displayMetrics);
+
                     swipeRefreshLayout.setVisibility(View.VISIBLE);
 
                     FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
@@ -547,7 +568,7 @@ public class ScheduleBusTimeFragment extends Fragment {
                     new Thread(() -> scheduleActivity.runOnUiThread(() -> ScrollToCurrentHour(view))).start();
                 }
 
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
                 Date date = new Date();
                 if (SelectedDate.equals(formatter.format(date))) {
                     GetLiveData(CurrentLines);
@@ -561,7 +582,7 @@ public class ScheduleBusTimeFragment extends Fragment {
     private void ScrollToCurrentHour(View view) {
         Calendar Now = Calendar.getInstance();
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US);
         Date date = new Date();
 
         if (getContext() == null) {
@@ -617,10 +638,10 @@ public class ScheduleBusTimeFragment extends Fragment {
             List<BusScheduleTime> ErrNotStartedList = new ArrayList<>();
 
             for (BusScheduleTime busScheduleTime : Lines) {
-                if (mStopId == -1) {
+                if (mStopId.equals("-1")) {
                     if ((busScheduleTime.getHour() == CurrentHour && CurrentMinute >= busScheduleTime.getMinute()) || busScheduleTime.getHour() + 1 == CurrentHour || busScheduleTime.getHour() + 2 == CurrentHour) {
-                        TukeServerApi tukeServerApi = new TukeServerApi(ctx);
-                        Boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
+                        GTFSRProvider GTFSRProvider_ = new GTFSRProvider(ctx);
+                        Boolean IsStarted = GTFSRProvider_.getIsBusHasStarted(busScheduleTime.getLineId());
                         if (IsStarted == null){
                             if(HelperProvider.displayOfflineText()){
                                 Activity activity = getActivity();
@@ -629,14 +650,13 @@ public class ScheduleBusTimeFragment extends Fragment {
                                 }
                                 HelperProvider.setOfflineTextDisplayed();
                             }
-                            continue;
                         }
 
-                        if (IsStarted) {
+                        if (IsStarted != null && IsStarted) {
                             StartedList.add(busScheduleTime);
                         } else {
-                            DatabaseManager Dm = new DatabaseManager(ctx);
-                            int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(Integer.toString(busScheduleTime.getLineId()));
+                            NewGTFSDatabase NDm = new NewGTFSDatabase(ctx);
+                            int TravelTimeMin = NDm.GetBusLineSumTravelTimeById(busScheduleTime.getLineId());
 
                             Calendar calendar = Calendar.getInstance();
                             calendar.setTime(new Date());
@@ -652,8 +672,8 @@ public class ScheduleBusTimeFragment extends Fragment {
                     }
                 } else {
                     if (busScheduleTime.getHour() == CurrentHour || busScheduleTime.getHour() + 1 == CurrentHour || busScheduleTime.getHour() - 1 == CurrentHour) {
-                        TukeServerApi tukeServerApi = new TukeServerApi(ctx);
-                        Boolean IsStarted = tukeServerApi.getIsBusHasStarted(busScheduleTime.getLineId());
+                        GTFSRProvider GTFSRProvider_ = new GTFSRProvider(ctx);
+                        Boolean IsStarted = GTFSRProvider_.getIsBusHasStarted(busScheduleTime.getLineId());
                         if (IsStarted == null){
                             if(HelperProvider.displayOfflineText()){
                                 Activity activity = getActivity();
@@ -662,7 +682,6 @@ public class ScheduleBusTimeFragment extends Fragment {
                                 }
                                 HelperProvider.setOfflineTextDisplayed();
                             }
-                            continue;
                         }
 
                         Calendar calendar = Calendar.getInstance();
@@ -670,17 +689,17 @@ public class ScheduleBusTimeFragment extends Fragment {
                         calendar.set(Calendar.HOUR_OF_DAY, busScheduleTime.getHour());
                         calendar.set(Calendar.MINUTE, busScheduleTime.getMinute());
 
-                        DatabaseManager Dm = new DatabaseManager(ctx);
-                        int StopDelta = Dm.GetBusLineStopTravelTimeById(Integer.toString(busScheduleTime.getLineId()), mStopId);
+                        NewGTFSDatabase NDm = new NewGTFSDatabase(ctx);
+
+                        int StopDelta = NDm.GetBusLineStopTravelTimeById(busScheduleTime.getLineId(), mStopId);
                         calendar.add(Calendar.MINUTE, StopDelta * -1);
 
-                        if (IsStarted) {
+                        if (IsStarted != null && IsStarted) {
                             if (((calendar.get(Calendar.HOUR_OF_DAY) == CurrentHour && CurrentMinute >= calendar.get(Calendar.MINUTE) || calendar.get(Calendar.HOUR_OF_DAY) + 1 == CurrentHour || calendar.get(Calendar.HOUR_OF_DAY) + 2 == CurrentHour))) {
                                 StartedList.add(busScheduleTime);
                             }
                         } else {
-
-                            int TravelTimeMin = Dm.GetBusLineSumTravelTimeById(Integer.toString(busScheduleTime.getLineId()));
+                            int TravelTimeMin = NDm.GetBusLineSumTravelTimeById(busScheduleTime.getLineId());
                             Calendar calendar1 = (Calendar) calendar.clone();
                             calendar1.add(Calendar.MINUTE, TravelTimeMin - 2);
 
@@ -764,7 +783,7 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int width = displayMetrics.widthPixels;
+        int width = GetAvailableWidth(displayMetrics);
 
         int ndp = Math.round(TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,

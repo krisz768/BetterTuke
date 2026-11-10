@@ -61,6 +61,18 @@ public class IncomingBusListFragment extends Fragment {
         Recv.setLayoutManager(mLayoutManager);
         Recv.setAdapter(Ibla);
 
+        /*ViewCompat.setOnApplyWindowInsetsListener(view, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Recv.setPadding(
+                    Recv.getPaddingLeft(),
+                    Recv.getPaddingTop(),
+                    Recv.getPaddingRight(),
+                    insets.bottom
+            );
+
+            return windowInsets;
+        });*/
+
         return view;
     }
 
@@ -72,7 +84,7 @@ public class IncomingBusListFragment extends Fragment {
         }
     }
 
-    public void OnBusClick(int Id, String Date) {
+    public void OnBusClick(String Id, String Date) {
         if (getActivity() != null) {
             ((MainActivity)getActivity()).TrackBus(Id, Date);
         }

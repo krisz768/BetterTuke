@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
@@ -25,13 +26,15 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Objects;
 
 import hu.krisz768.bettertuke.Gtfs.GTFSDatabase;
 import hu.krisz768.bettertuke.models.BusAttributes;
 
 public class HelperProvider {
-    private static final Bitmap[] BitmapContainer = new Bitmap[30];
+    private static final Bitmap[] BitmapContainer = new Bitmap[31];
+    private static final HashMap<String, Bitmap> BusBitmapContainer = new HashMap<>();
     private static JSONObject BusAttributes;
     private static boolean IsOfflineTextDisplayed = false;
     public static boolean displayOfflineText() {
@@ -51,41 +54,43 @@ public class HelperProvider {
     }
 
     public static void RenderAllBitmap(Context ctx) {
-        BitmapContainer[0] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus_stop1, com.google.android.material.R.attr.colorOnPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bus_stop, com.google.android.material.R.attr.colorPrimary, ctx, true));
+        BitmapContainer[0] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus_stop1, com.google.android.material.R.attr.colorOnPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bus_stop, android.R.attr.colorPrimary, ctx, true));
         BitmapContainer[1] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus_stop1, com.google.android.material.R.attr.colorOnPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bus_stop, com.google.android.material.R.attr.colorOutline, ctx, true));
         BitmapContainer[2] = HelperProvider.BitmapFromVector(R.drawable.bus_marker_small, com.google.android.material.R.attr.colorOutline, ctx, true);
         BitmapContainer[3] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus_place_pointer1, com.google.android.material.R.attr.colorOnPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bus_place_pointer, com.google.android.material.R.attr.colorOutline, ctx, true));
-        BitmapContainer[4] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus1, com.google.android.material.R.attr.colorPrimary, ctx, true),HelperProvider.BitmapFromVector(R.drawable.bus_small, com.google.android.material.R.attr.colorOnPrimary, ctx, false));
+        BitmapContainer[4] = overlay(HelperProvider.BitmapFromVector(R.drawable.bus1, android.R.attr.colorPrimary, ctx, true),HelperProvider.BitmapFromVector(R.drawable.bus_small, com.google.android.material.R.attr.colorOnPrimary, ctx, false));
 
         BitmapContainer[5] = HelperProvider.BitmapFromVector(R.drawable.bustrack_start_end, com.google.android.material.R.attr.colorOutline, ctx, false);
-        BitmapContainer[6] = overlay(HelperProvider.BitmapFromVector(R.drawable.bustrack_starthalf_1, com.google.android.material.R.attr.colorPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bustrack_half_1, com.google.android.material.R.attr.colorOutline, ctx, false));
-        BitmapContainer[7] = HelperProvider.BitmapFromVector(R.drawable.bustrack_startfull, com.google.android.material.R.attr.colorPrimary, ctx, false);
+        BitmapContainer[6] = overlay(HelperProvider.BitmapFromVector(R.drawable.bustrack_starthalf_1, android.R.attr.colorPrimary, ctx, false), HelperProvider.BitmapFromVector(R.drawable.bustrack_half_1, com.google.android.material.R.attr.colorOutline, ctx, false));
+        BitmapContainer[7] = HelperProvider.BitmapFromVector(R.drawable.bustrack_startfull, android.R.attr.colorPrimary, ctx, false);
 
         BitmapContainer[8] = HelperProvider.BitmapFromVector(R.drawable.bustrack_empty, com.google.android.material.R.attr.colorOutline, ctx, false);
-        BitmapContainer[9] = overlay(HelperProvider.BitmapFromVector(R.drawable.bustrack_half, com.google.android.material.R.attr.colorPrimary, ctx, false),HelperProvider.BitmapFromVector(R.drawable.bustrack_half_1, com.google.android.material.R.attr.colorOutline, ctx, false));
-        BitmapContainer[10] = HelperProvider.BitmapFromVector(R.drawable.bustrack_full, com.google.android.material.R.attr.colorPrimary, ctx, false);
-        BitmapContainer[11] = overlay(HelperProvider.BitmapFromVector(R.drawable.bustrack_start_end, com.google.android.material.R.attr.colorOutline, ctx, false),HelperProvider.BitmapFromVector(R.drawable.bustrack_empty_incom, com.google.android.material.R.attr.colorPrimary, ctx, false));
+        BitmapContainer[9] = overlay(HelperProvider.BitmapFromVector(R.drawable.bustrack_half, android.R.attr.colorPrimary, ctx, false),HelperProvider.BitmapFromVector(R.drawable.bustrack_half_1, com.google.android.material.R.attr.colorOutline, ctx, false));
+        BitmapContainer[10] = HelperProvider.BitmapFromVector(R.drawable.bustrack_full, android.R.attr.colorPrimary, ctx, false);
+        BitmapContainer[11] = overlay(HelperProvider.BitmapFromVector(R.drawable.bustrack_start_end, com.google.android.material.R.attr.colorOutline, ctx, false),HelperProvider.BitmapFromVector(R.drawable.bustrack_empty_incom, android.R.attr.colorPrimary, ctx, false));
 
         BitmapContainer[12] = createFlippedBitmap(HelperProvider.BitmapFromVector(R.drawable.bustrack_start_end, com.google.android.material.R.attr.colorOutline, ctx, false), false, true);
-        BitmapContainer[13] = overlay(HelperProvider.BitmapFromVector(R.drawable.bustrack_end_inc, com.google.android.material.R.attr.colorOutline, ctx, false),HelperProvider.BitmapFromVector(R.drawable.bustrack_empty_incom, com.google.android.material.R.attr.colorPrimary, ctx, false));
-        BitmapContainer[14] = HelperProvider.BitmapFromVector(R.drawable.bustrack_half, com.google.android.material.R.attr.colorPrimary, ctx, false);
-        BitmapContainer[15] = HelperProvider.BitmapFromVector(R.drawable.bustrack_full, com.google.android.material.R.attr.colorPrimary, ctx, false);
+        BitmapContainer[13] = overlay(HelperProvider.BitmapFromVector(R.drawable.bustrack_end_inc, com.google.android.material.R.attr.colorOutline, ctx, false),HelperProvider.BitmapFromVector(R.drawable.bustrack_empty_incom, android.R.attr.colorPrimary, ctx, false));
+        BitmapContainer[14] = HelperProvider.BitmapFromVector(R.drawable.bustrack_half, android.R.attr.colorPrimary, ctx, false);
+        BitmapContainer[15] = HelperProvider.BitmapFromVector(R.drawable.bustrack_full, android.R.attr.colorPrimary, ctx, false);
 
-        BitmapContainer[16] = HelperProvider.BitmapFromVector(R.drawable.electric,com.google.android.material.R.attr.colorPrimary,ctx,false);
-        BitmapContainer[17] = HelperProvider.BitmapFromVector(R.drawable.lowfloor,com.google.android.material.R.attr.colorPrimary,ctx,false);
-        BitmapContainer[18] = HelperProvider.BitmapFromVector(R.drawable.airconditioner,com.google.android.material.R.attr.colorPrimary,ctx,false);
-        BitmapContainer[19] = HelperProvider.BitmapFromVector(R.drawable.wifi,com.google.android.material.R.attr.colorPrimary,ctx,false);
-        BitmapContainer[20] = HelperProvider.BitmapFromVector(R.drawable.usb,com.google.android.material.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[16] = HelperProvider.BitmapFromVector(R.drawable.electric,android.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[17] = HelperProvider.BitmapFromVector(R.drawable.lowfloor,android.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[18] = HelperProvider.BitmapFromVector(R.drawable.airconditioner,android.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[19] = HelperProvider.BitmapFromVector(R.drawable.wifi,android.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[20] = HelperProvider.BitmapFromVector(R.drawable.usb,android.R.attr.colorPrimary,ctx,false);
 
         BitmapContainer[21] = HelperProvider.BitmapFromVector(R.drawable.favicon_01,com.google.android.material.R.attr.colorOutline,ctx,false);
-        BitmapContainer[22] = HelperProvider.BitmapFromVector(R.drawable.favicon_full_01,com.google.android.material.R.attr.colorPrimary,ctx,false);
-        BitmapContainer[23] = overlay(HelperProvider.BitmapFromVector(R.drawable.directionforwardarrow_01,com.google.android.material.R.attr.colorPrimary,ctx,false),HelperProvider.BitmapFromVector(R.drawable.directionbackwardsarrow_01,com.google.android.material.R.attr.colorOutline,ctx,false));
-        BitmapContainer[24] = overlay(HelperProvider.BitmapFromVector(R.drawable.directionforwardarrow_01,com.google.android.material.R.attr.colorOutline,ctx,false),HelperProvider.BitmapFromVector(R.drawable.directionbackwardsarrow_01,com.google.android.material.R.attr.colorPrimary,ctx,false));
-        BitmapContainer[25] = HelperProvider.BitmapFromVector(R.drawable.direction1wayarrow,com.google.android.material.R.attr.colorPrimary,ctx,false);
-        BitmapContainer[26] = HelperProvider.BitmapFromVector(R.drawable.location_pinpoint,com.google.android.material.R.attr.colorPrimary,ctx,true);
-        BitmapContainer[27] = HelperProvider.BitmapFromVector(R.drawable.navigation,com.google.android.material.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[22] = HelperProvider.BitmapFromVector(R.drawable.favicon_full_01,android.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[23] = overlay(HelperProvider.BitmapFromVector(R.drawable.directionforwardarrow_01,android.R.attr.colorPrimary,ctx,false),HelperProvider.BitmapFromVector(R.drawable.directionbackwardsarrow_01,com.google.android.material.R.attr.colorOutline,ctx,false));
+        BitmapContainer[24] = overlay(HelperProvider.BitmapFromVector(R.drawable.directionforwardarrow_01,com.google.android.material.R.attr.colorOutline,ctx,false),HelperProvider.BitmapFromVector(R.drawable.directionbackwardsarrow_01,android.R.attr.colorPrimary,ctx,false));
+        BitmapContainer[25] = HelperProvider.BitmapFromVector(R.drawable.direction1wayarrow,android.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[26] = HelperProvider.BitmapFromVector(R.drawable.location_pinpoint,android.R.attr.colorPrimary,ctx,true);
+        BitmapContainer[27] = HelperProvider.BitmapFromVector(R.drawable.navigation,android.R.attr.colorPrimary,ctx,false);
         BitmapContainer[28] = HelperProvider.BitmapFromVector(R.drawable.date,com.google.android.material.R.attr.colorOutline,ctx,false);
-        BitmapContainer[29] = HelperProvider.BitmapFromVector(R.drawable.date,com.google.android.material.R.attr.colorPrimary,ctx,false);
+        BitmapContainer[29] = HelperProvider.BitmapFromVector(R.drawable.date,android.R.attr.colorPrimary,ctx,false);
+
+        BitmapContainer[30] = HelperProvider.BitmapFromVector(R.drawable.all_bus_small_label, android.R.attr.colorPrimary, ctx, true);
     }
 
     @NonNull
@@ -149,9 +154,24 @@ public class HelperProvider {
                 return BitmapContainer[28];
             case DateSelectActive:
                 return BitmapContainer[29];
+            case AllBusSmallLabel:
+                return BitmapContainer[30];
             case MapStopSelected:
             default:
                 return BitmapContainer[0];
+        }
+    }
+
+    public static Bitmap GetBusBitmap(String TripId, String num, Context ctx) {
+        if (BusBitmapContainer.containsKey(TripId)) {
+            return BusBitmapContainer.get(TripId);
+        } else {
+            Bitmap newBitmap = overlayToBottom(HelperProvider.BitmapFromVector(R.drawable.bus_marker_label, android.R.attr.colorPrimary, ctx, true),HelperProvider.BitmapFromVector(R.drawable.bus_small, com.google.android.material.R.attr.colorOnPrimary, ctx, false));
+
+            newBitmap = AddBusNum(newBitmap, num, ctx);
+            BusBitmapContainer.put(TripId, newBitmap);
+
+            return newBitmap;
         }
     }
 
@@ -185,7 +205,8 @@ public class HelperProvider {
         LocationPin,
         Navigation,
         DateSelectInactive,
-        DateSelectActive
+        DateSelectActive,
+        AllBusSmallLabel
     }
 
     private static Bitmap overlay(Bitmap bmp1, Bitmap bmp2) {
@@ -196,6 +217,40 @@ public class HelperProvider {
         bmp1.recycle();
         bmp2.recycle();
         return bmOverlay;
+    }
+
+    private static Bitmap overlayToBottom(Bitmap bmp1, Bitmap bmp2) {
+        Bitmap bmOverlay = Bitmap.createBitmap(bmp1.getWidth(), bmp1.getHeight(), bmp1.getConfig());
+        Canvas canvas = new Canvas(bmOverlay);
+        canvas.drawBitmap(bmp1, new Matrix(), null);
+        canvas.drawBitmap(bmp2, (bmp1.getWidth() - bmp2.getWidth())/2, bmp1.getHeight() - bmp2.getHeight(), null);
+        bmp1.recycle();
+        bmp2.recycle();
+        return bmOverlay;
+    }
+
+    private static Bitmap AddBusNum(Bitmap bmp, String num, Context ctx) {
+        Bitmap newBitmap = Bitmap.createBitmap(bmp);
+        Canvas canvas = new Canvas(newBitmap);
+        Paint paint = new Paint();
+
+        TypedValue typedValue = new TypedValue();
+        ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
+
+        int color = ContextCompat.getColor(ctx, typedValue.resourceId);
+
+        paint.setColor(color);
+        paint.setTextAlign(Paint.Align.CENTER);
+
+        double relation = Math.sqrt(canvas.getWidth() * canvas.getHeight());
+        relation = relation / 250;
+
+        paint.setTextSize((float) (relation*80));
+        paint.setFakeBoldText(true);
+        canvas.drawText(num, canvas.getWidth()/2, (float)( canvas.getHeight()/4.2), paint);
+
+        bmp.recycle();
+        return newBitmap;
     }
 
     private static Bitmap BitmapFromVector(int vectorResId, int ColorResId, Context ctx, boolean shadow) {
@@ -212,7 +267,6 @@ public class HelperProvider {
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
 
         Canvas canvas = new Canvas(bitmap);
-
         vectorDrawable.draw(canvas);
 
         if (shadow) {
@@ -262,7 +316,7 @@ public class HelperProvider {
 
     public static String GetMapTheme(Context ctx) {
         TypedValue typedValue = new TypedValue();
-        ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+        ctx.getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
         String PrimaryColor = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
 
         ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryContainer, typedValue, true);
@@ -280,14 +334,14 @@ public class HelperProvider {
         ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurfaceInverse, typedValue, true);
         String OnSurfaceVariant = String.format("#%06X", (0xFFFFFF & ContextCompat.getColor(ctx, typedValue.resourceId)));
 
-        ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+        ctx.getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
         int waterColor = MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#3299a8"));
         String WaterColor = String.format("#%06X", (0xFFFFFF & waterColor));
 
         int railColor = MaterialColors.harmonizeWithPrimary(ctx, Color.parseColor("#8d8e8f"));
         String RailColor = String.format("#%06X", (0xFFFFFF & railColor));
 
-        ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true);
+        ctx.getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
 
         int highwayStroke = MaterialColors.getColorRoles(ctx,ContextCompat.getColor(ctx, typedValue.resourceId)).getOnAccent();
         String HighwayStroke = String.format("#%06X", (0xFFFFFF & highwayStroke));
@@ -547,12 +601,17 @@ public class HelperProvider {
         return oneBusAttributes;
     }
 
-    public static String GetStopDirectionString(Context ctx, int id) {
+    public static String GetStopDirectionString(Context ctx, String id) {
+        //NewGTFSDatabase gtfsDatabase = new NewGTFSDatabase(ctx);
         GTFSDatabase gtfsDatabase = new GTFSDatabase(ctx);
         String name = gtfsDatabase.GetStopName(id);
+
         if (name == null) {
             return "-";
         }
+
+        Log.e("TESZTETTET", id);
+        
         return name;
     }
 }

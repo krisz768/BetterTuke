@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UpdateAndOnboarding">
+    tools:context=".UpdateAndOnboarding"
+    android:id="@+id/main">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/updateOnBoardFragmentContainer"
