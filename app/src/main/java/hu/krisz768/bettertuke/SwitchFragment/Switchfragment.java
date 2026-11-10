@@ -92,8 +92,8 @@ public class Switchfragment extends Fragment {
             Date = getArguments().getString(ARG_PARAM3);
         }
 
-        mPlaceList = MainActivity.busPlaces;
-        mStopList = MainActivity.busStops;
+        mPlaceList = MainActivity.GetBusPlaces(requireContext());
+        mStopList = MainActivity.GetBusStops(requireContext());
     }
 
     @Override

@@ -3,7 +3,7 @@ package hu.krisz768.bettertuke;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
+import android.content.res.Configuration;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -11,7 +11,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import androidx.activity.EdgeToEdge;
-import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.pm.ShortcutInfoCompat;
 import androidx.core.content.pm.ShortcutManagerCompat;
@@ -42,7 +42,6 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
     private int FavPlaceCount;
     private BusPlaces[] searchedList;
     private int searchedFavPlaceCount;
-    private Parcelable ScrollState = null;
 
     private BusStops[] selectedBusStops;
     private int selectedBusFavStopCount;
@@ -50,9 +49,12 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
     HashMap<Integer, BusPlaces> busPlaces;
     HashMap<String, BusStops> busStops;
 
-    boolean StopClicked = false;
+    // Place whose stops are shown in the detail pane, -1 if none
+    private int SelectedPlaceId = -1;
 
-    private RecyclerView.LayoutManager mLayoutManager;
+    // Place list | stops of the selected place. Side by side on large screens, on phones the stops
+    // are shown above the list and back (with predictive animation) returns to the list.
+    private ListDetailController Panes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,18 +64,21 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
         HelperProvider.RenderAllBitmap(this);
 
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_stop_shortcut_creator);
+        setContentView(R.layout.activity_stop_shortcut_list_detail);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        SetupBackButton();
+        Panes = new ListDetailController(this, findViewById(R.id.StopShortcutListPane), findViewById(R.id.StopShortcutDetailPane), findViewById(R.id.StopShortcutDivider), this::OnDetailClosed);
+        Panes.SetOnLayoutModeChangedListener(this::UpdateSelection);
 
         RecyclerView recyclerView = findViewById(R.id.StopShortcutRec);
-        mLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        RecyclerView stopRecyclerView = findViewById(R.id.StopShortcutStopRec);
+        stopRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         GetStopPlaces();
         ListPlaces();
@@ -138,16 +143,41 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
     private void ListPlaces() {
         RecyclerView recyclerView = findViewById(R.id.StopShortcutRec);
 
-        if (StopClicked) {
-            StopShortcodeSubListAdapter BusStopList = new StopShortcodeSubListAdapter(selectedBusStops, this, selectedBusFavStopCount);
-            recyclerView.setAdapter(BusStopList);
-        } else {
-            BusPlaces[] Data = searchedList == null ? busPlacesList : searchedList;
-            int FavCount = searchedList == null ? FavPlaceCount : searchedFavPlaceCount;
+        BusPlaces[] Data = searchedList == null ? busPlacesList : searchedList;
+        int FavCount = searchedList == null ? FavPlaceCount : searchedFavPlaceCount;
 
-            StopShortcutMainListAdapter BusStopList = new StopShortcutMainListAdapter(Data, this, FavCount);
-            recyclerView.setAdapter(BusStopList);
+        StopShortcutMainListAdapter BusStopList = new StopShortcutMainListAdapter(Data, this, FavCount);
+        recyclerView.setAdapter(BusStopList);
+    }
+
+    // Place highlighted in the list: only in two-pane mode, where the list and its stops are both visible
+    public int GetHighlightedPlaceId() {
+        return Panes.IsMultiPane() ? SelectedPlaceId : -1;
+    }
+
+    private void UpdateSelection() {
+        findViewById(R.id.StopShortcutDetailPlaceholder).setVisibility(SelectedPlaceId == -1 ? View.VISIBLE : View.GONE);
+
+        RecyclerView recyclerView = findViewById(R.id.StopShortcutRec);
+        if (recyclerView.getAdapter() != null) {
+            recyclerView.getAdapter().notifyItemRangeChanged(0, recyclerView.getAdapter().getItemCount());
         }
+    }
+
+    // The stops were closed with back on a phone
+    private void OnDetailClosed() {
+        SelectedPlaceId = -1;
+        ((RecyclerView) findViewById(R.id.StopShortcutStopRec)).setAdapter(null);
+        UpdateSelection();
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // E.g. folding / unfolding: rearrange the panes, the lists are kept
+        Panes.OnConfigurationChanged(newConfig);
+        UpdateSelection();
     }
 
     private void OnSearch(String input) {
@@ -197,13 +227,7 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
             inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         }
 
-        mLayoutManager.onSaveInstanceState();
-
-        ScrollState = mLayoutManager.onSaveInstanceState();
-
-        StopClicked = true;
-
-        findViewById(R.id.StopShortcutSearch).setVisibility(View.GONE);
+        SelectedPlaceId = PlaceId;
 
         List<BusStops> ResultsList = new ArrayList<>();
         for (BusStops mStop : busStops.values()) {
@@ -229,7 +253,12 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
 
         selectedBusFavStopCount = FavNearBusStopsList.size();
 
-        ListPlaces();
+        RecyclerView stopRecyclerView = findViewById(R.id.StopShortcutStopRec);
+        stopRecyclerView.setAdapter(new StopShortcodeSubListAdapter(selectedBusStops, this, selectedBusFavStopCount));
+        stopRecyclerView.scrollToPosition(0);
+
+        Panes.ShowDetail(true);
+        UpdateSelection();
     }
 
     public void OnStopClick(String Id) {
@@ -256,23 +285,5 @@ public class StopShortcutCreatorActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT < 31) {
             setTheme(R.style.DefaultPre12);
         }
-    }
-
-    private void SetupBackButton() {
-        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                if (StopClicked) {
-                    findViewById(R.id.StopShortcutSearch).setVisibility(View.VISIBLE);
-                    StopClicked = false;
-                    ListPlaces();
-                    mLayoutManager.onRestoreInstanceState(ScrollState);
-                } else {
-                    finish();
-                }
-            }
-        };
-
-        getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
     }
 }

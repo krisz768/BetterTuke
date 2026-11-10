@@ -73,6 +73,29 @@ public class BusTypeRouteListFragment extends Fragment {
         return view;
     }
 
+    public void UpdateData(ActiveBusTypeRespModel Data) {
+        mData = Data;
+        if (getArguments() != null) {
+            getArguments().putSerializable(ARG_DATA, Data);
+        }
+
+        View view = getView();
+        if (view != null) {
+            ((TextView) view.findViewById(R.id.BusTypeListTitle)).setText(mData.getBusTypeName());
+            RecyclerView Recv = view.findViewById(R.id.BusTypeListRec);
+            Recv.setAdapter(new BusTypeRouteListAdapter(mData, this));
+        }
+
+        StopRefreshing();
+    }
+
+    public void StopRefreshing() {
+        View view = getView();
+        if (view != null) {
+            ((SwipeRefreshLayout) view.findViewById(R.id.swiperefreshBusType)).setRefreshing(false);
+        }
+    }
+
     public void OnBusClick(String TripID) {
         Activity activity = getActivity();
         if (activity != null) {

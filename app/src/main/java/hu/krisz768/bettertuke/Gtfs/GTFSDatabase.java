@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -119,6 +120,38 @@ public class GTFSDatabase {
         }
     }
 
+    // Indexes for the columns the queries filter / join on, see NewGTFSDatabase.CreateIndexes
+    public void CreateIndexes() {
+        try {
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_stop_times_trip ON stop_times (trip_id, stop_sequence);");
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_stop_times_stop ON stop_times (stop_id);");
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_trips_block ON trips (block_id);");
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_calendar_dates_service ON calendar_dates (service_id);");
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_shapes_shape ON shapes (shape_id);");
+        } catch (Exception e) {
+            log(e.toString());
+        }
+    }
+
+    // Coordinates of all stops by stop id, in one query (instead of one query per stop)
+    public HashMap<Long, float[]> GetAllStopCoords() {
+        HashMap<Long, float[]> coords = new HashMap<>();
+        try {
+            Cursor cursor = Sld.rawQuery("SELECT stop_id, stop_lat, stop_lon FROM stops;", null);
+            while (cursor.moveToNext()) {
+                float latitude = cursor.getFloat(1);
+                float longitude = cursor.getFloat(2);
+                if (latitude != 0 && longitude != 0) {
+                    coords.put(cursor.getLong(0), new float[]{latitude, longitude});
+                }
+            }
+            cursor.close();
+        } catch (Exception e) {
+            log(e.toString());
+        }
+        return coords;
+    }
+
     public void UpdateStopCoords (BusStops BusStop) {
         try
         {
@@ -146,7 +179,15 @@ public class GTFSDatabase {
     public static void DeleteDatabase(Context Ctx) {
         File Database = new File(Ctx.getFilesDir() + "/Database", "GTFS.db");
         try {
-            Database.delete();
+            // Close the shared connection, otherwise it would keep using the deleted file, and
+            // delete the journal / write-ahead log files with the database
+            synchronized (GTFSDatabase.class) {
+                if (Sld != null) {
+                    Sld.close();
+                    Sld = null;
+                }
+            }
+            SQLiteDatabase.deleteDatabase(Database);
         } catch (Exception e) {
             Log.e("DatabaseManager", e.toString());
         }
@@ -155,9 +196,11 @@ public class GTFSDatabase {
     public GTFSDatabase (Context Ctx) {
         String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "GTFS.db")).getAbsolutePath();
 
-        if (Sld == null) {
-            GTFSDatabaseHelper Dbh = new GTFSDatabaseHelper(Ctx, DATABASEFILE);
-            Sld = Dbh.getWritableDatabase();
+        synchronized (GTFSDatabase.class) {
+            if (Sld == null || !Sld.isOpen()) {
+                GTFSDatabaseHelper Dbh = new GTFSDatabaseHelper(Ctx, DATABASEFILE);
+                Sld = Dbh.getWritableDatabase();
+            }
         }
 
         this.ctx = Ctx;

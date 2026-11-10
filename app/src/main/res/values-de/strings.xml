@@ -94,4 +94,7 @@
     <string name="SwitchTimeString">%1$s (%2$s Minuten)</string>
     <string name="SwitchTimeStringOneMinute">%1$s (%2$s Minute)</string>
     <string name="BusLeftStop">" Der Bus fuhr von der Haltestelle ab."</string>
+    <string name="ScheduleSelectLineHint">Wähle eine Linie, um den Fahrplan zu sehen</string>
+    <string name="ActiveBusSelectTypeHint">Wähle einen Bustyp, um seine Busse zu sehen</string>
+    <string name="ShortcutSelectStopHint">Wähle eine Haltestelle aus der Liste</string>
 </resources>

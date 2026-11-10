@@ -102,4 +102,7 @@
     <string name="SwitchTimeString">%1$s (%2$s minutes)</string>
     <string name="SwitchTimeStringOneMinute">%1$s (%2$s minute)</string>
     <string name="BusLeftStop">The bus left the stop.</string>
+    <string name="ScheduleSelectLineHint">Select a line to see the timetable</string>
+    <string name="ActiveBusSelectTypeHint">Select a bus type to see its buses</string>
+    <string name="ShortcutSelectStopHint">Select a stop from the list</string>
 </resources>

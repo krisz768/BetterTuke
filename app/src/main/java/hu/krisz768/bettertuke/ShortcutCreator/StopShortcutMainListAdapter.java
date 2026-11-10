@@ -49,6 +49,8 @@ public class StopShortcutMainListAdapter extends RecyclerView.Adapter<StopShortc
             StopName.setText(stop.getName());
 
             view.setOnClickListener(view -> Callback.OnPlaceClick(stop.getId()));
+            // Highlight of the selected place in two-pane mode
+            view.setActivated(stop.getId() == Callback.GetHighlightedPlaceId());
         }
     }
 

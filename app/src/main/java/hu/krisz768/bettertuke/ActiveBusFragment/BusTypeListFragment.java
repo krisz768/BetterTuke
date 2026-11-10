@@ -20,6 +20,9 @@ public class BusTypeListFragment extends Fragment {
     private static final String ARG_DATA = "DATA";
 
     private ActiveBusTypeRespModel[] mData;
+    // Bus type shown in the detail pane (two-pane mode), highlighted in the list
+    private String mSelectedType;
+    private boolean mScrollToSelectedType = false;
 
     public BusTypeListFragment() {
 
@@ -53,6 +56,7 @@ public class BusTypeListFragment extends Fragment {
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         Recv.setLayoutManager(mLayoutManager);
         Recv.setAdapter(Btla);
+        ScrollToSelectedTypeIfRequested(Recv);
 
         SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefreshBusType);
         swipeRefreshLayout.setOnRefreshListener(
@@ -65,6 +69,70 @@ public class BusTypeListFragment extends Fragment {
         );
 
         return view;
+    }
+
+    public void UpdateData(ActiveBusTypeRespModel[] Data) {
+        mData = Data;
+        if (getArguments() != null) {
+            getArguments().putSerializable(ARG_DATA, Data);
+        }
+
+        View view = getView();
+        if (view != null) {
+            RecyclerView Recv = view.findViewById(R.id.BusTypeListRec);
+            Recv.setAdapter(new BusTypeListAdapter(mData, this));
+        }
+
+        StopRefreshing();
+    }
+
+    public void SetSelectedType(String Type) {
+        if (Type == null ? mSelectedType == null : Type.equals(mSelectedType)) {
+            return;
+        }
+
+        mSelectedType = Type;
+        View view = getView();
+        if (view != null) {
+            RecyclerView Recv = view.findViewById(R.id.BusTypeListRec);
+            if (Recv.getAdapter() != null) {
+                Recv.getAdapter().notifyItemRangeChanged(0, Recv.getAdapter().getItemCount());
+            }
+        }
+    }
+
+    public String GetSelectedType() {
+        return mSelectedType;
+    }
+
+    // Scrolls the list to the selected bus type (e.g. the screen was opened on a type)
+    public void ScrollToSelectedType() {
+        mScrollToSelectedType = true;
+        View view = getView();
+        if (view != null) {
+            ScrollToSelectedTypeIfRequested(view.findViewById(R.id.BusTypeListRec));
+        }
+    }
+
+    private void ScrollToSelectedTypeIfRequested(RecyclerView Recv) {
+        if (!mScrollToSelectedType || mSelectedType == null || mData == null) {
+            return;
+        }
+        mScrollToSelectedType = false;
+
+        for (int i = 0; i < mData.length; i++) {
+            if (mData[i].getBusTypeName().equals(mSelectedType)) {
+                Recv.scrollToPosition(i);
+                return;
+            }
+        }
+    }
+
+    public void StopRefreshing() {
+        View view = getView();
+        if (view != null) {
+            ((SwipeRefreshLayout) view.findViewById(R.id.swiperefreshBusType)).setRefreshing(false);
+        }
     }
 
     public void OnBusClick(String Type) {

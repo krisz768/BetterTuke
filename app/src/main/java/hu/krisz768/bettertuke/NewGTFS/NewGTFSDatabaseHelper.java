@@ -95,6 +95,10 @@ public class NewGTFSDatabaseHelper extends SQLiteOpenHelper {
 
     public NewGTFSDatabaseHelper(Context context, String DATABASEFILE) {
         super(context, DATABASEFILE, null, DATABASE_VERSION);
+        // Write-ahead logging: reads on the main thread don't have to wait for a query running on a
+        // background thread (with the default journal there is a single connection, see ANRs in
+        // SQLiteConnectionPool.waitForConnection)
+        setWriteAheadLoggingEnabled(true);
     }
 
     @Override

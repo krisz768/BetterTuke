@@ -36,6 +36,8 @@ public class BusTypeListAdapter extends RecyclerView.Adapter<BusTypeListAdapter.
             Icon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapBus));
 
             Name.setText(ClickCallBack.getString(R.string.BusTypeRec, Data.getBusTypeName(), Data.getTripIds().size()));
+            // Highlight of the selected bus type in two-pane mode
+            view.setActivated(Data.getBusTypeName().equals(ClickCallBack.GetSelectedType()));
         }
     }
 
@@ -60,6 +62,6 @@ public class BusTypeListAdapter extends RecyclerView.Adapter<BusTypeListAdapter.
 
     @Override
     public int getItemCount() {
-        return BusList.length;
+        return BusList == null ? 0 : BusList.length;
     }
 }

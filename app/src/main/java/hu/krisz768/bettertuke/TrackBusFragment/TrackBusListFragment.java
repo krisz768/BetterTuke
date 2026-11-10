@@ -61,8 +61,8 @@ public class TrackBusListFragment extends Fragment {
             mBusPosition = (TrackBusRespModel) getArguments().getSerializable(POSITION);
         }
 
-        mPlaceList = MainActivity.busPlaces;
-        mStopList = MainActivity.busStops;
+        mPlaceList = MainActivity.GetBusPlaces(requireContext());
+        mStopList = MainActivity.GetBusStops(requireContext());
     }
 
     @Override

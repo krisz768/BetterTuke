@@ -2,15 +2,18 @@ package hu.krisz768.bettertuke;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
-import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,9 +25,12 @@ import hu.krisz768.bettertuke.NewApiInterface.GTFSRProvider;
 import hu.krisz768.bettertuke.api_interface.models.ActiveBusTypeRespModel;
 
 public class ActiveBusActivity extends AppCompatActivity {
+    private static final String STATE_OPEN_BUS_TYPE = "OpenBusType";
 
     private ActiveBusTypeRespModel[] Data;
-    private boolean IsBusOpen = false;
+    private boolean OpenDirectly = false;
+    private boolean PendingDataUpdate = false;
+    private ListDetailController Panes;
     public String OpenBusType = "";
 
     @Override
@@ -33,8 +39,6 @@ public class ActiveBusActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
 
         setTheme();
-
-        SetupBack();
 
         setContentView(R.layout.activity_active_bus);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -45,12 +49,47 @@ public class ActiveBusActivity extends AppCompatActivity {
 
         Bundle b = getIntent().getExtras();
 
-        if (b != null) {
+        if (b != null && b.getString("BusType") != null) {
             OpenBusType = b.getString("BusType");
-            IsBusOpen = true;
+            OpenDirectly = true;
         }
 
+        if (savedInstanceState != null) {
+            OpenBusType = savedInstanceState.getString(STATE_OPEN_BUS_TYPE, OpenBusType);
+        }
+
+        // Bus type list | buses of the selected type. Side by side on large screens, on phones the
+        // buses are shown above the list and back (with predictive animation) returns to the list.
+        Panes = new ListDetailController(this, findViewById(R.id.ActiveBusFragmentContainer), findViewById(R.id.ActiveBusDetailPane), findViewById(R.id.ActiveBusDivider), this::OnDetailClosed);
+        Panes.SetOnLayoutModeChangedListener(this::UpdateSelection);
+
+        if (savedInstanceState != null && GetRouteList() != null) {
+            Panes.ShowDetail(false);
+        }
+        UpdateSelection();
+
         GetData();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        UpdateSelection();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(STATE_OPEN_BUS_TYPE, OpenBusType);
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // E.g. folding / unfolding: rearrange the panes, the fragments are kept
+        Panes.OnConfigurationChanged(newConfig);
+        UpdateSelection();
     }
 
     private void GetData() {
@@ -58,45 +97,111 @@ public class ActiveBusActivity extends AppCompatActivity {
             GTFSRProvider gtfsrProvider = new GTFSRProvider(this);
             Data = gtfsrProvider.GetActiveBuses();
 
-            if (IsBusOpen) {
-                runOnUiThread(() -> ShowRoutes(OpenBusType));
-            } else {
-                runOnUiThread(this::ListBuses);
-            }
+            runOnUiThread(this::OnDataLoaded);
         }).start();
     }
 
-    private void ListBuses () {
-        if (Data != null) {
-            BusTypeListFragment Fragment = BusTypeListFragment.newInstance(Data);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.ActiveBusFragmentContainer, Fragment)
-                    .commit();
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+
+        if (PendingDataUpdate) {
+            OnDataLoaded();
         }
     }
 
-    private void SetupBack() {
-        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                if (!IsBusOpen) {
-                    finish();
-                } else {
-                    IsBusOpen = false;
+    private void OnDataLoaded() {
+        // The download may finish after the screen was closed
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
 
-                    BusTypeListFragment Fragment = BusTypeListFragment.newInstance(Data);
+        // Fragment transactions are not allowed after onSaveInstanceState, retry when resumed
+        PendingDataUpdate = getSupportFragmentManager().isStateSaved();
+        if (PendingDataUpdate) {
+            return;
+        }
 
-                    getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in,
-                                    R.anim.slide_out,
-                                    R.anim.slide_in,
-                                    R.anim.fade_out)
-                            .replace(R.id.ActiveBusFragmentContainer, Fragment)
+        BusTypeListFragment typeList = GetTypeList();
+        BusTypeRouteListFragment routeList = GetRouteList();
+
+        if (typeList == null) {
+            // First load
+            if (Data == null) {
+                // Download failed (no internet), instead of loading forever
+                if (!(getSupportFragmentManager().findFragmentById(R.id.ActiveBusFragmentContainer) instanceof InfoFragment)) {
+                    getSupportFragmentManager().beginTransaction()
+                            .setReorderingAllowed(true)
+                            .replace(R.id.ActiveBusFragmentContainer, InfoFragment.newInstance(getString(R.string.InternetError), -1))
                             .commit();
                 }
+                return;
             }
-        };
 
-        getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
+            // commitNow: the list has to exist when the selection is applied below
+            getSupportFragmentManager().beginTransaction()
+                    .setReorderingAllowed(true)
+                    .replace(R.id.ActiveBusFragmentContainer, BusTypeListFragment.newInstance(Data))
+                    .commitNow();
+
+            if (OpenDirectly) {
+                ShowRoutes(OpenBusType, false);
+
+                BusTypeListFragment list = GetTypeList();
+                if (list != null && Panes.IsMultiPane()) {
+                    list.ScrollToSelectedType();
+                }
+            } else {
+                UpdateSelection();
+            }
+            return;
+        }
+
+        // Reload (swipe to refresh): update the screens in place
+        if (Data == null) {
+            typeList.StopRefreshing();
+            if (routeList != null) {
+                routeList.StopRefreshing();
+            }
+            return;
+        }
+
+        typeList.UpdateData(Data);
+
+        if (routeList != null) {
+            ActiveBusTypeRespModel selected = FindBusType(OpenBusType);
+            if (selected != null) {
+                routeList.UpdateData(selected);
+            } else {
+                // This bus type has no active buses anymore
+                routeList.StopRefreshing();
+                Panes.CloseDetail();
+                OnDetailClosed();
+            }
+        }
+    }
+
+    private BusTypeListFragment GetTypeList() {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.ActiveBusFragmentContainer);
+        return fragment instanceof BusTypeListFragment ? (BusTypeListFragment) fragment : null;
+    }
+
+    private BusTypeRouteListFragment GetRouteList() {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.ActiveBusDetailContainer);
+        return fragment instanceof BusTypeRouteListFragment ? (BusTypeRouteListFragment) fragment : null;
+    }
+
+    private ActiveBusTypeRespModel FindBusType(String Type) {
+        if (Data == null || Type == null) {
+            return null;
+        }
+
+        for (ActiveBusTypeRespModel busType : Data) {
+            if (busType.getBusTypeName().equals(Type)) {
+                return busType;
+            }
+        }
+        return null;
     }
 
     private void setTheme() {
@@ -106,33 +211,52 @@ public class ActiveBusActivity extends AppCompatActivity {
     }
 
     public void ShowRoutes(String Type) {
-        ActiveBusTypeRespModel Selected = null;
-        for (ActiveBusTypeRespModel list : Data) {
-            if (list.getBusTypeName().equals(Type)) {
-                Selected = list;
-                break;
-            }
+        ShowRoutes(Type, true);
+    }
+
+    private void ShowRoutes(String Type, boolean Animate) {
+        ActiveBusTypeRespModel selected = FindBusType(Type);
+        if (selected == null || getSupportFragmentManager().isStateSaved()) {
+            return;
         }
 
-        if (Selected != null) {
-            BusTypeRouteListFragment Btrl = BusTypeRouteListFragment.newInstance(Selected);
-
-            if (IsBusOpen) {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.ActiveBusFragmentContainer, Btrl)
-                        .commit();
-            } else {
-                getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_in,
-                                R.anim.fade_out,
-                                R.anim.fade_in,
-                                R.anim.slide_out)
-                        .replace(R.id.ActiveBusFragmentContainer, Btrl)
-                        .commit();
-            }
+        if (Type.equals(OpenBusType) && GetRouteList() != null) {
+            Panes.ShowDetail(Animate);
+            return;
         }
 
-        IsBusOpen = true;
+        getSupportFragmentManager().beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(R.id.ActiveBusDetailContainer, BusTypeRouteListFragment.newInstance(selected))
+                .commit();
+
         OpenBusType = Type;
+        Panes.ShowDetail(Animate);
+        UpdateSelection();
+    }
+
+    // The buses of a type were closed (back on a phone, or the type disappeared)
+    private void OnDetailClosed() {
+        OpenBusType = "";
+
+        BusTypeRouteListFragment routeList = GetRouteList();
+        if (routeList != null && !getSupportFragmentManager().isStateSaved()) {
+            getSupportFragmentManager().beginTransaction()
+                    .setReorderingAllowed(true)
+                    .remove(routeList)
+                    .commit();
+        }
+
+        UpdateSelection();
+    }
+
+    private void UpdateSelection() {
+        findViewById(R.id.ActiveBusDetailPlaceholder).setVisibility(GetRouteList() == null && OpenBusType.isEmpty() ? View.VISIBLE : View.GONE);
+
+        BusTypeListFragment typeList = GetTypeList();
+        if (typeList != null) {
+            typeList.SetSelectedType(Panes.IsMultiPane() && !OpenBusType.isEmpty() ? OpenBusType : null);
+        }
     }
 
     public void OnBusClick(String TripID) {

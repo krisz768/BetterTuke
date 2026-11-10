@@ -92,8 +92,8 @@ public class BottomSheetIncomingBusFragment extends Fragment {
             mStartMode = (IncomBusBackStack) getArguments().getSerializable(STARTMODE);
         }
 
-        mPlaceList = MainActivity.busPlaces;
-        mStopList = MainActivity.busStops;
+        mPlaceList = MainActivity.GetBusPlaces(requireContext());
+        mStopList = MainActivity.GetBusStops(requireContext());
 
         if (mPlaceList == null) {
             mPlaceList = BusPlaces.getAllBusPlaces(this.getContext());

@@ -240,7 +240,25 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         ReloadSchedules(view);
 
+        // The number of minutes per row depends on the width of this pane, which changes e.g. when
+        // a foldable is folded / unfolded or the two-pane layout is toggled
+        view.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (right - left != oldRight - oldLeft) {
+                v.post(this::UpdateMaxPerLine);
+            }
+        });
+
         return view;
+    }
+
+    // Width available for the schedule: the width of this fragment (it may be only one pane of the
+    // screen), or the window width before the first layout
+    private int GetAvailableWidth(DisplayMetrics displayMetrics) {
+        View view = getView();
+        if (view != null && view.getWidth() > 0) {
+            return view.getWidth();
+        }
+        return displayMetrics.widthPixels;
     }
 
     @Override
@@ -511,7 +529,6 @@ public class ScheduleBusTimeFragment extends Fragment {
 
             DisplayMetrics displayMetrics = new DisplayMetrics();
             scheduleActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            int width = displayMetrics.widthPixels;
 
             int ndp = Math.round(TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP,
@@ -531,6 +548,9 @@ public class ScheduleBusTimeFragment extends Fragment {
                 SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swiperefresh);
 
                 if (Sbta == null) {
+                    // Read on the main thread: the width of the pane this fragment is in
+                    int width = GetAvailableWidth(displayMetrics);
+
                     swipeRefreshLayout.setVisibility(View.VISIBLE);
 
                     FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
@@ -763,7 +783,7 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int width = displayMetrics.widthPixels;
+        int width = GetAvailableWidth(displayMetrics);
 
         int ndp = Math.round(TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,

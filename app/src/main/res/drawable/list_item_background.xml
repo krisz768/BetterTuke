@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- List item background: ripple, plus a highlight when the item is activated (selected item of
+     a list-detail layout in two-pane mode) -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+    <item>
+        <selector>
+            <item android:state_activated="true">
+                <color android:color="?attr/colorSecondaryContainer" />
+            </item>
+            <item>
+                <color android:color="@android:color/transparent" />
+            </item>
+        </selector>
+    </item>
+    <item android:id="@android:id/mask">
+        <color android:color="@android:color/white" />
+    </item>
+</ripple>

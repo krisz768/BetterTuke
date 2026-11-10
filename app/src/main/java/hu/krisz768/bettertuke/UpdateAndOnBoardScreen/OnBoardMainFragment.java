@@ -7,7 +7,10 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.activity.BackEventCompat;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
@@ -36,6 +39,47 @@ public class OnBoardMainFragment extends Fragment {
     private ProgressBar PageProgress;
     private DatabaseUpdate databaseUpdate;
     private boolean IsDatabaseDownloaded = false;
+    private boolean IsLocked = false;
+
+    // Back goes to the previous page. During the predictive back gesture the pager is dragged
+    // towards the previous page (up to PREVIEW_FRACTION of its width), so the user can see where
+    // back leads. On the first page the callback is disabled and the system handles back.
+    private static final float PREVIEW_FRACTION = 0.35f;
+    private boolean IsBackDragging = false;
+    private float BackDraggedPx = 0;
+
+    private final OnBackPressedCallback PageBackCallback = new OnBackPressedCallback(false) {
+        @Override
+        public void handleOnBackStarted(@NonNull BackEventCompat backEvent) {
+            IsBackDragging = viewPager.beginFakeDrag();
+            BackDraggedPx = 0;
+        }
+
+        @Override
+        public void handleOnBackProgressed(@NonNull BackEventCompat backEvent) {
+            if (!IsBackDragging) {
+                return;
+            }
+
+            float target = viewPager.getWidth() * PREVIEW_FRACTION * backEvent.getProgress();
+            // Positive offsets drag towards the previous page (inverted in RTL)
+            float direction = viewPager.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL ? -1f : 1f;
+            viewPager.fakeDragBy((target - BackDraggedPx) * direction);
+            BackDraggedPx = target;
+        }
+
+        @Override
+        public void handleOnBackPressed() {
+            EndBackDrag();
+            ScrollTo(CurrentPage - 1);
+        }
+
+        @Override
+        public void handleOnBackCancelled() {
+            EndBackDrag();
+            viewPager.setCurrentItem(CurrentPage, true);
+        }
+    };
 
     public OnBoardMainFragment() {
 
@@ -106,6 +150,23 @@ public class OnBoardMainFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), PageBackCallback);
+    }
+
+    private void EndBackDrag() {
+        if (IsBackDragging) {
+            IsBackDragging = false;
+            viewPager.endFakeDrag();
+        }
+    }
+
+    private void UpdateBackCallback() {
+        PageBackCallback.setEnabled(CurrentPage > 0 && !IsLocked);
+    }
+
     @SuppressLint("DefaultLocale")
     private void OnPageChanged() {
         if (CurrentPage == 0) {
@@ -126,6 +187,8 @@ public class OnBoardMainFragment extends Fragment {
             LockButtons();
             databaseUpdate.StartUpdate();
         }
+
+        UpdateBackCallback();
     }
 
     private void ScrollTo(int Position) {
@@ -186,15 +249,19 @@ public class OnBoardMainFragment extends Fragment {
     }
 
     private void LockButtons() {
+        IsLocked = true;
         NextButton.setEnabled(false);
         PrevButton.setEnabled(false);
         viewPager.setUserInputEnabled(false);
+        UpdateBackCallback();
     }
 
     private void UnlockButtons() {
+        IsLocked = false;
         NextButton.setEnabled(true);
         PrevButton.setEnabled(true);
         viewPager.setUserInputEnabled(true);
+        UpdateBackCallback();
     }
 
     private void StartMain() {

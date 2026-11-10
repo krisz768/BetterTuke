@@ -45,6 +45,8 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             Description.setText(busNum.getLineDesc());
 
             view.setOnClickListener(view -> Callback.OnLineClick(busNum.getLineName()));
+            // Highlight of the selected line in two-pane mode
+            view.setActivated(busNum.getLineName().equals(Callback.GetSelectedLine()));
         }
 
         public String GetName() {
@@ -123,6 +125,30 @@ public class ScheduleBusListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 }
             }
         }
+    }
+
+    // Adapter position of a line (in the favourites if it is one of them), -1 if not in the list
+    public int GetPosition(String LineName) {
+        if (LineName == null) {
+            return -1;
+        }
+
+        int offset = 0;
+        if (Favorites.length > 0) {
+            for (int i = 0; i < Favorites.length; i++) {
+                if (Favorites[i].getLineName().equals(LineName)) {
+                    return i + 1;
+                }
+            }
+            offset = Favorites.length + 2;
+        }
+
+        for (int i = 0; i < busNums.length; i++) {
+            if (busNums[i].getLineName().equals(LineName)) {
+                return i + offset;
+            }
+        }
+        return -1;
     }
 
     @Override

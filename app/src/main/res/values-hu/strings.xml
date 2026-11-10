@@ -93,4 +93,7 @@
     <string name="SwitchTimeString">%1$s (%2$s perc)</string>
     <string name="SwitchTimeStringOneMinute">%1$s (%2$s perc)</string>
     <string name="BusLeftStop">A busz elhagyta a megállót.</string>
+    <string name="ScheduleSelectLineHint">Válassz egy járatot a menetrendhez</string>
+    <string name="ActiveBusSelectTypeHint">Válassz egy busztípust a járművek listájához</string>
+    <string name="ShortcutSelectStopHint">Válassz egy megállót a listából</string>
 </resources>

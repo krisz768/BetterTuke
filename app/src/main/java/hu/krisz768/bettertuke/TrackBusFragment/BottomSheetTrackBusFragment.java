@@ -81,7 +81,7 @@ public class BottomSheetTrackBusFragment extends Fragment {
             mBusLine = (BusLine) getArguments().getSerializable(LINEOBJ);
         }
 
-        mStopList = MainActivity.busStops;
+        mStopList = MainActivity.GetBusStops(requireContext());
 
         if (mStopList == null) {
             mStopList = BusStops.GetAllStops(this.getContext());

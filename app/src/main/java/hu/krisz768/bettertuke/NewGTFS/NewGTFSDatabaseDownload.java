@@ -182,6 +182,8 @@ public class NewGTFSDatabaseDownload implements Runnable {
 
             tempFile.delete();
 
+            db.CreateIndexes();
+
             GTFSContentLength contentLength = new GTFSContentLength();
             Thread thread = new Thread(contentLength);
             thread.start();

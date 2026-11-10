@@ -98,11 +98,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/gps" />
 
+    <!--
+        saveEnabled="false": MainActivity always starts over (GPS loading -> nearest stop) after it
+        is recreated, so the BottomSheetBehavior must not restore its previous state (e.g. EXPANDED),
+        otherwise it clashes with the initial collapsed setup done in SetupBottomSheet().
+    -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:elevation="6dp"
+        android:saveEnabled="false"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp">
 

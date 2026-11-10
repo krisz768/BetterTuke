@@ -19,8 +19,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.BetterTuke"
-        android:usesCleartextTraffic="true"
-        tools:targetApi="34">
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:targetApi="37">
         <activity
             android:name=".SwitchActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
@@ -32,7 +32,7 @@
         <activity
             android:name=".BusShortcutCreatorActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
-            android:exported="false"
+            android:exported="true"
             android:icon="@mipmap/bus_shortcut_icon_round"
             android:label="@string/BusShortcutIcon">
             <intent-filter>
@@ -55,7 +55,7 @@
         <activity
             android:name=".StopShortcutCreatorActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
-            android:exported="false"
+            android:exported="true"
             android:icon="@mipmap/stop_shortcut_icon_round"
             android:label="@string/StopShortcutIcon">
             <intent-filter>

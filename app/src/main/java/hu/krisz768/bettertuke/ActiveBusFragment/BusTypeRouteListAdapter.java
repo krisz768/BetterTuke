@@ -99,6 +99,6 @@ public class BusTypeRouteListAdapter  extends RecyclerView.Adapter<BusTypeRouteL
 
     @Override
     public int getItemCount() {
-        return BusData.getTripIds().size();
+        return BusData == null || BusData.getTripIds() == null ? 0 : BusData.getTripIds().size();
     }
 }

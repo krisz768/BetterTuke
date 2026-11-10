@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Replaces android:usesCleartextTraffic (deprecated starting with Android 17).
+    Cleartext (HTTP) traffic is only allowed for the Tüke GTFS / GTFS-RT server,
+    because it does not serve HTTPS. Every other connection must use HTTPS.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">menobusz.tukebusz.hu</domain>
+    </domain-config>
+</network-security-config>

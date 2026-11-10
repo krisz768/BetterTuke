@@ -36,9 +36,28 @@ public class NewGTFSDatabase {
         this.ctx = Ctx;
         String DATABASEFILE = (new File(Ctx.getFilesDir() + "/Database", "NewGTFS.db")).getAbsolutePath();
 
-        if (Sld == null) {
-            NewGTFSDatabaseHelper Dbh = new NewGTFSDatabaseHelper(Ctx, DATABASEFILE);
-            Sld = Dbh.getWritableDatabase();
+        synchronized (NewGTFSDatabase.class) {
+            if (Sld == null || !Sld.isOpen()) {
+                NewGTFSDatabaseHelper Dbh = new NewGTFSDatabaseHelper(Ctx, DATABASEFILE);
+                Sld = Dbh.getWritableDatabase();
+            }
+        }
+    }
+
+    // Indexes for the columns the queries filter / join on. Without them every query reads the
+    // whole stop_times / trips tables and keeps the database busy for seconds. Takes a few seconds
+    // the first time, has to be called on a background thread (no-op when the indexes exist).
+    public void CreateIndexes() {
+        try {
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_stop_times_trip ON stop_times (trip_id, stop_sequence);");
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_stop_times_stop ON stop_times (stop_id);");
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_trips_trip ON trips (trip_id);");
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_trips_route ON trips (route_id);");
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_calendar_dates_date ON calendar_dates (date, service_id);");
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_routes_short_name ON routes (route_short_name);");
+            Sld.execSQL("CREATE INDEX IF NOT EXISTS idx_shapes_shape ON shapes (shape_id);");
+        } catch (Exception e) {
+            log(e.toString());
         }
     }
 
@@ -606,7 +625,15 @@ public class NewGTFSDatabase {
         File Database = new File(Ctx.getFilesDir() + "/Database", "NewGTFS.db");
 
         try {
-            Database.delete();
+            // Close the shared connection, otherwise it would keep using the deleted file, and
+            // delete the journal / write-ahead log files with the database
+            synchronized (NewGTFSDatabase.class) {
+                if (Sld != null) {
+                    Sld.close();
+                    Sld = null;
+                }
+            }
+            SQLiteDatabase.deleteDatabase(Database);
         } catch (Exception e) {
             Log.e("DatabaseManager", e.toString());
         }

@@ -60,8 +60,19 @@ public class BusStops implements Serializable {
         GTFSDatabase GDm = new GTFSDatabase(ctx);
 
         HashMap<String, BusStops> Stops = Dm.GetAllBusStops();
+
+        // The more precise coordinates of the other database, loaded with one query (this runs on
+        // the main thread when the main screen starts)
+        HashMap<Long, float[]> Coords = GDm.GetAllStopCoords();
         for (BusStops Stop : Stops.values()) {
-            GDm.UpdateStopCoords(Stop);
+            try {
+                float[] coord = Coords.get(Long.parseLong(Stop.getId().substring(2)));
+                if (coord != null) {
+                    Stop.SetCoords(coord[1], coord[0]);
+                }
+            } catch (Exception ignored) {
+                // Not a numeric id, there are no other coordinates for it
+            }
         }
 
         return Stops;

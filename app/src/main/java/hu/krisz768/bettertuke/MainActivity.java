@@ -1,5 +1,6 @@
 package hu.krisz768.bettertuke;
 
+import androidx.activity.BackEventCompat;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
@@ -7,6 +8,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
@@ -15,6 +17,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentContainerView;
+import androidx.window.layout.WindowMetricsCalculator;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
@@ -25,6 +28,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -123,6 +127,22 @@ public class MainActivity extends AppCompatActivity {
     private GoogleMap googleMap;
     public static HashMap<Integer, BusPlaces> busPlaces;
     public static  HashMap<String, BusStops> busStops;
+
+    // The lists are loaded in onCreate. Screens restored after the process was killed (without
+    // MainActivity being created) load them on demand.
+    public static synchronized HashMap<String, BusStops> GetBusStops(Context ctx) {
+        if (busStops == null) {
+            busStops = BusStops.GetAllStops(ctx.getApplicationContext());
+        }
+        return busStops;
+    }
+
+    public static synchronized HashMap<Integer, BusPlaces> GetBusPlaces(Context ctx) {
+        if (busPlaces == null) {
+            busPlaces = BusPlaces.getAllBusPlaces(ctx.getApplicationContext());
+        }
+        return busPlaces;
+    }
     private final List<BackStack> backStack = new ArrayList<>();
     private boolean smallMarkerMode = false;
     private boolean IsBackButtonHalfExpanded = true;
@@ -141,6 +161,20 @@ public class MainActivity extends AppCompatActivity {
     private AppUpdateManager appUpdateManager;
     private int MapTopPadding = 0;
     private int BottomInset = 0;
+
+    // Phone: draggable bottom sheet over the map.
+    // SidePanel (tablet, unfolded foldable): the screen is split 50/50, the draggable bottom sheet is
+    // on the start half, the map with the search bar on the end half.
+    // Tabletop (foldable half opened with a horizontal fold, "Flex mode"): the map is on the top half,
+    // the bottom sheet fills the whole width below the fold and can not be moved or closed.
+    private enum LayoutMode {
+        Phone,
+        SidePanel,
+        Tabletop
+    }
+
+    private LayoutMode CurrentLayoutMode = LayoutMode.Phone;
+    private TabletopPostureTracker PostureTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,12 +200,20 @@ public class MainActivity extends AppCompatActivity {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.MainActivityViewLayout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            boolean insetsChanged = MapTopPadding != systemBars.top || BottomInset != systemBars.bottom;
             MapTopPadding = systemBars.top;
             BottomInset = systemBars.bottom;
 
-            ConstraintLayout.LayoutParams BottomSheetConLayout = (ConstraintLayout.LayoutParams)findViewById(R.id.coordinatorLayout).getLayoutParams();
-            BottomSheetConLayout.topMargin = MapTopPadding;
-            findViewById(R.id.coordinatorLayout).setLayoutParams(BottomSheetConLayout);
+            // Keep the search bar, buttons and bottom sheet out from under side system bars and
+            // cutouts (e.g. the 3-button navigation bar is on the side in landscape)
+            Insets sides = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(sides.left, 0, sides.right, 0);
+
+            UpdatePanelLayout();
+            if (insetsChanged) {
+                // The sizes depend on the insets, which may arrive after a configuration change
+                SetBottomsheetParamsAfterLayout();
+            }
 
             return insets;
         });
@@ -203,6 +245,13 @@ public class MainActivity extends AppCompatActivity {
         SetupGoogleMap();
 
         CheckForUpdates();
+
+        // Tabletop posture ("Flex mode") of foldables: map on the top half, sheet on the bottom half
+        PostureTracker = new TabletopPostureTracker(this, this::ApplyLayoutMode);
+
+        ApplyLayoutMode();
+
+        UpdateBackCallback();
     }
 
     private void CheckForUpdates () {
@@ -297,6 +346,9 @@ public class MainActivity extends AppCompatActivity {
         super.onConfigurationChanged(newConfig);
         View bottomSheet = findViewById(R.id.standard_bottom_sheet);
 
+        // E.g. folding / unfolding: switch between the bottom sheet and the side panel layout
+        ApplyLayoutMode();
+
         /*bottomSheet.post(() -> {
             SetupBottomSheet();
 
@@ -309,7 +361,9 @@ public class MainActivity extends AppCompatActivity {
                 bottomSheet.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 SetupBottomSheet();
 
-                bottomSheetBehavior.setHideable(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+                if (!IsFixedPanel()) {
+                    bottomSheetBehavior.setHideable(IsSheetHideable());
+                }
             }
         });
 
@@ -459,8 +513,17 @@ public class MainActivity extends AppCompatActivity {
             googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
 
-        bottomSheetBehavior.setHideable(true);
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        if (IsFixedPanel()) {
+            // The panel stays visible, show the hint in it instead of the GPS loading screen
+            if (!getSupportFragmentManager().isStateSaved()) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentContainerView2, InfoFragment.newInstance(getString(R.string.GPSHint), -1))
+                        .commit();
+            }
+        } else {
+            bottomSheetBehavior.setHideable(true);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
 
         Toast.makeText(this, R.string.GPSHint, Toast.LENGTH_LONG).show();
     }
@@ -481,7 +544,7 @@ public class MainActivity extends AppCompatActivity {
                 TrackBus(Md.getId(), formatter.format(now));
             } else {
                 ZoomTo(BusMarker.getPosition());
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                SetSheetState(BottomSheetBehavior.STATE_HALF_EXPANDED);
                 UserTouchedMap = false;
             }
         } else {
@@ -894,6 +957,10 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                    if (IsFixedPanel()) {
+                        return;
+                    }
+
                     ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
                     ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
 
@@ -901,16 +968,12 @@ public class MainActivity extends AppCompatActivity {
                     float CalculatedCurrent = ((bottomSheet.getMeasuredHeight()-(bottomSheetBehavior.getPeekHeight()+BottomInset))*slideOffset)+bottomSheetBehavior.getPeekHeight() + BottomInset;
 
                     if (CalculatedCurrent < CalculatedHalfExpanded) {
-                        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                            if(IsMapInitialized) {
-                                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, BottomInset);
-                            }
+                        if (IsSheetBesideMap()) {
+                            SetMapPadding((dp20 * 4) + MapTopPadding, BottomInset);
                             params2.bottomMargin = dp20 + BottomInset;
                         } else {
                             int CalculatedHeight = Math.round(((bottomSheet.getMeasuredHeight()-(bottomSheetBehavior.getPeekHeight() + BottomInset))*slideOffset)+bottomSheetBehavior.getPeekHeight() + BottomInset);
-                            if(IsMapInitialized) {
-                                googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, CalculatedHeight);
-                            }
+                            SetMapPadding((dp20 * 4) + MapTopPadding, CalculatedHeight);
                             params2.bottomMargin = CalculatedHeight + dp20;
                         }
                     } else if (slideOffset != 1){
@@ -1118,6 +1181,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void BottomSheetSetNormalParams(int HeaderInDp) {
         IsBackButtonHalfExpanded = bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED;
+        UpdateBackCallback();
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -1152,12 +1216,14 @@ public class MainActivity extends AppCompatActivity {
         bottomSheetBehavior.setHalfExpandedRatio(Ratio);
 
         bottomSheetBehavior.setMaxHeight(-1);
-        bottomSheetBehavior.setHideable(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+        if (!IsFixedPanel()) {
+            bottomSheetBehavior.setHideable(IsSheetHideable());
+        }
 
         bottomSheetBehavior.setPeekHeight(HeaderInPx);
 
         if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+            SetSheetState(BottomSheetBehavior.STATE_HALF_EXPANDED);
         }
 
         /*final View Fc = findViewById(R.id.fragmentContainerView2);
@@ -1185,7 +1251,23 @@ public class MainActivity extends AppCompatActivity {
         }
         Fc.setLayoutParams(params);
         ScheduleButton.setLayoutParams(params2);*/
-        SetBottomsheetParams();
+        SetBottomsheetParamsAfterLayout();
+    }
+
+    // The max height / peek height set above only take effect on the next layout pass, so the
+    // bottom sheet's measured height is stale right now. If the state doesn't change (e.g. it is
+    // already EXPANDED), no BottomSheetCallback fires to fix the sizes later, so wait for the layout.
+    private void SetBottomsheetParamsAfterLayout() {
+        View bottomSheet = findViewById(R.id.standard_bottom_sheet);
+
+        bottomSheet.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                v.removeOnLayoutChangeListener(this);
+                v.post(() -> SetBottomsheetParams());
+            }
+        });
+        bottomSheet.requestLayout();
     }
 
     private void ShowBottomSheetTrackBus() {
@@ -1364,6 +1446,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void ZoomTo(LatLng Position) {
+        // E.g. a marker of a place that is not selected anymore
+        if (Position == null) {
+            return;
+        }
+
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(Position).zoom(15).build();
 
@@ -1382,46 +1469,170 @@ public class MainActivity extends AppCompatActivity {
         BusMarker.setZIndex(Float.MAX_VALUE);
     }
 
+    // Whether the bottom sheet content is partly visible (the side panel counts as such too, its
+    // list can always be scrolled to the current item)
     public boolean IsBottomSheetHalfExpanded() {
-        return bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED;
+        return IsFixedPanel() || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HALF_EXPANDED || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED;
     }
 
+    // ---- Back navigation / predictive back ----
+
+    private enum BackAction {
+        // Nothing to go back to inside the app: the callback is disabled and the system handles
+        // back (with the predictive back-to-home animation)
+        None,
+        // Close the search view (on Android 13+ the SearchView handles its own predictive back)
+        Search,
+        // Collapsed / hidden bottom sheet -> half expanded
+        ExpandSheet,
+        // Expanded bottom sheet -> half expanded
+        CollapseSheet,
+        // Go back to the previous bottom sheet mode stored in backStack
+        PreviousMode
+    }
+
+    private OnBackPressedCallback MainBackCallback;
+    private BackAction GestureBackAction = BackAction.None;
+    private boolean IsBackGestureInProgress = false;
+    // Predictive back between bottom sheet modes (the sheet content shrinks while swiping)
+    private PredictiveBackContentAnimation ModeBackAnimation;
+
     private void SetupBackButton() {
-        OnBackPressedCallback onBackPressedCallbackOld = new OnBackPressedCallback(true) {
+        ModeBackAnimation = new PredictiveBackContentAnimation(findViewById(R.id.fragmentContainerView2), true);
+
+        MainBackCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackStarted(@NonNull BackEventCompat backEvent) {
+                ModeBackAnimation.CompletePending();
+
+                IsBackGestureInProgress = true;
+                GestureBackAction = DetermineBackAction();
+
+                if (GestureBackAction == BackAction.CollapseSheet) {
+                    bottomSheetBehavior.startBackProgress(backEvent);
+                } else if (GestureBackAction == BackAction.PreviousMode) {
+                    ModeBackAnimation.Start();
+                }
+            }
+
+            @Override
+            public void handleOnBackProgressed(@NonNull BackEventCompat backEvent) {
+                if (GestureBackAction == BackAction.CollapseSheet) {
+                    bottomSheetBehavior.updateBackProgress(backEvent);
+                } else if (GestureBackAction == BackAction.PreviousMode) {
+                    ModeBackAnimation.Update(backEvent);
+                }
+            }
+
             @Override
             public void handleOnBackPressed() {
-                DoBack();
+                boolean fromGesture = IsBackGestureInProgress;
+                BackAction action;
+
+                if (fromGesture) {
+                    action = GestureBackAction;
+                } else {
+                    // Button navigation / no gesture events
+                    ModeBackAnimation.CompletePending();
+                    action = DetermineBackAction();
+                }
+
+                IsBackGestureInProgress = false;
+                GestureBackAction = BackAction.None;
+
+                DoBack(action, fromGesture);
+            }
+
+            @Override
+            public void handleOnBackCancelled() {
+                if (GestureBackAction == BackAction.CollapseSheet) {
+                    bottomSheetBehavior.cancelBackProgress();
+                } else if (GestureBackAction == BackAction.PreviousMode) {
+                    ModeBackAnimation.Cancel();
+                }
+
+                IsBackGestureInProgress = false;
+                GestureBackAction = BackAction.None;
             }
         };
 
-        getOnBackPressedDispatcher().addCallback(onBackPressedCallbackOld);
+        getOnBackPressedDispatcher().addCallback(this, MainBackCallback);
     }
 
-    private void DoBack() {
-        if (searchView.isShowing()) {
-            searchView.hide();
-            return;
+    private BackAction DetermineBackAction() {
+        if (searchView != null && searchView.isShowing()) {
+            return BackAction.Search;
         }
 
-        if ((bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) && !CurrentStop.equals("-1")) {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
-            return;
+        int state = bottomSheetBehavior.getState();
+
+        // The fixed panel of the large screen / tabletop layouts can not be collapsed / expanded
+        if (!IsFixedPanel() && (state == BottomSheetBehavior.STATE_HIDDEN || state == BottomSheetBehavior.STATE_COLLAPSED) && !CurrentStop.equals("-1")) {
+            return BackAction.ExpandSheet;
         }
 
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED && IsBackButtonHalfExpanded) {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
-            return;
+        if (!IsFixedPanel() && state == BottomSheetBehavior.STATE_EXPANDED && IsBackButtonHalfExpanded) {
+            return BackAction.CollapseSheet;
         }
 
-        if (backStack.isEmpty()) {
-            finish();
-        } else {
-            RestorePrevState();
+        if (!backStack.isEmpty()) {
+            return BackAction.PreviousMode;
         }
+
+        return BackAction.None;
+    }
+
+    // Has to be called whenever something DetermineBackAction() depends on changes. The system only
+    // shows the back-to-home animation if no back callback is enabled when the gesture starts.
+    private void UpdateBackCallback() {
+        if (MainBackCallback != null) {
+            MainBackCallback.setEnabled(DetermineBackAction() != BackAction.None);
+        }
+    }
+
+    private void DoBack(BackAction action, boolean fromGesture) {
+        switch (action) {
+            case Search:
+                searchView.hide();
+                break;
+            case ExpandSheet:
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                break;
+            case CollapseSheet:
+                if (fromGesture) {
+                    // Scale the sheet back to normal while it slides down
+                    bottomSheetBehavior.cancelBackProgress();
+                }
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                break;
+            case PreviousMode:
+                if (fromGesture) {
+                    ModeBackAnimation.Finish(() -> {
+                        RestorePrevState();
+                        UpdateBackCallback();
+                    });
+                } else {
+                    RestorePrevState();
+                }
+                break;
+            case None:
+                // The callback should have been disabled, let the system handle back
+                MainBackCallback.setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+                return;
+        }
+
+        UpdateBackCallback();
+    }
+
+    private void PushBackStack(BackStack entry) {
+        backStack.add(entry);
+        UpdateBackCallback();
     }
 
     private void RestorePrevState() {
-        if (backStack.size() - 1 == -1) {
+        if (backStack.isEmpty()) {
+            UpdateBackCallback();
             return;
         }
 
@@ -1514,6 +1725,8 @@ public class MainActivity extends AppCompatActivity {
         IsBackButtonHalfExpanded = PrevState.isBackButtonCollapse();
 
         MarkerRenderer();
+
+        UpdateBackCallback();
     }
 
     private Mode DetermineMode() {
@@ -1536,7 +1749,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void AddBackStack() {
-        backStack.add(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace, IncomBusMode, null, null));
+        PushBackStack(new BackStack(CurrentPlace, CurrentStop, CurrentBusTrack, busLine, null, IsBackButtonHalfExpanded, SelectedPlace, IncomBusMode, null, null));
     }
 
     public void ShowActiveBusActivity(String BusType) {
@@ -1565,7 +1778,7 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     if (result.getData() != null && result.getData().getExtras() != null) {
                         TrackBus(result.getData().getExtras().getString("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
-                        backStack.add(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null, null, null));
+                        PushBackStack(new BackStack(null, null, null, null, new ScheduleBackStack(result.getData().getExtras().getString("LineNum"), result.getData().getExtras().getString("Direction"), result.getData().getExtras().getString("ScheduleDate"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getBoolean("PreSelected")), false, null, null, null, null));
                     }
                 }
             });
@@ -1576,7 +1789,7 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     if (result.getData() != null && result.getData().getExtras() != null) {
                         TrackBus(result.getData().getExtras().getString("ScheduleId"), result.getData().getExtras().getString("ScheduleDate"));
-                        backStack.add(new BackStack(null, null, null, null, null, false, null, null, result.getData().getExtras().getString("BusType"), null));
+                        PushBackStack(new BackStack(null, null, null, null, null, false, null, null, result.getData().getExtras().getString("BusType"), null));
                     }
                 }
             });
@@ -1587,30 +1800,28 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     if (result.getData() != null && result.getData().getExtras() != null) {
                         TrackBus(result.getData().getExtras().getString("TrackId"), result.getData().getExtras().getString("Date"));
-                        backStack.add(new BackStack(null, null, null, null, null, false, null, null, null, new SwitchBackStack(result.getData().getExtras().getString("TripId"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getString("CurrentStopId"), result.getData().getExtras().getString("Date"))));
+                        PushBackStack(new BackStack(null, null, null, null, null, false, null, null, null, new SwitchBackStack(result.getData().getExtras().getString("TripId"), result.getData().getExtras().getString("StopId"), result.getData().getExtras().getString("CurrentStopId"), result.getData().getExtras().getString("Date"))));
                     }
                 }
             });
 
-    @SuppressLint("NonConstantResourceId")
     private void SetupSearchView() {
         searchView = findViewById(R.id.search_view);
         SearchBar searchBar = findViewById(R.id.search_bar);
 
         searchBar.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.AboutUsButton:
-                    ShowAbout();
-                    return true;
-                case R.id.ActiveBusButton:
-                    ShowActiveBusActivity(null);
-                    return true;
-                case R.id.PrivacyButton:
-                    ShowPrivacySettings();
-                    return true;
-                default:
-                    return false;
+            int itemId = item.getItemId();
+            if (itemId == R.id.AboutUsButton) {
+                ShowAbout();
+                return true;
+            } else if (itemId == R.id.ActiveBusButton) {
+                ShowActiveBusActivity(null);
+                return true;
+            } else if (itemId == R.id.PrivacyButton) {
+                ShowPrivacySettings();
+                return true;
             }
+            return false;
         });
 
         /*Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -1620,6 +1831,8 @@ public class MainActivity extends AppCompatActivity {
 
         searchView.addTransitionListener(
                 (searchView, previousState, newState) -> {
+                    UpdateBackCallback();
+
                     if (newState == SearchView.TransitionState.SHOWING) {
                         List<SearchResult> AllItemList = new ArrayList<>();
 
@@ -1784,6 +1997,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        UpdateBackCallback();
+
         if (OnStartFragmentError) {
             ShowBottomSheetIncomingBuses();
             OnStartFragmentError = false;
@@ -1791,7 +2006,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void CollapseBottomSheet() {
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        SetSheetState(BottomSheetBehavior.STATE_HALF_EXPANDED);
     }
 
     private void ShowAbout() {
@@ -1834,6 +2049,218 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    // ---- Large screen layout ----
+
+    // In the tabletop layout the sheet is always expanded and can not be moved
+    private boolean IsFixedPanel() {
+        return CurrentLayoutMode == LayoutMode.Tabletop;
+    }
+
+    // The sheet is next to the map (tablet split view, landscape phone): the map and its buttons
+    // don't have to move up with the sheet
+    private boolean IsSheetBesideMap() {
+        return CurrentLayoutMode == LayoutMode.SidePanel || getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+    }
+
+    // The sheet can be swiped away only on landscape phones, where it covers the map
+    private boolean IsSheetHideable() {
+        return CurrentLayoutMode == LayoutMode.Phone && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+    }
+
+    // Map padding. In the split view the start half of the map is covered by the sheet, so the
+    // camera centers on the other half.
+    private void SetMapPadding(int top, int bottom) {
+        if (!IsMapInitialized) {
+            return;
+        }
+
+        int left = 0;
+        int right = 0;
+
+        if (CurrentLayoutMode == LayoutMode.SidePanel) {
+            View panel = findViewById(R.id.coordinatorLayout);
+            View map = findViewById(R.id.map);
+
+            if (map.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL) {
+                right = Math.max(0, map.getRight() - panel.getLeft());
+            } else {
+                left = Math.max(0, panel.getRight() - map.getLeft());
+            }
+        }
+
+        googleMap.setPadding(left, top, right, bottom);
+    }
+
+    // Sheet state changes only apply to the phone layout
+    private void SetSheetState(int state) {
+        if (IsFixedPanel()) {
+            return;
+        }
+        bottomSheetBehavior.setState(state);
+    }
+
+    private LayoutMode DetermineLayoutMode() {
+        if (PostureTracker != null && PostureTracker.IsTabletop()) {
+            return LayoutMode.Tabletop;
+        }
+        if (ListDetailController.IsTwoPane(getResources().getConfiguration())) {
+            return LayoutMode.SidePanel;
+        }
+        return LayoutMode.Phone;
+    }
+
+    // Switches between the phone, the side panel and the tabletop layout if needed. Called on
+    // configuration changes (folding / unfolding) and on tabletop posture changes.
+    private void ApplyLayoutMode() {
+        LayoutMode mode = DetermineLayoutMode();
+        LayoutMode previous = CurrentLayoutMode;
+
+        if (mode == previous) {
+            // Same mode (the layout XML is the phone layout), only the sizes may have changed
+            UpdatePanelLayout();
+            if (IsFixedPanel()) {
+                SetBottomsheetParamsAfterLayout();
+            }
+            return;
+        }
+        CurrentLayoutMode = mode;
+
+        boolean fixed = IsFixedPanel();
+        boolean wasFixed = previous == LayoutMode.Tabletop;
+
+        findViewById(R.id.drag_handle).setVisibility(fixed ? View.GONE : View.VISIBLE);
+
+        if (fixed && !wasFixed) {
+            bottomSheetBehavior.setDraggable(false);
+            bottomSheetBehavior.setHideable(false);
+            bottomSheetBehavior.setFitToContents(false);
+            bottomSheetBehavior.setExpandedOffset(0);
+            bottomSheetBehavior.setMaxHeight(-1);
+            bottomSheetBehavior.setShouldRemoveExpandedCorners(false);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            IsBackButtonHalfExpanded = false;
+        } else if (!fixed && wasFixed) {
+            bottomSheetBehavior.setDraggable(true);
+            bottomSheetBehavior.setShouldRemoveExpandedCorners(true);
+            RestoreBottomSheet();
+        } else {
+            // Phone <-> split view: the sheet stays draggable, only its place changes
+            bottomSheetBehavior.setHideable(IsSheetHideable() || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN);
+        }
+
+        UpdatePanelLayout();
+        SetBottomsheetParamsAfterLayout();
+        UpdateBackCallback();
+    }
+
+    // Back to the bottom sheet after the side panel / tabletop layout (e.g. the foldable was folded)
+    private void RestoreBottomSheet() {
+        bottomSheetBehavior.setHideable(IsSheetHideable());
+
+        switch (DetermineMode()) {
+            case IncBus:
+            case NearStops:
+                BottomSheetSetNormalParams(65);
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                break;
+            case TrackBus:
+                BottomSheetSetNormalParams(90);
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                break;
+            default:
+                // Nothing selected yet (GPS loading screen), like after the start
+                int height = getResources().getDisplayMetrics().heightPixels / 10;
+                bottomSheetBehavior.setPeekHeight(height);
+                bottomSheetBehavior.setMaxHeight(height);
+                bottomSheetBehavior.setHideable(false);
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                break;
+        }
+    }
+
+    // Top and bottom edge of the fold in the coordinates of the root layout (tabletop posture only)
+    @Nullable
+    private int[] GetFoldPosition() {
+        Rect hinge = PostureTracker != null ? PostureTracker.GetHingeBounds() : null;
+        if (hinge == null) {
+            return null;
+        }
+
+        View root = findViewById(R.id.MainActivityViewLayout);
+        int[] location = new int[2];
+        root.getLocationInWindow(location);
+        int height = root.getHeight() > 0 ? root.getHeight() : getWindow().getDecorView().getHeight();
+
+        int top = Math.max(0, Math.min(height, hinge.top - location[1]));
+        int bottom = Math.max(top, Math.min(height, hinge.bottom - location[1]));
+        return new int[]{top, bottom};
+    }
+
+    // Position of the search bar and the bottom sheet / panel.
+    // The search view always fills the whole screen (also in the split view): the Material expand
+    // animation measures the search bar position from the search view's parent, so a search view
+    // that does not start at the parent's start edge animates to the wrong place.
+    private void UpdatePanelLayout() {
+        View root = findViewById(R.id.MainActivityViewLayout);
+        View coordinator = findViewById(R.id.coordinatorLayout);
+        View searchBarContainer = findViewById(R.id.search_bar_cont);
+
+        ConstraintLayout.LayoutParams sheetParams = (ConstraintLayout.LayoutParams) coordinator.getLayoutParams();
+        ConstraintLayout.LayoutParams barParams = (ConstraintLayout.LayoutParams) searchBarContainer.getLayoutParams();
+
+        // The sheet may use the whole width (no Material max width), in the split view its
+        // container is half of the screen
+        bottomSheetBehavior.setMaxWidth(-1);
+
+        sheetParams.setMarginStart(0);
+        sheetParams.topToBottom = ConstraintLayout.LayoutParams.UNSET;
+
+        if (CurrentLayoutMode == LayoutMode.SidePanel) {
+            // Current window width (the views may not be laid out with the new size yet)
+            int windowWidth = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(this).getBounds().width();
+            int contentWidth = Math.max(0, windowWidth - root.getPaddingLeft() - root.getPaddingRight());
+            int half = contentWidth / 2;
+
+            // Sheet on the start half, from the top (below the status bar) to the bottom
+            sheetParams.width = half;
+            sheetParams.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            sheetParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+            sheetParams.topToTop = ConstraintLayout.LayoutParams.UNSET;
+            sheetParams.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+            sheetParams.topMargin = MapTopPadding;
+
+            // Search bar on the map half
+            barParams.width = contentWidth - half;
+            barParams.startToStart = ConstraintLayout.LayoutParams.UNSET;
+            barParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+        } else {
+            barParams.width = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            barParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+            barParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+
+            sheetParams.width = ConstraintLayout.LayoutParams.MATCH_PARENT;
+            sheetParams.startToStart = ConstraintLayout.LayoutParams.UNSET;
+
+            int[] fold = CurrentLayoutMode == LayoutMode.Tabletop ? GetFoldPosition() : null;
+
+            if (fold != null) {
+                // Tabletop: the sheet fills the whole width below the fold
+                sheetParams.height = 0;
+                sheetParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+                sheetParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+                sheetParams.topMargin = fold[1];
+            } else {
+                sheetParams.height = ConstraintLayout.LayoutParams.MATCH_PARENT;
+                sheetParams.topToTop = ConstraintLayout.LayoutParams.UNSET;
+                sheetParams.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+                sheetParams.topMargin = MapTopPadding;
+            }
+        }
+
+        searchBarContainer.setLayoutParams(barParams);
+        coordinator.setLayoutParams(sheetParams);
+    }
+
     public void SetBottomsheetParams() {
         SetBottomsheetParams(bottomSheetBehavior.getState());
     }
@@ -1856,40 +2283,52 @@ public class MainActivity extends AppCompatActivity {
         ViewGroup.LayoutParams params = fragmentView.getLayoutParams();
         ConstraintLayout.LayoutParams params2 = (ConstraintLayout.LayoutParams) ScheduleButton.getLayoutParams();
 
-        if (newState == BottomSheetBehavior.STATE_HALF_EXPANDED) {
+        int mapTop = (dp20 * 4) + MapTopPadding;
+        int[] fold = IsFixedPanel() ? GetFoldPosition() : null;
+
+        if (fold != null) {
+            // Tabletop: the sheet fills the part below the fold, the map and its buttons are above it
+            if (bottomSheet.getHeight() > 0) {
+                params.height = bottomSheet.getHeight() - BottomInset;
+            }
+
+            View map = findViewById(R.id.map);
+            int belowFold = Math.max(0, map.getBottom() - fold[0]);
+            params2.bottomMargin = belowFold + dp20;
+            SetMapPadding(mapTop, belowFold);
+        } else if (newState == BottomSheetBehavior.STATE_HALF_EXPANDED) {
             IsBackButtonHalfExpanded = true;
 
             params.height = Math.round(bottomSheet.getMeasuredHeight() * bottomSheetBehavior.getHalfExpandedRatio());
 
-            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                if(IsMapInitialized) {
-                    googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, BottomInset);
-                }
-                params2.bottomMargin = dp20+ BottomInset;
+            if (IsSheetBesideMap()) {
+                SetMapPadding(mapTop, BottomInset);
+                params2.bottomMargin = dp20 + BottomInset;
             } else {
-                if(IsMapInitialized) {
-                    googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, params.height);
-                }
+                SetMapPadding(mapTop, params.height);
                 params2.bottomMargin = params.height + dp20;
             }
 
         } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
             params.height = bottomSheet.getHeight() - BottomInset;
-        } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                if(IsMapInitialized) {
-                    googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, BottomInset);
-                }
+
+            if (IsSheetBesideMap()) {
+                SetMapPadding(mapTop, BottomInset);
                 params2.bottomMargin = dp20 + BottomInset;
-            } else {
-                if(IsMapInitialized) {
-                    googleMap.setPadding(0, (dp20 * 4) + MapTopPadding, 0, bottomSheetBehavior.getPeekHeight() + BottomInset);
-                }
+            }
+        } else if (newState == BottomSheetBehavior.STATE_COLLAPSED || newState == BottomSheetBehavior.STATE_HIDDEN) {
+            if (IsSheetBesideMap()) {
+                SetMapPadding(mapTop, BottomInset);
+                params2.bottomMargin = dp20 + BottomInset;
+            } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                SetMapPadding(mapTop, bottomSheetBehavior.getPeekHeight() + BottomInset);
                 params2.bottomMargin = bottomSheetBehavior.getPeekHeight() + dp20 + BottomInset;
             }
         }
 
         fragmentView.setLayoutParams(params);
         ScheduleButton.setLayoutParams(params2);
+
+        UpdateBackCallback();
     }
 }

@@ -7,18 +7,54 @@
     android:layout_height="match_parent"
     tools:context=".ScheduleActivity">
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/ScheduleFragmentContainer"
-        android:name="hu.krisz768.bettertuke.LoadingFragment"
+    <!-- List-detail panes, arranged by ListDetailController (side by side on large screens) -->
+    <FrameLayout
+        android:id="@+id/SchedulePanes"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/adView2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        tools:layout="@layout/fragment_loading" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/ScheduleFragmentContainer"
+            android:name="hu.krisz768.bettertuke.LoadingFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:layout="@layout/fragment_loading" />
+
+        <View
+            android:id="@+id/ScheduleDivider"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="?attr/colorOutlineVariant"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/ScheduleDetailPane"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?android:attr/colorBackground"
+            android:visibility="gone">
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/ScheduleDetailContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/ScheduleDetailPlaceholder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:padding="24dp"
+                android:text="@string/ScheduleSelectLineHint"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </FrameLayout>
+    </FrameLayout>
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView2"
