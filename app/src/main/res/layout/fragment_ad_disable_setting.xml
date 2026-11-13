@@ -42,11 +42,15 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:breakStrategy="balanced"
-        android:text="@string/DisableAdText" />
+        android:gravity="center"
+        android:text="@string/DisableAdText"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="?attr/colorOnSurfaceVariant" />
 
-    <Switch
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/AdSwitch"
-        android:layout_width="150dp"
+        android:layout_width="wrap_content"
+        app:layout_constrainedWidth="true"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="24dp"
@@ -60,7 +64,7 @@
 
     <Button
         android:id="@+id/SaveButton"
-        android:layout_width="115dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="36dp"

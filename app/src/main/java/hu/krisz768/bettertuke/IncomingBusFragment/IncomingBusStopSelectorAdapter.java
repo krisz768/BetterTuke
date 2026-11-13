@@ -43,16 +43,19 @@ public class IncomingBusStopSelectorAdapter extends RecyclerView.Adapter<Recycle
 
            button.setOnClickListener(view -> callback.OnStopClick(Data.getId()));
 
+            // Selected stop: filled primary pill, the others: tonal pills
             TypedValue typedValue = new TypedValue();
             if (!Data.getId().equals(SelectedStop)) {
-                ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOutline, typedValue, true);
-               int color = ContextCompat.getColor(ctx, typedValue.resourceId);
-               button.setBackgroundColor(color);
-           } else {
+                ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSecondaryContainer, typedValue, true);
+                button.setBackgroundColor(ContextCompat.getColor(ctx, typedValue.resourceId));
+                ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondaryContainer, typedValue, true);
+                button.setTextColor(ContextCompat.getColor(ctx, typedValue.resourceId));
+            } else {
                 ctx.getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
-               int color = ContextCompat.getColor(ctx, typedValue.resourceId);
-               button.setBackgroundColor(color);
-           }
+                button.setBackgroundColor(ContextCompat.getColor(ctx, typedValue.resourceId));
+                ctx.getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true);
+                button.setTextColor(ContextCompat.getColor(ctx, typedValue.resourceId));
+            }
         }
     }
 

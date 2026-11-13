@@ -6,92 +6,71 @@
     android:layout_height="match_parent"
     tools:context=".IncomingBusFragment.BottomSheetIncomingBusFragment"
     android:orientation="vertical"
-    android:layout_marginTop="15dp">
+    android:layout_marginTop="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginEnd="5dp"
+        android:layout_height="wrap_content"
+        android:minHeight="52dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="16dp"
+        android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/BusStopName"
                 android:layout_width="match_parent"
-                android:layout_height="35dp"
-                android:layout_marginStart="20dp"
-                android:layout_weight="0"
-                android:gravity="start|center"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:text=""
-                android:textSize="25sp"
-                app:autoSizeMaxTextSize="30sp"
-                app:autoSizeTextType="uniform" />
+                android:textAppearance="@style/TextAppearance.BetterTuke.SheetTitle" />
 
             <TextView
                 android:id="@+id/BusStopDate"
                 android:layout_width="match_parent"
-                android:layout_height="15dp"
-                android:layout_marginStart="20dp"
-                android:layout_weight="0"
+                android:layout_height="wrap_content"
+                android:maxLines="2"
                 android:text=""
-                android:textSize="25sp"
-                app:autoSizeMaxTextSize="30sp"
-                app:autoSizeTextType="uniform" />
+                android:textAppearance="@style/TextAppearance.BetterTuke.Supporting" />
         </LinearLayout>
 
         <ImageView
             android:id="@+id/StopDateTimeButton"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:layout_margin="5dp"
-            android:layout_weight="0"
-            android:clickable="true"
+            style="@style/Widget.BetterTuke.HeaderAction"
+            android:layout_marginStart="12dp"
             android:contentDescription="@string/SelectDate"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="5dp"
-            android:src="@drawable/date"
-            tools:ignore="TouchTargetSizeCheck" />
+            android:src="@drawable/date" />
 
         <ImageView
             android:id="@+id/StopFavoriteButton"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:layout_margin="5dp"
-            android:layout_weight="0"
-            android:clickable="true"
+            style="@style/Widget.BetterTuke.HeaderAction"
             android:contentDescription="@string/FavoriteButton"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="5dp"
-            android:src="@drawable/favicon_01"
-            tools:ignore="TouchTargetSizeCheck" />
+            android:src="@drawable/favicon_01" />
 
         <ImageView
             android:id="@+id/StopScheduleButton"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:layout_margin="5dp"
-            android:layout_weight="0"
-            android:clickable="true"
+            style="@style/Widget.BetterTuke.HeaderAction"
             android:contentDescription="@string/Schedule"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="5dp"
-            android:src="@drawable/bus_stop"
-            tools:ignore="TouchTargetSizeCheck" />
+            android:src="@drawable/bus_stop" />
 
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/BusStopListRecView"
         android:layout_width="match_parent"
-        android:layout_height="40dp">
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
     </androidx.recyclerview.widget.RecyclerView>
 
@@ -99,6 +78,7 @@
         android:id="@+id/divider5"
         android:layout_width="match_parent"
         android:layout_height="1dp"
+        android:layout_marginTop="8dp"
         android:background="?android:attr/listDivider" />
 
     <com.google.android.gms.ads.AdView

@@ -31,6 +31,7 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/prev_button"
+        style="?attr/floatingActionButtonSurfaceStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
@@ -46,6 +47,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="100dp"
+        android:textAppearance="?attr/textAppearanceLabelLarge"
+        android:textColor="?attr/colorOnSurfaceVariant"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/OnBoardViewPager"
@@ -53,9 +56,9 @@
 
     <ProgressBar
         android:id="@+id/PageBar"
-        style="?android:attr/progressBarStyleHorizontal"
+        style="@style/Widget.BetterTuke.ProgressBar.Rounded"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="6dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="100dp"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -1413,6 +1413,21 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // Animatable marker position. Implemented explicitly instead of
+    // Property.of(Marker.class, LatLng.class, "position"): that looks up getPosition()/setPosition()
+    // by name via reflection, which fails in the R8-optimized release build.
+    private static final Property<Marker, LatLng> MARKER_POSITION = new Property<Marker, LatLng>(LatLng.class, "position") {
+        @Override
+        public LatLng get(Marker marker) {
+            return marker.getPosition();
+        }
+
+        @Override
+        public void set(Marker marker, LatLng value) {
+            marker.setPosition(value);
+        }
+    };
+
     private void animateALlMarker(String TripId, Marker marker, LatLng finalPosition, final LatLngInterpolator latLngInterpolator) {
         if (AllMarkerAnimator == null) {
             AllMarkerAnimator = new HashMap<>();
@@ -1425,8 +1440,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         TypeEvaluator<LatLng> typeEvaluator = latLngInterpolator::interpolate;
-        Property<Marker, LatLng> property = Property.of(Marker.class, LatLng.class, "position");
-        ObjectAnimator markerAnimator = ObjectAnimator.ofObject(marker, property, typeEvaluator, finalPosition);
+        ObjectAnimator markerAnimator = ObjectAnimator.ofObject(marker, MARKER_POSITION, typeEvaluator, finalPosition);
         markerAnimator.setDuration(500);
         markerAnimator.start();
 
@@ -1439,8 +1453,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         TypeEvaluator<LatLng> typeEvaluator = latLngInterpolator::interpolate;
-        Property<Marker, LatLng> property = Property.of(Marker.class, LatLng.class, "position");
-        MarkerAnimator = ObjectAnimator.ofObject(marker, property, typeEvaluator, finalPosition);
+        MarkerAnimator = ObjectAnimator.ofObject(marker, MARKER_POSITION, typeEvaluator, finalPosition);
         MarkerAnimator.setDuration(500);
         MarkerAnimator.start();
     }

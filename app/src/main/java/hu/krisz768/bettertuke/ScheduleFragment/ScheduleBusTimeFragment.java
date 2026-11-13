@@ -238,6 +238,13 @@ public class ScheduleBusTimeFragment extends Fragment {
 
         swipeRefreshLayout.setVisibility(View.GONE);
 
+        // The live data (started / late trips) re-binds hour rows with notifyItemChanged, usually
+        // while the list scrolls to the current hour and the pane slides in. The default change
+        // animation cross-fades two copies of the row and moves the rows below it, which tore the
+        // list apart (faded row, gap, the end lagging behind): the rows are re-bound in place.
+        RecyclerView HoursRecv = view.findViewById(R.id.ScheduleTimeHoursRecView);
+        HoursRecv.setItemAnimator(null);
+
         ReloadSchedules(view);
 
         // The number of minutes per row depends on the width of this pane, which changes e.g. when
@@ -306,24 +313,24 @@ public class ScheduleBusTimeFragment extends Fragment {
         getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnError, typedValue, true);
         colorOnError = ContextCompat.getColor(getContext(), typedValue.resourceId);
 
-        DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
-        int StrokeWidth = Math.round(TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                2,
-                displayMetrics
-        ));
+        // Fill of the regular (not started) minute tiles
+        getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurfaceContainerHigh, typedValue, true);
+        int colorMinuteTile = ContextCompat.getColor(getContext(), typedValue.resourceId);
+
+        // Rounded tiles without outline
+        int StrokeWidth = 0;
 
         MinuteBackground = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_background);
         if (MinuteBackground != null) {
             ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
-            ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorOnSec);
+            ((GradientDrawable)(((LayerDrawable)MinuteBackground).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorMinuteTile);
         }
 
 
         MinuteBackgroundFull = ContextCompat.getDrawable(getContext(), R.drawable.bus_schedule_minute_fbackground);
         if (MinuteBackgroundFull != null) {
             ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFull).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setStroke(StrokeWidth, colorSecContainer);
-            ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFull).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorOnSec);
+            ((GradientDrawable)(((LayerDrawable)MinuteBackgroundFull).findDrawableByLayerId(R.id.busScheduleMinuteBackgroundRectangle))).setColor(colorMinuteTile);
         }
 
 
@@ -516,13 +523,28 @@ public class ScheduleBusTimeFragment extends Fragment {
                 }
             }
 
+            // Route variants of the shown trips: letter in the corner of the minutes + legend
+            List<String> TripIds = new ArrayList<>();
+            for (BusScheduleTime busScheduleTime : CurrentLines) {
+                TripIds.add(busScheduleTime.getLineId());
+            }
+            ScheduleVariants scheduleVariants = new ScheduleVariants(
+                    TripIds,
+                    NDm.GetTripStops(TripIds),
+                    mStopId.equals("-1") ? null : mStopId,
+                    SelectedWay.equals("O") ? "0" : "1",
+                    scheduleActivity.getString(R.string.VariantVia),
+                    scheduleActivity.getString(R.string.VariantSkips),
+                    scheduleActivity.getString(R.string.VariantTerminatesHere));
+            BusVariation[] Legend = scheduleVariants.GetLegend();
+
             String[][] BusCodes = new String[CurrentHours.length][];
 
             int Counter = 0;
             for (int i = 0; i < CurrentHours.length; i++) {
                 BusCodes[i] = new String[CurrentMinutes[i].length];
                 for (int j = 0; j < CurrentMinutes[i].length; j++){
-                    BusCodes[i][j] = CurrentLines[Counter].getLineCode().replace(mLineNum, "");
+                    BusCodes[i][j] = scheduleVariants.GetCode(CurrentLines[Counter].getLineId());
                     Counter++;
                 }
             }
@@ -556,14 +578,14 @@ public class ScheduleBusTimeFragment extends Fragment {
                     FragmentContainerView fragmentContainerView = view.findViewById(R.id.ScheduleTimeFragmentContainer);
                     fragmentContainerView.setVisibility(View.GONE);
 
-                    Sbta = new ScheduleBusTimeHourAdapter(CurrentHours, CurrentMinutes,BusCodes, Variations, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorSec, colorSecContainer, colorOnSecContainer, colorOnPrimary, colorOnError, MinuteBackground, MinuteBackgroundFull, MinuteBackgroundStarted, MinuteBackgroundFullStarted, MinuteBackgroundErr, MinuteBackgroundFullErr, getContext(), Callback);
+                    Sbta = new ScheduleBusTimeHourAdapter(CurrentHours, CurrentMinutes,BusCodes, Legend, (int) Math.floor((float)(width-ndp)/(float) MinuteWidth), colorSec, colorSecContainer, colorOnSecContainer, colorOnPrimary, colorOnError, MinuteBackground, MinuteBackgroundFull, MinuteBackgroundStarted, MinuteBackgroundFullStarted, MinuteBackgroundErr, MinuteBackgroundFullErr, getContext(), Callback);
                     RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(scheduleActivity);
                     Recv.setLayoutManager(mLayoutManager);
                     Recv.setAdapter(Sbta);
 
                     new Thread(() -> scheduleActivity.runOnUiThread(() -> ScrollToCurrentHour(view))).start();
                 } else {
-                    Sbta.UpdateData(CurrentHours, CurrentMinutes, BusCodes);
+                    Sbta.UpdateData(CurrentHours, CurrentMinutes, BusCodes, Legend);
                     Sbta.notifyDataSetChanged();
                     new Thread(() -> scheduleActivity.runOnUiThread(() -> ScrollToCurrentHour(view))).start();
                 }

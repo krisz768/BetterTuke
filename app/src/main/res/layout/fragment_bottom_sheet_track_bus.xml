@@ -4,143 +4,162 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="15dp"
+    android:layout_marginTop="18dp"
     android:orientation="vertical"
     tools:context=".TrackBusFragment.BottomSheetTrackBusFragment">
 
+    <!-- Header: grows with the font size; the first ~90dp is visible in the collapsed sheet -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="75dp"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content"
+        android:minHeight="72dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingEnd="16dp">
 
         <FrameLayout
-            android:layout_width="75dp"
-            android:layout_height="match_parent">
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="88dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="12dp">
 
             <TextView
                 android:id="@+id/TrackBusNumber"
-                android:layout_width="65dp"
-                android:layout_height="30dp"
+                style="@style/Widget.BetterTuke.LineBadge"
                 android:layout_gravity="center"
-                android:background="@drawable/bus_number_background_inactive"
-                android:gravity="center"
-                android:textSize="20sp" />
+                android:minHeight="36dp"
+                android:background="@drawable/bus_number_background_inactive" />
         </FrameLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="vertical">
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/TrackBusName"
                 android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_weight="1"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.BetterTuke.SheetTitle" />
 
-                <TextView
-                    android:id="@+id/TrackBusName"
+            <!-- Wraps to a new line instead of pushing items off screen (large font sizes) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="22dp">
+
+                <androidx.constraintlayout.helper.widget.Flow
+                    android:id="@+id/TrackBusInfoFlow1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:paddingTop="2dp"
-                    android:paddingEnd="3dp"
-                    android:textSize="20sp"
-                    app:autoSizeTextType="uniform" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="2dp"
-                android:layout_weight="1"
-                android:orientation="horizontal">
+                    android:layout_height="wrap_content"
+                    app:constraint_referenced_ids="PlateNumber,BusType,Electric"
+                    app:flow_horizontalBias="0"
+                    app:flow_horizontalGap="10dp"
+                    app:flow_horizontalStyle="packed"
+                    app:flow_verticalAlign="center"
+                    app:flow_verticalGap="2dp"
+                    app:flow_wrapMode="chain"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/PlateNumber"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.BetterTuke.Supporting" />
 
                 <TextView
                     android:id="@+id/BusType"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="14dp"
-                    android:paddingEnd="2dp"
-                    android:paddingStart="2dp"
-                    app:autoSizeTextType="uniform" />
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.BetterTuke.Supporting" />
 
                 <ImageView
                     android:id="@+id/Electric"
-                    android:layout_width="30dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="5dp"
+                    android:layout_width="18sp"
+                    android:layout_height="18sp"
                     android:contentDescription="@string/ElectricBusIndicator"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="2dp"
                     android:src="@drawable/electric"
                     android:visibility="gone" />
-            </LinearLayout>
 
-            <LinearLayout
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Wraps to a new line instead of pushing items off screen (large font sizes) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginBottom="2dp"
-                android:layout_weight="1"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:minHeight="22dp">
+
+                <androidx.constraintlayout.helper.widget.Flow
+                    android:id="@+id/TrackBusInfoFlow2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:constraint_referenced_ids="Articulated,Doors,LowFloor,AirConditioner,Wifi,Usb"
+                    app:flow_horizontalBias="0"
+                    app:flow_horizontalGap="10dp"
+                    app:flow_horizontalStyle="packed"
+                    app:flow_verticalAlign="center"
+                    app:flow_verticalGap="2dp"
+                    app:flow_wrapMode="chain"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/Articulated"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.BetterTuke.Supporting" />
 
                 <TextView
                     android:id="@+id/Doors"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="14dp" />
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.BetterTuke.Supporting" />
 
                 <ImageView
                     android:id="@+id/LowFloor"
-                    android:layout_width="30dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="5dp"
+                    android:layout_width="18sp"
+                    android:layout_height="18sp"
                     android:contentDescription="@string/LowFloorIndicator"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="2dp"
                     android:src="@drawable/lowfloor"
                     android:visibility="gone" />
 
                 <ImageView
                     android:id="@+id/AirConditioner"
-                    android:layout_width="30dp"
-                    android:layout_height="match_parent"
+                    android:layout_width="18sp"
+                    android:layout_height="18sp"
                     android:contentDescription="@string/AirConditionIndicator"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="2dp"
                     android:src="@drawable/airconditioner"
                     android:visibility="gone" />
 
                 <ImageView
                     android:id="@+id/Wifi"
-                    android:layout_width="30dp"
-                    android:layout_height="match_parent"
+                    android:layout_width="18sp"
+                    android:layout_height="18sp"
                     android:contentDescription="@string/WifiOnBusIndicator"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="2dp"
                     android:src="@drawable/wifi"
                     android:visibility="gone" />
 
                 <ImageView
                     android:id="@+id/Usb"
-                    android:layout_width="30dp"
-                    android:layout_height="match_parent"
+                    android:layout_width="18sp"
+                    android:layout_height="18sp"
                     android:contentDescription="@string/UsbOnBusIndicator"
                     android:src="@drawable/usb"
                     android:visibility="gone" />
 
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>
 
@@ -150,6 +169,7 @@
         android:id="@+id/divider6"
         android:layout_width="match_parent"
         android:layout_height="1dp"
+        android:layout_marginTop="8dp"
         android:background="?android:attr/listDivider" />
 
     <com.google.android.gms.ads.AdView

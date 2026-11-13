@@ -8,6 +8,9 @@
     <string name="ArticulatedBus">csuklós</string>
     <string name="SoloBus">szóló</string>
     <string name="Legend">Jelmagyarázat:</string>
+    <string name="VariantVia">érinti: %1$s</string>
+    <string name="VariantSkips">nem érinti: %1$s</string>
+    <string name="VariantTerminatesHere">Itt végállomás</string>
     <string name="SelectDate">Válassz dátumot:</string>
     <string name="SelectTime">Válassz időt:</string>
     <string name="StartingDataFromStop">Indulási adatok innen: %1$s (%2$s)</string>

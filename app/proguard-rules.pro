@@ -12,10 +12,34 @@
 #   public *;
 #}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep line numbers so the (deobfuscated) crash reports in Play Console point to the right line,
+# but hide the original source file names.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# ---------------------------------------------------------------------------------------------
+# GTFS-Realtime bindings (NewApiInterface/GTFSRProvider)
+# The full protobuf runtime looks up the generated getters/builders by name via reflection
+# (field accessor tables, descriptors), so the generated classes must keep their members.
+-keep class com.google.transit.realtime.** { *; }
+-dontwarn com.google.protobuf.**
+
+# ---------------------------------------------------------------------------------------------
+# Model classes passed between fragments as Serializable in Bundles
+# (IncomingBusRespModel[], BusStops[], BusPlaces[] ...): keep the serialization hooks.
+-keepclassmembers class * implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
+
+# ---------------------------------------------------------------------------------------------
+# WorkManager 2.7 + Room 2.2.5 (pulled in by play-services-ads) instantiate these classes
+# reflectively through their no-arg constructor. Their own rules keep only the class, and R8 full
+# mode (default since AGP 8) then removes the constructor -> crash at startup:
+# "Failed to create an instance of androidx.work.impl.WorkDatabase".
+-keep class * extends androidx.room.RoomDatabase { <init>(); }
+-keep class * extends androidx.work.InputMerger { <init>(); }

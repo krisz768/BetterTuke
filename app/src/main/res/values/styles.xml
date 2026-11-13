@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ===================== Text appearances ===================== -->
+
+    <!-- Large screen / panel title (e.g. "Schedule") -->
+    <style name="TextAppearance.BetterTuke.ScreenTitle" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Title of a bottom sheet header (stop name, line name) -->
+    <style name="TextAppearance.BetterTuke.SheetTitle" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Secondary line below a title -->
+    <style name="TextAppearance.BetterTuke.Supporting" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- Primary text of a list row -->
+    <style name="TextAppearance.BetterTuke.ListTitle" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Section header inside lists -->
+    <style name="TextAppearance.BetterTuke.Section" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textColor">?attr/colorPrimary</item>
+    </style>
+
+    <!-- Line number inside the colored badges -->
+    <style name="TextAppearance.BetterTuke.LineBadge" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- ===================== Widgets ===================== -->
+
+    <!-- Colored line number badge (status badges and the line list badges) -->
+    <style name="Widget.BetterTuke.LineBadge" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:minWidth">56dp</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textAppearance">@style/TextAppearance.BetterTuke.LineBadge</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <!-- Square-ish line badge used in the line lists (schedule, search, shortcuts) -->
+    <style name="Widget.BetterTuke.LineBadge.Square">
+        <item name="android:minHeight">44dp</item>
+        <item name="android:minWidth">44dp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:background">@drawable/schedule_bus_number_background</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+    </style>
+
+    <!-- Round tonal icon button in the sheet headers -->
+    <style name="Widget.BetterTuke.HeaderAction" parent="">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_marginStart">6dp</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:background">@drawable/header_action_background</item>
+        <item name="android:foreground">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <!-- Leading icon of the stop / bus type rows, in a tonal circle -->
+    <style name="Widget.BetterTuke.ListIcon" parent="">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:background">@drawable/list_icon_background</item>
+    </style>
+
+    <!-- Pill shaped stop / direction selector -->
+    <style name="Widget.BetterTuke.SelectorChip" parent="Widget.Material3.Button">
+        <item name="android:minHeight">36dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+        <item name="iconPadding">6dp</item>
+        <item name="iconSize">18dp</item>
+        <item name="cornerRadius">18dp</item>
+    </style>
+
+    <!-- Rounded, borderless search field -->
+    <style name="Widget.BetterTuke.SearchField" parent="Widget.Material3.TextInputLayout.FilledBox">
+        <item name="boxBackgroundColor">?attr/colorSurfaceContainerHigh</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">0dp</item>
+        <item name="boxCornerRadiusTopStart">28dp</item>
+        <item name="boxCornerRadiusTopEnd">28dp</item>
+        <item name="boxCornerRadiusBottomStart">28dp</item>
+        <item name="boxCornerRadiusBottomEnd">28dp</item>
+        <item name="hintEnabled">false</item>
+        <item name="startIconTint">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- Rounded determinate progress bar (plain ProgressBar, progress is set from code) -->
+    <style name="Widget.BetterTuke.ProgressBar.Rounded" parent="Widget.AppCompat.ProgressBar.Horizontal">
+        <item name="android:progressDrawable">@drawable/progress_rounded</item>
+        <item name="android:minHeight">8dp</item>
+        <item name="android:maxHeight">8dp</item>
+    </style>
+</resources>

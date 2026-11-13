@@ -36,14 +36,19 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:maxWidth="480dp"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp">
 
         <TextView
             android:id="@+id/textView4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="@string/OnBoardUpdateTitle"
-            android:textSize="16sp"
+            android:textAppearance="@style/TextAppearance.BetterTuke.SheetTitle"
+            app:layout_constrainedWidth="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -52,19 +57,22 @@
             android:id="@+id/textView7"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
             android:text="@string/OnBoardUpdateDesc"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constrainedWidth="true"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView4" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ProgressBar
         android:id="@+id/DownloadPregressbar"
-        style="?android:attr/progressBarStyleHorizontal"
+        style="@style/Widget.BetterTuke.ProgressBar.Rounded"
         android:layout_width="0dp"
-        android:layout_height="15dp"
+        android:layout_height="8dp"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
         android:layout_marginBottom="32dp"
@@ -80,6 +88,8 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="30dp"
         android:text="0%"
+        android:textAppearance="?attr/textAppearanceLabelLarge"
+        android:textColor="?attr/colorOnSurfaceVariant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/DownloadPregressbar" />
 

@@ -20,9 +20,9 @@
     <color name="md_theme_light_errorContainer">#FFDAD6</color>
     <color name="md_theme_light_onError">#FFFFFF</color>
     <color name="md_theme_light_onErrorContainer">#410002</color>
-    <color name="md_theme_light_background">#FCFDF6</color>
+    <color name="md_theme_light_background">#F8FAF5</color>
     <color name="md_theme_light_onBackground">#1A1C19</color>
-    <color name="md_theme_light_surface">#FCFDF6</color>
+    <color name="md_theme_light_surface">#F8FAF5</color>
     <color name="md_theme_light_onSurface">#1A1C19</color>
     <color name="md_theme_light_surfaceVariant">#DEE4D8</color>
     <color name="md_theme_light_onSurfaceVariant">#42493F</color>
@@ -50,18 +50,40 @@
     <color name="md_theme_dark_errorContainer">#93000A</color>
     <color name="md_theme_dark_onError">#690005</color>
     <color name="md_theme_dark_onErrorContainer">#FFDAD6</color>
-    <color name="md_theme_dark_background">#1A1C19</color>
+    <color name="md_theme_dark_background">#11140F</color>
     <color name="md_theme_dark_onBackground">#E2E3DD</color>
-    <color name="md_theme_dark_surface">#1A1C19</color>
+    <color name="md_theme_dark_surface">#11140F</color>
     <color name="md_theme_dark_onSurface">#E2E3DD</color>
     <color name="md_theme_dark_surfaceVariant">#42493F</color>
     <color name="md_theme_dark_onSurfaceVariant">#C2C8BC</color>
     <color name="md_theme_dark_outline">#8C9388</color>
-    <color name="md_theme_dark_inverseOnSurface">#1A1C19</color>
+    <color name="md_theme_dark_inverseOnSurface">#2F312D</color>
     <color name="md_theme_dark_inverseSurface">#E2E3DD</color>
     <color name="md_theme_dark_inversePrimary">#2B6B28</color>
     <color name="md_theme_dark_shadow">#000000</color>
     <color name="md_theme_dark_surfaceTint">#92D787</color>
     <color name="md_theme_dark_outlineVariant">#42493F</color>
     <color name="md_theme_dark_scrim">#000000</color>
+
+    <!-- Surface container roles of the static (pre Android 12) palette -->
+    <color name="md_theme_light_surfaceDim">#D9DBD6</color>
+    <color name="md_theme_light_surfaceBright">#F8FAF5</color>
+    <color name="md_theme_light_surfaceContainerLowest">#FFFFFF</color>
+    <color name="md_theme_light_surfaceContainerLow">#F2F4EF</color>
+    <color name="md_theme_light_surfaceContainer">#EDEFE9</color>
+    <color name="md_theme_light_surfaceContainerHigh">#E7E9E4</color>
+    <color name="md_theme_light_surfaceContainerHighest">#E1E3DE</color>
+    <color name="md_theme_dark_surfaceDim">#11140F</color>
+    <color name="md_theme_dark_surfaceBright">#373A35</color>
+    <color name="md_theme_dark_surfaceContainerLowest">#0C0F0A</color>
+    <color name="md_theme_dark_surfaceContainerLow">#1A1C18</color>
+    <color name="md_theme_dark_surfaceContainer">#1E201C</color>
+    <color name="md_theme_dark_surfaceContainerHigh">#282B26</color>
+    <color name="md_theme_dark_surfaceContainerHighest">#333531</color>
+
+    <!-- Status colors of the line number badges (kept semantic: live / not started / missed / delayed) -->
+    <color name="badge_active">#1E8E3E</color>
+    <color name="badge_inactive">#5F6368</color>
+    <color name="badge_miss">#D93025</color>
+    <color name="badge_warn">#C4600B</color>
 </resources>

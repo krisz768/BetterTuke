@@ -3,13 +3,11 @@ package hu.krisz768.bettertuke.ActiveBusFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import hu.krisz768.bettertuke.HelperProvider;
 import hu.krisz768.bettertuke.R;
 import hu.krisz768.bettertuke.api_interface.models.ActiveBusTypeRespModel;
 
@@ -19,13 +17,11 @@ public class BusTypeListAdapter extends RecyclerView.Adapter<BusTypeListAdapter.
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView Name;
-        private final ImageView Icon;
         private final View view;
 
         public ViewHolder(View view) {
             super(view);
 
-            Icon = view.findViewById(R.id.BusTypeIcon);
             Name = view.findViewById(R.id.BusTypeName);
             this.view = view;
         }
@@ -33,7 +29,6 @@ public class BusTypeListAdapter extends RecyclerView.Adapter<BusTypeListAdapter.
         public void setData(ActiveBusTypeRespModel Data, BusTypeListFragment ClickCallBack) {
 
             view.setOnClickListener(view -> ClickCallBack.OnBusClick(Data.getBusTypeName()));
-            Icon.setImageBitmap(HelperProvider.getBitmap(HelperProvider.Bitmaps.MapBus));
 
             Name.setText(ClickCallBack.getString(R.string.BusTypeRec, Data.getBusTypeName(), Data.getTripIds().size()));
             // Highlight of the selected bus type in two-pane mode

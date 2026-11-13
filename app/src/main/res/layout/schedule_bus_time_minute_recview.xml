@@ -1,26 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Minute tile of the timetable (the rounded tile is a 3dp inset background).
+     It is at least 50dp tall and grows with the font size; the route variant letter sits in the
+     top-end corner above the minute, centered in a 16dp box so it keeps away from the rounded edge. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="50dp"
+    android:layout_height="wrap_content"
     android:layout_gravity="start">
 
     <TextView
         android:id="@+id/ScheduleMinuteText"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="50dp"
+        android:paddingTop="9dp"
+        android:paddingBottom="9dp"
         android:background="@drawable/bus_schedule_minute_background"
         android:clickable="true"
         android:contentDescription="@string/ScheduleMinuteButton"
         android:focusable="true"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:gravity="center" />
+        android:fontFamily="sans-serif-medium"
+        android:foreground="@drawable/schedule_minute_ripple"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textAppearance="?attr/textAppearanceBodyLarge" />
 
     <TextView
         android:id="@+id/ScheduleMinuteCode"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="16dp"
+        android:minWidth="16dp"
         android:layout_gravity="end"
-        android:layout_marginTop="3dp"
-        android:layout_marginEnd="5dp"
-        android:textSize="11sp" />
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="6dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:gravity="center"
+        android:fontFamily="sans-serif-medium"
+        android:includeFontPadding="false"
+        android:textSize="12dp" />
 </FrameLayout>

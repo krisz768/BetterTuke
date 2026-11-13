@@ -5,13 +5,11 @@ import java.util.Calendar;
 public class BusScheduleTime {
     private int Hour;
     private int Minute;
-    private final String LineCode;
     private final String LineId;
 
-    public BusScheduleTime(int hour, int minute, String lineCode, String lineId) {
+    public BusScheduleTime(int hour, int minute, String lineId) {
         Hour = hour;
         Minute = minute;
-        LineCode = lineCode;
         LineId = lineId;
     }
 
@@ -21,10 +19,6 @@ public class BusScheduleTime {
 
     public int getMinute() {
         return Minute;
-    }
-
-    public String getLineCode() {
-        return LineCode;
     }
 
     public String getLineId() {

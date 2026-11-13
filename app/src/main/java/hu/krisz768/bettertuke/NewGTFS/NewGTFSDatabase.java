@@ -11,8 +11,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import hu.krisz768.bettertuke.Database.BusLine;
@@ -168,34 +170,33 @@ public class NewGTFSDatabase {
         }
     }
 
+    // The directions of the line, one entry each, named after the most frequent headsign (the main
+    // destination, e.g. "Hősök tere" for the 4, not the list of every short turn)
     public BusVariation[] GetBusVariations(String LineNum) {
-        try {
-            List<BusVariation> Lines = new ArrayList<>();
-
-            //SELECT GROUP_CONCAT(trip_headsign), direction_id FROM (SELECT DISTINCT substr(t.trip_headsign , " + (LineNum.length()+1) + ") as trip_headsign, t.direction_id FROM trips t INNER JOIN routes AS r ON t.route_id = r.route_id WHERE r.route_short_name = '" + LineNum + "' ORDER BY r.route_short_name, t.direction_id LIMIT 7) GROUP BY direction_id;
-            Cursor cursor = Sld.rawQuery("SELECT GROUP_CONCAT(trip_headsign), direction_id FROM (SELECT DISTINCT substr(t.trip_headsign , " + (LineNum.length()+2) + ") as trip_headsign, t.direction_id FROM trips t INNER JOIN routes AS r ON t.route_id = r.route_id WHERE r.route_short_name = '" + LineNum + "' ORDER BY r.route_short_name, t.direction_id LIMIT 7) GROUP BY direction_id;", null);
-            while (cursor.moveToNext()) {
-                Lines.add(new BusVariation(cursor.getString(0), cursor.getString(1), ""));
-            }
-            cursor.close();
-
-            BusVariation[] ret = new BusVariation[Lines.size()];
-            Lines.toArray(ret);
-
-            return ret;
-        } catch (Exception e) {
-            log(e.toString());
-            return new BusVariation[0];
-        }
+        return GetMainHeadsigns("SELECT t.direction_id, substr(t.trip_headsign, length(r.route_short_name) + 2) AS headsign, count(*) AS trip_count FROM trips AS t INNER JOIN routes AS r ON t.route_id = r.route_id WHERE r.route_short_name = ? GROUP BY t.direction_id, headsign ORDER BY t.direction_id, trip_count DESC, headsign;", new String[]{LineNum});
     }
 
+    // Same as GetBusVariations, counting only the trips that serve the stop
     public BusVariation[] GetBusVariationsFromStop(String LineNum, String StopId) {
+        return GetMainHeadsigns("SELECT t.direction_id, substr(t.trip_headsign, length(r.route_short_name) + 2) AS headsign, count(DISTINCT t.trip_id) AS trip_count FROM trips AS t INNER JOIN routes AS r ON t.route_id = r.route_id INNER JOIN stop_times AS st ON st.trip_id = t.trip_id WHERE st.stop_id = ? AND r.route_short_name = ? GROUP BY t.direction_id, headsign ORDER BY t.direction_id, trip_count DESC, headsign;", new String[]{StopId, LineNum});
+    }
+
+    // Rows: direction_id, headsign, trip count, sorted by direction then count descending
+    private BusVariation[] GetMainHeadsigns(String Query, String[] Args) {
         try {
             List<BusVariation> Lines = new ArrayList<>();
 
-            Cursor cursor = Sld.rawQuery("SELECT GROUP_CONCAT(trip_headsign), direction_id FROM (SELECT DISTINCT substr(t.trip_headsign , " + (LineNum.length()+1) + ") as trip_headsign, t.direction_id FROM trips t INNER JOIN routes AS r ON t.route_id = r.route_id INNER JOIN stop_times AS st ON st.trip_id = t.trip_id WHERE st.stop_id = '" + StopId + "' AND r.route_short_name = '" + LineNum + "' ORDER BY r.route_short_name, t.direction_id LIMIT 7) GROUP BY direction_id;", null);
+            Cursor cursor = Sld.rawQuery(Query, Args);
+            String LastDirection = null;
             while (cursor.moveToNext()) {
-                Lines.add(new BusVariation(cursor.getString(0), cursor.getString(1), ""));
+                String Direction = cursor.getString(0);
+                if (Direction.equals(LastDirection)) {
+                    continue;
+                }
+                LastDirection = Direction;
+
+                String Headsign = cursor.getString(1);
+                Lines.add(new BusVariation(Headsign == null ? "" : Headsign.trim(), Direction, ""));
             }
             cursor.close();
 
@@ -218,7 +219,7 @@ public class NewGTFSDatabase {
             while (cursor.moveToNext()) {
                 String[] TimeParts = (cursor.getString(0)).split(":");
 
-                Lines.add(new BusScheduleTime(Integer.parseInt(TimeParts[0]), Integer.parseInt(TimeParts[1]), "", cursor.getString(1)));
+                Lines.add(new BusScheduleTime(Integer.parseInt(TimeParts[0]), Integer.parseInt(TimeParts[1]), cursor.getString(1)));
 
 
             }
@@ -241,7 +242,7 @@ public class NewGTFSDatabase {
             while (cursor.moveToNext()) {
                 String[] TimeParts = (cursor.getString(0)).split(":");
 
-                Lines.add(new BusScheduleTime(Integer.parseInt(TimeParts[0]), Integer.parseInt(TimeParts[1]), "", cursor.getString(1)));
+                Lines.add(new BusScheduleTime(Integer.parseInt(TimeParts[0]), Integer.parseInt(TimeParts[1]), cursor.getString(1)));
             }
             cursor.close();
 
@@ -252,6 +253,38 @@ public class NewGTFSDatabase {
             log(e.toString());
             return new BusScheduleTime[0];
         }
+    }
+
+    // Stops of the given trips in order: trip id -> list of {stop_id, stop_name}
+    public HashMap<String, List<String[]>> GetTripStops(Collection<String> TripIds) {
+        HashMap<String, List<String[]>> ret = new HashMap<>();
+        try {
+            List<String> Ids = new ArrayList<>(new LinkedHashSet<>(TripIds));
+
+            // SQLite allows at most 999 parameters per query
+            for (int From = 0; From < Ids.size(); From += 500) {
+                List<String> Chunk = Ids.subList(From, Math.min(From + 500, Ids.size()));
+                StringBuilder Placeholders = new StringBuilder();
+                for (int i = 0; i < Chunk.size(); i++) {
+                    Placeholders.append(i == 0 ? "?" : ",?");
+                }
+
+                Cursor cursor = Sld.rawQuery("SELECT st.trip_id, st.stop_id, s.stop_name FROM stop_times AS st INNER JOIN stops AS s ON s.stop_id = st.stop_id WHERE st.trip_id IN (" + Placeholders + ") ORDER BY st.trip_id, st.stop_sequence;", Chunk.toArray(new String[0]));
+                while (cursor.moveToNext()) {
+                    String StopName = cursor.getString(2);
+                    List<String[]> Stops = ret.get(cursor.getString(0));
+                    if (Stops == null) {
+                        Stops = new ArrayList<>();
+                        ret.put(cursor.getString(0), Stops);
+                    }
+                    Stops.add(new String[]{cursor.getString(1), StopName == null ? "" : StopName.trim()});
+                }
+                cursor.close();
+            }
+        } catch (Exception e) {
+            log(e.toString());
+        }
+        return ret;
     }
 
     public IncomingBusRespModel[] GetOfflineDepartureTimes(String StopId, String Date, String Time) {

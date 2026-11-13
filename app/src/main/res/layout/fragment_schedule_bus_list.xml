@@ -9,28 +9,30 @@
     <TextView
         android:id="@+id/textView3"
         android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="24dp"
         android:text="@string/Schedule"
-        android:textSize="24sp" />
+        android:textAppearance="@style/TextAppearance.BetterTuke.ScreenTitle" />
 
     <TextView
         android:id="@+id/ScheduleTargetText"
         android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:layout_marginBottom="10dp"
-        android:gravity="center"
-        android:text="@string/AllLines" />
-
-    <View
-        android:id="@+id/divider7"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="?android:attr/listDivider" />
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="12dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:text="@string/AllLines"
+        android:textAppearance="@style/TextAppearance.BetterTuke.Supporting" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/ScheduleBusLineRec"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent" />
+        android:layout_height="fill_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp" />
 </LinearLayout>

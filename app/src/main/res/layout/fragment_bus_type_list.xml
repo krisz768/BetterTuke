@@ -9,18 +9,15 @@
     <TextView
         android:id="@+id/BusTypeListTitle"
         android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:layout_marginBottom="10dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="12dp"
+        android:ellipsize="end"
+        android:maxLines="2"
         android:text="@string/ActiveBuses"
-        android:textSize="24sp" />
-
-    <View
-        android:id="@+id/divider7"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="?android:attr/listDivider" />
+        android:textAppearance="@style/TextAppearance.BetterTuke.ScreenTitle" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swiperefreshBusType"
@@ -30,7 +27,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/BusTypeListRec"
             android:layout_width="match_parent"
-            android:layout_height="fill_parent" />
+            android:layout_height="fill_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

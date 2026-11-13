@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Switch;
+import android.widget.CompoundButton;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -44,7 +44,7 @@ public class AdDisableSetting extends Fragment {
             UserDatabase userDatabase = new UserDatabase(context);
             String AdEnabled = userDatabase.GetPreference("AdEnabled");
 
-            ((Switch)view.findViewById(R.id.AdSwitch)).setChecked(AdEnabled == null || AdEnabled.equals("true"));
+            ((CompoundButton)view.findViewById(R.id.AdSwitch)).setChecked(AdEnabled == null || AdEnabled.equals("true"));
         }
 
         view.findViewById(R.id.SaveButton).setOnClickListener(v -> ConfirmWindow());
@@ -70,7 +70,7 @@ public class AdDisableSetting extends Fragment {
 
         if (activity != null) {
             UserDatabase userDatabase = new UserDatabase(activity);
-            userDatabase.SetPreference("AdEnabled", Boolean.toString(((Switch)view.findViewById(R.id.AdSwitch)).isChecked()));
+            userDatabase.SetPreference("AdEnabled", Boolean.toString(((CompoundButton)view.findViewById(R.id.AdSwitch)).isChecked()));
 
             activity.finish();
         }

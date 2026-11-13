@@ -1,61 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- One stop of the tracked trip.
+     The track graphic always fills the full row height (centerCrop keeps the circle round while the
+     vertical line reaches both edges), so the line stays continuous even when a larger font size
+     makes the rows taller than 55dp. -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/ConstraintView4"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:minHeight="55dp"
     android:clickable="true"
     android:focusable="true"
     android:background="?android:attr/selectableItemBackground">
 
-    <View
-        android:id="@+id/divider2"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_marginStart="67dp"
-        android:layout_marginEnd="3dp"
-        android:layout_marginBottom="1dp"
-        android:background="?android:attr/listDivider"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/TrackBusStopName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="5dp"
-        app:layout_constraintStart_toEndOf="@+id/trackGraphic"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <ImageView
         android:id="@+id/trackGraphic"
         android:layout_width="55dp"
-        android:layout_height="55dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
         android:contentDescription="@string/BusPositionIcon"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/bustrack_empty" />
+
+    <!-- Height in sp: grows together with the text, auto size only shrinks long stop names -->
+    <TextView
+        android:id="@+id/TrackBusStopName"
+        android:layout_width="0dp"
+        android:layout_height="24sp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:maxLines="1"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        app:autoSizeMaxTextSize="16sp"
+        app:autoSizeMinTextSize="12sp"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintBottom_toTopOf="@+id/TrackBusStopTime"
+        app:layout_constraintEnd_toStartOf="@+id/TrackBusSwitchIcon"
+        app:layout_constraintStart_toEndOf="@+id/trackGraphic"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
 
     <TextView
         android:id="@+id/TrackBusStopTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="6dp"
-        app:layout_constraintStart_toEndOf="@+id/trackGraphic"
+        android:layout_marginTop="1dp"
+        android:layout_marginBottom="4dp"
+        android:fontFamily="sans-serif-medium"
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/TrackBusStopName"
         app:layout_constraintTop_toBottomOf="@+id/TrackBusStopName" />
 
     <TextView
         android:id="@+id/TrackBusDelayTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="6dp"
-        app:layout_constraintStart_toEndOf="@+id/TrackBusStopTime"
-        app:layout_constraintTop_toBottomOf="@+id/TrackBusStopName" />
+        android:layout_marginStart="12dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBaseline_toBaselineOf="@+id/TrackBusStopTime"
+        app:layout_constraintEnd_toEndOf="@+id/TrackBusStopName"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@+id/TrackBusStopTime" />
 
 
     <Button
@@ -63,7 +78,7 @@
         style="?attr/materialIconButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

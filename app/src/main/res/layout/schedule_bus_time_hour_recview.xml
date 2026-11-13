@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- One hour row of the timetable: hour pill + grid of minute tiles.
+     Hour pill (40dp) + gap (3dp) + list margins (2x16dp) = 75dp, the value used by
+     ScheduleBusTimeFragment.UpdateMaxPerLine(). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="4dp"
-    android:layout_marginBottom="4dp">
+    android:layout_marginTop="2dp"
+    android:layout_marginBottom="2dp">
 
     <TextView
         android:id="@+id/ScheduleHourText"
-        android:layout_width="35dp"
+        android:layout_width="40dp"
         android:layout_height="match_parent"
+        android:layout_marginTop="3dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="3dp"
         android:layout_weight="0"
         android:background="@drawable/bus_schedule_hour_background"
-        android:gravity="center" />
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:textAppearance="?attr/textAppearanceTitleSmall" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/ScheduleMinuteRecview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
         android:layout_weight="0" />
 
 </LinearLayout>

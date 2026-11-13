@@ -7,13 +7,15 @@
 
     <Button
         android:id="@+id/StopButton"
+        style="@style/Widget.BetterTuke.SelectorChip"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="6dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginBottom="6dp"
         android:contentDescription="@string/StopSelectorButton"
+        android:ellipsize="end"
         android:maxLines="1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -46,6 +46,8 @@ public class ScheduleBusTimeMinuteAdapter extends RecyclerView.Adapter<ScheduleB
             MinuteText.setText(String.format(Locale.US, "%02d", Minute));
 
             BusCodeText.setText(Code);
+            // Main variant: no code
+            BusCodeText.setVisibility(Code == null || Code.isEmpty() ? View.GONE : View.VISIBLE);
 
             boolean IsStarted = false;
             boolean IsErr = false;

@@ -10,15 +10,17 @@ android {
         applicationId = "hu.krisz768.bettertuke"
         minSdk = 24
         targetSdk = 37
-        versionCode = 84
-        versionName = "3.1"
+        versionCode = 87
+        versionName = "3.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            minifyEnabled = false
+            // R8: shrinking, optimization and obfuscation (rules: proguard-rules.pro)
+            minifyEnabled = true
+            shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

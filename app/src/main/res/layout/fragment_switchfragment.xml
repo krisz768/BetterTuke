@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,46 +8,41 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginEnd="5dp"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content"
+        android:minHeight="52dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="24dp">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/SwichBusStopName"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text=""
+            android:textAppearance="@style/TextAppearance.BetterTuke.SheetTitle" />
 
-            <TextView
-                android:id="@+id/SwichBusStopName"
-                android:layout_width="match_parent"
-                android:layout_height="35dp"
-                android:layout_marginStart="20dp"
-                android:layout_weight="0"
-                android:gravity="start|center"
-                android:text=""
-                android:textSize="25sp"
-                app:autoSizeMaxTextSize="30sp"
-                app:autoSizeTextType="uniform" />
-
-            <TextView
-                android:id="@+id/SwitchBusStopInfo"
-                android:layout_width="match_parent"
-                android:layout_height="15dp"
-                android:layout_marginStart="20dp"
-                android:layout_weight="0"
-                android:text=""
-                android:textSize="25sp"
-                app:autoSizeMaxTextSize="30sp"
-                app:autoSizeTextType="uniform" />
-        </LinearLayout>
-
+        <TextView
+            android:id="@+id/SwitchBusStopInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:text=""
+            android:textAppearance="@style/TextAppearance.BetterTuke.Supporting" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/SwichBusStopListRecView"
         android:layout_width="match_parent"
-        android:layout_height="40dp">
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
     </androidx.recyclerview.widget.RecyclerView>
 
@@ -56,6 +50,7 @@
         android:id="@+id/divider5"
         android:layout_width="match_parent"
         android:layout_height="1dp"
+        android:layout_marginTop="8dp"
         android:background="?android:attr/listDivider" />
 
     <androidx.fragment.app.FragmentContainerView

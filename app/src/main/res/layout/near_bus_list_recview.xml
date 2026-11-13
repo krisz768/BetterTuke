@@ -3,65 +3,49 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:minHeight="64dp"
     android:clickable="true"
     android:focusable="true"
-    android:background="?android:attr/selectableItemBackground">
+    android:background="@drawable/list_item_background">
 
     <TextView
         android:id="@+id/NearBusListArrNumText"
-        android:layout_width="65dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="15dp"
+        style="@style/Widget.BetterTuke.LineBadge"
+        android:layout_marginStart="20dp"
         android:background="@drawable/bus_number_background_active"
-        android:gravity="center"
-        android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <View
-        android:id="@+id/divider2"
-        android:layout_width="wrap_content"
-        android:layout_height="1dp"
-        android:layout_marginStart="1dp"
-        android:layout_marginEnd="1dp"
-        android:layout_marginBottom="1dp"
-        android:background="?android:attr/listDivider"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <FrameLayout
         android:id="@+id/frameLayout"
         android:layout_width="0dp"
-        android:layout_height="57dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="35dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/NearBusShortcutFavIcon"
         app:layout_constraintStart_toEndOf="@+id/NearBusListArrNumText"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/NearBusArrDesText"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:gravity="center_vertical"
-            android:textSize="20sp"
-            app:autoSizeMaxTextSize="20sp"
-            app:autoSizeTextType="uniform" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAppearance="@style/TextAppearance.BetterTuke.ListTitle" />
 
     </FrameLayout>
 
     <ImageView
         android:id="@+id/NearBusShortcutFavIcon"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
-        android:layout_marginEnd="10dp"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_marginEnd="24dp"
         android:contentDescription="@string/NearStopFavIcon"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

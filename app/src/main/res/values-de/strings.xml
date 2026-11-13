@@ -20,6 +20,9 @@
     <string name="SelectDate">Wählen Sie ein Datum:</string>
     <string name="SelectTime">Wählen Sie Ihre Zeit:</string>
     <string name="Legend">Erklärung:</string>
+    <string name="VariantVia">über %1$s</string>
+    <string name="VariantSkips">ohne Halt in %1$s</string>
+    <string name="VariantTerminatesHere">Endet hier</string>
     <string name="SoloBus">Solobus</string>
     <string name="ArticulatedBus">Gelenkbus</string>
     <string name="MidiBus">midi</string>
